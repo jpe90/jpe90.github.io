@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blogs on Jon Eskin&#39;s Blog</title>
+    <link>https://jpe90.github.io/blog/</link>
+    <description>Recent content in Blogs on Jon Eskin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 20 Apr 2022 03:00:00 -0400</lastBuildDate><atom:link href="https://jpe90.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Guile Scheme Overview</title>
+      <link>https://jpe90.github.io/blog/guile-scheme-overview/</link>
+      <pubDate>Wed, 20 Apr 2022 03:00:00 -0400</pubDate>
+      
+      <guid>https://jpe90.github.io/blog/guile-scheme-overview/</guid>
+      <description>Guile Scheme is actively maintained scheme dialect by the GNU project and has receieved continued improvement over the years. Most recently, version 3 introduced JIT compilation to speed it&amp;rsquo;s performance considerably.
+Like (some) other Lisps, allows you to interact with and modify your program while it&amp;rsquo;s running. It also has good C interop for both C FFI or for embedding in (and adding interactivity to) C programs.
+If you&amp;rsquo;re interested in using GNU GUIX, the entire GUIX system as well as the Shepherd init system are written in Guile.</description>
+    </item>
+    
+    <item>
+      <title>Overview of Common Lisp</title>
+      <link>https://jpe90.github.io/blog/common-lisp-in-2022/</link>
+      <pubDate>Mon, 04 Apr 2022 14:15:00 -0400</pubDate>
+      
+      <guid>https://jpe90.github.io/blog/common-lisp-in-2022/</guid>
+      <description>In this post I&amp;rsquo;ll give my thoughts on the strengths and weaknesses of programming in Common Lisp.
+CL is particularly well suited for building applications which can be inspected and modified as they run. Applications can be running locally, on a server, or even on embedded devices. CL&amp;rsquo;s macros empower you to cut down substantially on boilerplate and create useful DSLs, which can sound very abstract, but in practise it just means that you get the ability to shape the language to the problem you&amp;rsquo;re working on far more than you can with most other languages.</description>
+    </item>
+    
+    <item>
+      <title>My Experience With Lisp</title>
+      <link>https://jpe90.github.io/blog/my-experience-with-lisp/</link>
+      <pubDate>Sun, 03 Apr 2022 04:32:55 -0400</pubDate>
+      
+      <guid>https://jpe90.github.io/blog/my-experience-with-lisp/</guid>
+      <description>When I worked on web applications in a previous job, I had to maintain a lot of unfamiliar systems using old libraries. Often times I would need to experiment with them to understand how they worked. The web applications were large and took a long time to recompile, so tweaking the existing setup in a development environment wasn&amp;rsquo;t a good option. I would usually end up building an individual sandbox application for each library to test it in isolation.</description>
+    </item>
+    
+  </channel>
+</rss>

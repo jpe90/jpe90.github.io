@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type=text/css>body{font-family:monospace;}</style>
+	<title>My Experience With Lisp</title>
+	
+	
+	<link rel="stylesheet" href="/css/style.css">
+	
+	
+</head>
+<body>
+	<header>
+	======================<br>
+	== <a href="https://jpe90.github.io/">Jon Eskin&#39;s Blog</a> ==<br>
+	======================
+	<div style="float: right;"></div><br>
+	<p>
+	<nav>
+			<a href="/"><b>Home</b></a>.
+			
+			
+			<a href="/blog/"><b>Blog</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>My Experience With Lisp</h1>
+			<b><time>03.04.2022 04:32</time></b>
+		       
+
+			<div>
+				<p>When I worked on web applications in a previous job, I had to maintain a lot of unfamiliar systems using old libraries. Often times I would need to experiment with them to understand how they worked. The web applications were large and took a long time to recompile, so tweaking the existing setup in a development environment wasn&rsquo;t a good option. I would usually end up building an individual sandbox application for each library to test it in isolation. It worked, but felt cluttery and unpleasant.</p>
+<p>Many of our webapps had a substantial amount generic logic that was wired up with a large number of individual settings in massive configuration files. This let developers change our libraries&rsquo; behavior at runtime without recompiling the application, but it made the libraries very hard to understand and made applications more brittle.</p>
+<p>These were just things that I came to accept as &ldquo;how enterprise development is done&rdquo;, and I didn&rsquo;t really enjoy it, although I appreciated that it worked decently enough.</p>
+<p>A few years ago, I downloaded Emacs on a whim. I was bored and using a Windows desktop hooked up to my big screen tv. I opened up the application and saw a manual on the splash screen, so I figured why not actually read the manual for once in my life?</p>
+<p>The manual had a bunch of sections, including an &ldquo;introduction to Emacs Lisp&rdquo;. I had never heard of Lisp before that point. Following along with the manual felt like playing a weird <a href="https://www.zachtronics.com">Zachtronics game</a>. Luckily I enjoy those games, even if I suck at them, and I was interested enough to keep at it. I ended up spending a decent amount of time learning the editor and Emacs Lisp, then learning Common Lisp, diving into Clojure, trying out Racket, checking out Gerbil, and hacking around in Guix using Guile.</p>
+<p>To me, the power of Lisp is that it makes it very easy to build flexible, robust software without excessive boilerplate, config files, and the need for lengthy recompilation. S-expressions and macros are a very intuitive way to build abstractions and build code as a set of pure functions that you compose and thread state through at the highest level possible. While this is doable in any language, I think it&rsquo;s harder to focus on while juggling with noisy syntax and verbose language idioms. Just try comparing an implementation of a scheme written in scheme to the implementation of say, Clojure, written in Java,
+and you&rsquo;ll see what I mean.</p>
+<p>Most importantly, it&rsquo;s shown me that I actually enjoy software development, which isn&rsquo;t something I would have confidently said before. I&rsquo;ve largely moved on from Lisps since, but I think the time I spent learning them was well spent.</p>
+
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/blog/guile-scheme-overview/">Guile Scheme Overview</a></li>
+				
+				<li><a href="/blog/common-lisp-in-2022/">Overview of Common Lisp</a></li>
+				
+				<li><a href="/blog/my-experience-with-lisp/">My Experience With Lisp</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2022 <a href="https://jpe90.github.io/"><b>Jon Eskin&#39;s Blog</b></a>.
+	<a href="https://github.com/jpe90"><b>Github</b></a>.
+	<a href="https://sr.ht/~eskin/"><b>SourceHut</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>

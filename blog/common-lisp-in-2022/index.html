@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type=text/css>body{font-family:monospace;}</style>
+	<title>Overview of Common Lisp</title>
+	
+	
+	<link rel="stylesheet" href="/css/style.css">
+	
+	
+</head>
+<body>
+	<header>
+	======================<br>
+	== <a href="https://jpe90.github.io/">Jon Eskin&#39;s Blog</a> ==<br>
+	======================
+	<div style="float: right;"></div><br>
+	<p>
+	<nav>
+			<a href="/"><b>Home</b></a>.
+			
+			
+			<a href="/blog/"><b>Blog</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>Overview of Common Lisp</h1>
+			<b><time>04.04.2022 14:15</time></b>
+		       
+
+			<div>
+				<p>In this post I&rsquo;ll give my thoughts on the strengths and weaknesses of programming in Common Lisp.</p>
+<p>CL is particularly well suited for building applications which can be inspected and modified as they run. Applications can be running locally, on a server, or even on embedded devices. CL&rsquo;s macros empower you to cut down substantially on boilerplate and create useful DSLs, which can sound very abstract, but in practise it just means that you get the ability to shape the language to the problem you&rsquo;re working on far more than you can with most other languages. What makes Common Lisp unique even among other Lisps is how well it does both of these.</p>
+<p>If you&rsquo;ve been considering investing some time in learning CL, you might want to know it&rsquo;s weaknesses. An interesting thing about CL is that it&rsquo;s biggest weaknesses are social, not necessarily technical. The power to shape the language is often used by library authors in ways you wouldn&rsquo;t expect, which can lead to surprising situations where you can&rsquo;t really predict how the code you&rsquo;re interfacing with works. (As a side note, this drawback was very influential in the design of Clojure in its efforts to encourage idiomatic program design and limit the use of reader macros to radically change the langage).</p>
+<p>As an example: it&rsquo;s not uncommon exploit mutability under the hood for performance reasons. I&rsquo;ve had a few insidious bugs creep into programs where my program state would change in places where I wasn&rsquo;t expecting it to because I call into a function which mutates the library&rsquo;s internal state without any indication it was doing so.</p>
+<p>Some people are turned off by how many libraries don&rsquo;t see tons of updates. In some cases this is due to the language&rsquo;s stability. CL code is not subject to the same level of bitrot as other ecosystems, and since the language standard hasn&rsquo;t changed in an eternity, you don&rsquo;t get the same situation where the language evolves and breaks existing code.</p>
+<p>Of course, this doesn&rsquo;t apply for code that makes heavy use of FFI (for GUI development, for example). If CL code is leaning on bindings to another language, and that language&rsquo;s code changes, the CL bindings need to be updated in lockstep or they will break. This is where you really feel the language&rsquo;s relative unpopularity, especially if you&rsquo;re trying to build software on uncommon arcitechtures that aren&rsquo;t as well supported- on my ARM mac, QT and GTK bindings fail to build.</p>
+<p>When I&rsquo;m checking out languages to decide if they&rsquo;re worth learning, I like to take a tour of of the claimed strengths to see if they convince me. Here are some examples of concrete demonstrations of CL that you can judge for yourself:</p>
+<ul>
+<li><a href="https://malisper.me/debugging-lisp-part-1-recompilation/">The condition/restart system for debugging</a></li>
+<li><a href="https://stackoverflow.com/a/4621882">Extending the language with macros</a></li>
+<li><a href="https://baltazaar.wordpress.com/2009/07/20/a-story-about-lisp-remote-debugging/">An overused story on the value of the usefulness of interactive debugging on a running process</a>:</li>
+</ul>
+<p>If you&rsquo;re interested in checking out the language, here are some resources you&rsquo;ll want to check out:</p>
+<ul>
+<li><a href="https://stevelosh.com/blog/2018/08/a-road-to-common-lisp/">A solid starting point of beginner resources</a></li>
+<li>Peter Siebel&rsquo;s <a href="https://www.apress.com/us/book/9781590592397">Practical Common Lisp</a> for learning how to effectively use the language</li>
+<li><a href="https://github.com/CodyReichert/awesome-cl/">Libraries for getting stuff done</a></li>
+<li><a href="https://lispcookbook.github.io/cl-cookbook/editor-support.html">Options for editor integration</a></li>
+</ul>
+<p>Before I end this post I should note that Common Lisp in Emacs is the most fun I&rsquo;ve ever had programming. At the same time, for a real-world project, I would almost never use it these days. The more experienced I&rsquo;ve gotten with programming, I&rsquo;ve increasingly come to value languages with strong network effects, that can produce fast code and small binaries without insane arm twisting. Common Lisp can be quite fast, but it falters on the other two. Still, I would definitely recommend dipping your toes in the water if you&rsquo;re on the fence about learning it.</p>
+
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/blog/guile-scheme-overview/">Guile Scheme Overview</a></li>
+				
+				<li><a href="/blog/common-lisp-in-2022/">Overview of Common Lisp</a></li>
+				
+				<li><a href="/blog/my-experience-with-lisp/">My Experience With Lisp</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2022 <a href="https://jpe90.github.io/"><b>Jon Eskin&#39;s Blog</b></a>.
+	<a href="https://github.com/jpe90"><b>Github</b></a>.
+	<a href="https://sr.ht/~eskin/"><b>SourceHut</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>

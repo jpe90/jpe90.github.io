@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type=text/css>body{font-family:monospace;}</style>
+	<title>Guile Scheme Overview</title>
+	
+	
+	<link rel="stylesheet" href="/css/style.css">
+	
+	
+</head>
+<body>
+	<header>
+	======================<br>
+	== <a href="https://jpe90.github.io/">Jon Eskin&#39;s Blog</a> ==<br>
+	======================
+	<div style="float: right;"></div><br>
+	<p>
+	<nav>
+			<a href="/"><b>Home</b></a>.
+			
+			
+			<a href="/blog/"><b>Blog</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>Guile Scheme Overview</h1>
+			<b><time>20.04.2022 03:00</time></b>
+		       
+
+			<div>
+				<p>Guile Scheme is actively maintained scheme dialect by the GNU project and has receieved continued improvement over the years. Most recently, <a href="https://www.gnu.org/software/guile/news/gnu-guile-300-released.html">version 3 introduced JIT compilation</a> to speed it&rsquo;s performance considerably.</p>
+<p>Like (some) other Lisps, allows you to <a href="https://www.gnu.org/software/guile/manual/html_node/REPL-Servers.html">interact with and modify your program while it&rsquo;s running</a>. It also has good C interop for both C FFI or for embedding in (and adding interactivity to) C programs.</p>
+<p>If you&rsquo;re interested in using GNU GUIX, the entire GUIX system as well as the Shepherd init system are written in Guile. It&rsquo;s under <a href="https://git.savannah.gnu.org/cgit/guix.git">very active development</a> and is a lot of fun to hack on, so if tinkering with a Lisp-based OS sounds appealing to you, I highly recommend you check it out.</p>
+<p>Being a GNU project, it&rsquo;s hackable by design and very well documented. It has an <a href="https://www.gnu.org/software/guile/manual/">excellent manual version</a> and the <a href="https://git.savannah.gnu.org/cgit/guile.git/tree/">source code</a> is literred with useful comments, readmes, and other breadcrumbs that I&rsquo;ve really come to appreciate.</p>
+<p>There are plenty of libraries worth checking out, such as <a href="https://dthompson.us/projects/haunt.html">Haunt Static Site Generator</a>, <a href="https://dthompson.us/projects/chickadee.html">Chickadee Game Development Toolkit</a>, or the <a href="https://www.gnu.org/software/artanis/">Artanis Web Framework</a>, all of which are recent projects and actively maintained.</p>
+<p>If you&rsquo;re looking to pick up a general-purpose scheme for learning purposes, it&rsquo;s sufficient. Racket is better for that, honestly, because of the great tooling, debugging tools, cross-platform availability, and how everything &ldquo;just works&rdquo;. But now that I am familiar with both, I stick to Guile, because the advantages of Racket don&rsquo;t matter as much as you become more knowledgeable (in my opinion at least).</p>
+<h2 id="how-is-the-tooling">How is the tooling?</h2>
+<p>If you&rsquo;re used to the tooling of lisps like Racket, Clojure, or CL, Guile&rsquo;s tooling is not as polished. Within Emacs, goto-definition, autocomplete, and in-editor evaluation are available with Geiser. Breakpoints and step debugging are available, but not within Geiser. The documentation on interactive debugging is <a href="https://www.gnu.org/software/guile/manual/html_node/Interactive-Debugging.html">available here</a>.</p>
+<p>Package management is accomplished with the module system. Deploying libraries means adding files to installation-designated directories- compiled files are put in the <code>SITE_CCACHE_DIR</code> and source files to the <code>GUILE_SITE_DIR</code>. Most libraries that I&rsquo;ve seen use autotools (the tools behind ./configure, make, make install) to figure out where these are. If you&rsquo;re on a Mac and unfamiliar with Guile, you&rsquo;ll want to lean on the homebrew links below and read them carefully to make sure stuff works as expected.</p>
+<h3 id="installation-tips">Installation Tips</h3>
+<p>Installation is very straightforward on both Linux and MacOS. Below are a few installation tips for installing Guile 3 (which is designed to co-exist with older versions, so don&rsquo;t worry about conflicts).</p>
+<h3 id="arch-linux">Arch Linux</h3>
+<p>Install Guile 3 from <a href="https://aur.archlinux.org/packages/guile3">the AUR package</a>.</p>
+<h3 id="ubuntu">Ubuntu</h3>
+<p>Guile 3 is available as a <a href="https://launchpad.net/ubuntu/+source/guile-3.0">Ubuntu package</a></p>
+<h3 id="macos">MacOS</h3>
+<p>Guile is available on <a href="https://formulae.brew.sh/formula/guile">homebrew</a>. There&rsquo;s also a very handy <a href="https://github.com/aconchillo/homebrew-guile">homebrew tap</a> for installing popular Guile libraries and applications.</p>
+<h2 id="post-installation">Post Installation</h2>
+<p>On both my Linux and Mac, I added the &ldquo;guile site dir&rdquo; to guile&rsquo;s load path by adding a <code>~/.guile</code> file, which on my mac contains:</p>
+<pre tabindex="0"><code>(add-to-load-path &#34;/opt/homebrew/share/guile/site/3.0&#34;)
+(add-to-load-path &#34;/usr/local/share/guile/site/3.0&#34;)
+</code></pre><p>These are where homebrew libraries and libraries that I manually built are found, respectively.</p>
+<p>Also, I needed to tell Geiser to use this file for it to work. Here&rsquo;s my use-package declaration for guile-geiser:</p>
+<pre tabindex="0"><code>(use-package geiser-guile
+  :ensure t
+    :config
+      (setq geiser-guile-load-init-file-p t))
+</code></pre>
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/blog/guile-scheme-overview/">Guile Scheme Overview</a></li>
+				
+				<li><a href="/blog/common-lisp-in-2022/">Overview of Common Lisp</a></li>
+				
+				<li><a href="/blog/my-experience-with-lisp/">My Experience With Lisp</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2022 <a href="https://jpe90.github.io/"><b>Jon Eskin&#39;s Blog</b></a>.
+	<a href="https://github.com/jpe90"><b>Github</b></a>.
+	<a href="https://sr.ht/~eskin/"><b>SourceHut</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>
