@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blogs on Jon Eskin&#39;s Website</title>
+    <link>https://jeskin.net/blog/</link>
+    <description>Recent content in Blogs on Jon Eskin&#39;s Website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <copyright>Copyright CC-BY-SA © 2022, Jon Eskin.</copyright>
+    <lastBuildDate>Sat, 14 Jan 2023 03:13:30 -0500</lastBuildDate><atom:link href="https://jeskin.net/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Running Dreambooth in Stable Diffusion with Low VRAM</title>
+      <link>https://jeskin.net/blog/dreambooth-low-vram/</link>
+      <pubDate>Sat, 14 Jan 2023 03:13:30 -0500</pubDate>
+      
+      <guid>https://jeskin.net/blog/dreambooth-low-vram/</guid>
+      <description>Updated with the latest stable diffusion web UI, sd_dreambooth_extension, and xformers as of 1/27/2023
+Introduction In a recent whitepaper, researchers described a technique to take existing pre-trained text-to-image models and embed new subjects, adding the capability to synthesize photorealistic images of the subject contextualized in the model&amp;rsquo;s output.
+A series of implementations were quickly built, finding their way to the Stable Diffusion web UI project in the form of the sd_dreambooth_extension.</description>
+    </item>
+    
+    <item>
+      <title>FIFO based IRC with ii and lchat</title>
+      <link>https://jeskin.net/blog/irc-ii-lchat/</link>
+      <pubDate>Tue, 03 Jan 2023 13:34:15 -0500</pubDate>
+      
+      <guid>https://jeskin.net/blog/irc-ii-lchat/</guid>
+      <description>Introduction lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.
+ii A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.
+For example, the popular client weechat draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on.</description>
+    </item>
+    
+    <item>
+      <title>Home Monitoring with Raspberry Pis and USB Webcams</title>
+      <link>https://jeskin.net/blog/raspberry-cam-home-monitoring/</link>
+      <pubDate>Wed, 28 Dec 2022 06:15:34 -0500</pubDate>
+      
+      <guid>https://jeskin.net/blog/raspberry-cam-home-monitoring/</guid>
+      <description>Introduction Sometimes it&amp;rsquo;s difficult for my wife and I not to worry about pipes bursting or break-ins while on extended stays away from home.
+This year I took a couple Raspberry Pis and usb webcams I had laying around and set up a DIY home security system using motion.
+In this blog post, I&amp;rsquo;ll show how my setup lets me check a livestream of the cameras, save pictures when the camera detects movement, and creates off-site backups when new pictures are saved.</description>
+    </item>
+    
+    <item>
+      <title>Debugging Emacs Lisp</title>
+      <link>https://jeskin.net/blog/debugging-emacs/</link>
+      <pubDate>Tue, 06 Dec 2022 12:58:42 -0500</pubDate>
+      
+      <guid>https://jeskin.net/blog/debugging-emacs/</guid>
+      <description>In this post, I&amp;rsquo;ll show how I used basic capabilities of the built-in Emacs Lisp debugger such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.
+Downloading Problems I recently stumbled upon an Advent of Code utility which lets you authenticate with the advent of code server via M-x advent-login and download your daily input file with M-x advent-input.
+When I ran advent-login followed by advent-input, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area.</description>
+    </item>
+    
+    <item>
+      <title>Model View Projection Matrices</title>
+      <link>https://jeskin.net/blog/model-view-projection/</link>
+      <pubDate>Wed, 23 Nov 2022 11:07:54 -0400</pubDate>
+      
+      <guid>https://jeskin.net/blog/model-view-projection/</guid>
+      <description>Introduction When a 3D model is rendered using a modern graphics API, three things typically occur:
+the programmer defines the vertices that define the model and passes them to the graphics API a transform matrix is created in the application and sent to the GPU the GPU calculates the screen position and color of each visible point on the object&amp;rsquo;s surface using the vertices and transform matrix This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering.</description>
+    </item>
+    
+    <item>
+      <title>Self Hosting Git Repositories with Stagit</title>
+      <link>https://jeskin.net/blog/self-hosting-git-with-stagit/</link>
+      <pubDate>Thu, 06 Oct 2022 14:29:45 -0400</pubDate>
+      
+      <guid>https://jeskin.net/blog/self-hosting-git-with-stagit/</guid>
+      <description>Introduction An alternative to hosting your source code on forges like Github is use your own server. This commonly involves running git as a daemon and deploying a web interface such as gitea, gitlab, cgit, or sourcehut. These projects essentially serve web applications that interface with the git server.
+However, if you&amp;rsquo;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is stagit.</description>
+    </item>
+    
+    <item>
+      <title>Getting Started with Cosmopolitan Libc</title>
+      <link>https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/</link>
+      <pubDate>Sun, 04 Sep 2022 05:59:22 -0400</pubDate>
+      
+      <guid>https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/</guid>
+      <description>I recently learned a little bit about Cosmopolitan Libc in order to make a portable executable of clp, a small program written for POSIX systems.
+I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.
+In this blog post I&amp;rsquo;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it.</description>
+    </item>
+    
+    <item>
+      <title>CLI Workflow with Grep, Fzf, and Clp</title>
+      <link>https://jeskin.net/blog/grep-fzf-clp/</link>
+      <pubDate>Tue, 02 Aug 2022 05:50:00 -0400</pubDate>
+      
+      <guid>https://jeskin.net/blog/grep-fzf-clp/</guid>
+      <description>Introduction grep, ag, and ripgrep search file contents for text that matches regular expressions. The previous links show some of their more advanced options.
+fzf is an interactive Unix filter. You can feed it anything from stdin (files, previously entered commands, etc) and it displays the results on the screen along with a prompt. When you type into the prompt, fzf filters the list.
+When combined, they can substantially speed up a CLI workflow.</description>
+    </item>
+    
+    <item>
+      <title>Fast Command Line Syntax Highlighting with Clp</title>
+      <link>https://jeskin.net/blog/clp/</link>
+      <pubDate>Thu, 28 Jul 2022 05:59:41 -0400</pubDate>
+      
+      <guid>https://jeskin.net/blog/clp/</guid>
+      <description>clp&amp;rsquo;s source code and installation instructions are available on Github and Sourcehut. It’s a work in progress hobby project, so expect bugs and quirks.
+clp is a program that writes files to stdout with syntax highlighting. I built it to quickly fill fzf&amp;rsquo;s preview window.
+It&amp;rsquo;s similar to bat but is simpler, faster, and easier to add languages that don&amp;rsquo;t have existing Sublime syntax definitions.
+When the --preview option is set in fzf, the preview command is kicked off in an external process and the results are displayed in the preview window, which in this case is clp.</description>
+    </item>
+    
+  </channel>
+</rss>

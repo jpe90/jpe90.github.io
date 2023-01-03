@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
+<title>Model View Projection Matrices | Jon Eskin&#39;s Website</title>
+<meta name="title" content="Model View Projection Matrices" />
+<meta name="description" content="Introduction When a 3D model is rendered using a modern graphics API, three things typically occur:
+the programmer defines the vertices that define the model and passes them to the graphics API a transform matrix is created in the application and sent to the GPU the GPU calculates the screen position and color of each visible point on the object&rsquo;s surface using the vertices and transform matrix This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:title" content="Model View Projection Matrices" />
+<meta property="og:description" content="Introduction When a 3D model is rendered using a modern graphics API, three things typically occur:
+the programmer defines the vertices that define the model and passes them to the graphics API a transform matrix is created in the application and sent to the GPU the GPU calculates the screen position and color of each visible point on the object&rsquo;s surface using the vertices and transform matrix This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jeskin.net/blog/model-view-projection/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-11-23T11:07:54-04:00" />
+<meta property="article:modified_time" content="2022-11-23T11:07:54-04:00" /><meta property="og:site_name" content="Jon Eskin&#39;s Blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
+
+<meta name="twitter:title" content="Model View Projection Matrices"/>
+<meta name="twitter:description" content="Introduction When a 3D model is rendered using a modern graphics API, three things typically occur:
+the programmer defines the vertices that define the model and passes them to the graphics API a transform matrix is created in the application and sent to the GPU the GPU calculates the screen position and color of each visible point on the object&rsquo;s surface using the vertices and transform matrix This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering."/>
+
+
+
+<meta itemprop="name" content="Model View Projection Matrices">
+<meta itemprop="description" content="Introduction When a 3D model is rendered using a modern graphics API, three things typically occur:
+the programmer defines the vertices that define the model and passes them to the graphics API a transform matrix is created in the application and sent to the GPU the GPU calculates the screen position and color of each visible point on the object&rsquo;s surface using the vertices and transform matrix This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering."><meta itemprop="datePublished" content="2022-11-23T11:07:54-04:00" />
+<meta itemprop="dateModified" content="2022-11-23T11:07:54-04:00" />
+<meta itemprop="wordCount" content="1599"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="keywords" content="" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+      padding: 2px 5px;
+	  background-color: #eeeeec
+  }
+
+  pre code {
+     
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: light) {
+    /* Background */ .bg { background-color: #ffffff; }
+/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err {  }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #204a87 }
+/* KeywordConstant */ .chroma .kc { color: #204a87 }
+/* KeywordDeclaration */ .chroma .kd { color: #204a87 }
+/* KeywordNamespace */ .chroma .kn { color: #204a87 }
+/* KeywordPseudo */ .chroma .kp { color: #204a87 }
+/* KeywordReserved */ .chroma .kr { color: #204a87 }
+/* KeywordType */ .chroma .kt { color: #3465a4}
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na {  }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #2b91af }
+/* NameConstant */ .chroma .no {  }
+/* NameDecorator */ .chroma .nd {  }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne {  }
+/* NameFunction */ .chroma .nf {  }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx {  }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt {  }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l {  }
+/* LiteralDate */ .chroma .ld {  }
+/* LiteralString */ .chroma .s { color: #4e8a06; font-style: italic; }
+/* LiteralStringAffix */ .chroma .sa { color: #4e8a06; font-style: italic; }
+/* LiteralStringBacktick */ .chroma .sb { color: #4e8a06; font-style: italic; }
+/* LiteralStringChar */ .chroma .sc { color: #4e8a06; font-style: italic; }
+/* LiteralStringDelimiter */ .chroma .dl { color: #4e8a06; font-style: italic; }
+/* LiteralStringDoc */ .chroma .sd { color: #4e8a06; font-style: italic; }
+/* LiteralStringDouble */ .chroma .s2 { color: #4e8a06; font-style: italic; }
+/* LiteralStringEscape */ .chroma .se { color: #2e3436 }
+/* LiteralStringHeredoc */ .chroma .sh { color: #4e8a06; font-style: italic; }
+/* LiteralStringInterpol */ .chroma .si { color: #4e8a06; font-style: italic; }
+/* LiteralStringOther */ .chroma .sx { color: #4e8a06; font-style: italic; }
+/* LiteralStringRegex */ .chroma .sr { color: #4e8a06; font-style: italic; }
+/* LiteralStringSingle */ .chroma .s1 { color: #4e8a06; font-style: italic; }
+/* LiteralStringSymbol */ .chroma .ss { color: #4e8a06; font-style: italic; }
+/* LiteralNumber */ .chroma .m {  }
+/* LiteralNumberBin */ .chroma .mb {  }
+/* LiteralNumberFloat */ .chroma .mf {  }
+/* LiteralNumberHex */ .chroma .mh {  }
+/* LiteralNumberInteger */ .chroma .mi {  }
+/* LiteralNumberIntegerLong */ .chroma .il {  }
+/* LiteralNumberOct */ .chroma .mo {  }
+/* Operator */ .chroma .o {  }
+/* OperatorWord */ .chroma .ow { color: #204a87 }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #008000 }
+/* CommentHashbang */ .chroma .ch { color: #333; font-style: italic;}
+/* CommentMultiline */ .chroma .cm { color: #333; font-style: italic;}
+/* CommentSingle */ .chroma .c1 { color: #333; font-style: italic;}
+/* CommentSpecial */ .chroma .cs { color: #333; font-style: italic;}
+/* CommentPreproc */ .chroma .cp { color: #a40000 }
+/* CommentPreprocFile */ .chroma .cpf { }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { color: #cc0000 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { color: green }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp { font-weight: bold }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { font-weight: bold }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #272822;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+	/* Background */ .bg { color: #f8f8f2; background-color: #777; }
+/* PreWrapper */ .chroma { color: #f8f8f2; background-color: #777; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #afaf87 }
+/* KeywordConstant */ .chroma .kc { color: #d7afaf }
+/* KeywordDeclaration */ .chroma .kd { color: #afaf87 }
+/* KeywordNamespace */ .chroma .kn { color: #f92672 }
+/* KeywordPseudo */ .chroma .kp { color: #afaf87 }
+/* KeywordReserved */ .chroma .kr { color: #afaf87 }
+/* KeywordType */ .chroma .kt { color: #afaf87 }
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na { color: #d7d7af }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #d7d7af }
+/* NameConstant */ .chroma .no { color: #d7afaf }
+/* NameDecorator */ .chroma .nd { color: #d7d7af }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne { color: #d7d7af }
+/* NameFunction */ .chroma .nf { color: #d7d7af }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx { color: #d7d7af }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt { color: #f92672 }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l { color: #87d7d7 }
+/* LiteralDate */ .chroma .ld { color: #d78787 }
+/* LiteralString */ .chroma .s { color: #d78787 }
+/* LiteralStringAffix */ .chroma .sa { color: #d78787 }
+/* LiteralStringBacktick */ .chroma .sb { color: #d78787 }
+/* LiteralStringChar */ .chroma .sc { color: #d78787 }
+/* LiteralStringDelimiter */ .chroma .dl { color: #d78787 }
+/* LiteralStringDoc */ .chroma .sd { color: #d78787 }
+/* LiteralStringDouble */ .chroma .s2 { color: #d78787 }
+/* LiteralStringEscape */ .chroma .se { color: #d7afaf }
+/* LiteralStringHeredoc */ .chroma .sh { color: #d78787 }
+/* LiteralStringInterpol */ .chroma .si { color: #d78787 }
+/* LiteralStringOther */ .chroma .sx { color: #d78787 }
+/* LiteralStringRegex */ .chroma .sr { color: #d78787 }
+/* LiteralStringSingle */ .chroma .s1 { color: #d78787 }
+/* LiteralStringSymbol */ .chroma .ss { color: #d78787 }
+/* LiteralNumber */ .chroma .m { color: #87d7d7 }
+/* LiteralNumberBin */ .chroma .mb { color: #87d7d7 }
+/* LiteralNumberFloat */ .chroma .mf { color: #87d7d7 }
+/* LiteralNumberHex */ .chroma .mh { color: #87d7d7 }
+/* LiteralNumberInteger */ .chroma .mi { color: #87d7d7 }
+/* LiteralNumberIntegerLong */ .chroma .il { color: #87d7d7 }
+/* LiteralNumberOct */ .chroma .mo { color: #87d7d7 }
+/* Operator */ .chroma .o { }
+/* OperatorWord */ .chroma .ow {  }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #87af87 }
+/* CommentHashbang */ .chroma .ch { color: #87af87 }
+/* CommentMultiline */ .chroma .cm { color: #87af87 }
+/* CommentSingle */ .chroma .c1 { color: #999 }
+/* CommentSpecial */ .chroma .cs { color: #87af87 }
+/* CommentPreproc */ .chroma .cp { color: #db8 }
+/* CommentPreprocFile */ .chroma .cpf { color: #87af87 }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { background-color: #9C6363 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { background-color: #7F9F7F }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp {  }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { color: #87af87 }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><link rel="stylesheet" href="https://jeskin.net/css/katex.min.css">
+<script defer src="https://jeskin.net/js/katex.min.js"></script>
+
+<script defer src="https://jeskin.net/js/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false}
+            ]
+        });
+    });
+</script>
+
+
+
+<script src="https://jeskin.net/js/lightense.min.js"></script>
+<script>
+    window.addEventListener('load', function () {
+        Lightense('img:not(.no-lightense),.lightense');
+    }, false);
+</script>
+
+<nav><a href="/">About</a>
+
+
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Model View Projection Matrices</h1>
+<p>
+  <i>
+    <time datetime='2022-11-23' pubdate>
+      23 Nov, 2022
+    </time>
+  </i>
+</p>
+
+<content>
+  <h2 id="introduction">Introduction</h2>
+<p>When a 3D model is rendered using a modern graphics API, three things typically occur:</p>
+<ol>
+<li>the programmer defines the vertices that define the model and passes them to the graphics API</li>
+<li>a transform matrix is created in the application and sent to the GPU</li>
+<li>the GPU calculates the screen position and color of each visible point on the object&rsquo;s surface using the vertices and transform matrix</li>
+</ol>
+<p>This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering. It may be useful if you&rsquo;re interested in getting started with low-level graphics programming or hand-rolling a 3D game engine.</p>
+<p>Some familiarity with graphics APIs such as OpenGL and knowledge of linear algebra is helpful but not required to follow along.</p>
+<p>The images in this post were produced by <a href="https://github.com/jpe90/model-view-projection">model-view-projection</a>, an OpenGL ES application written in C99. It lets you fly a free roam camera around or tug on some on-screen controls, and you can see how they affect the values of the model, view, and projection matrices in real-time.</p>
+<p><img src="/images/mvp_ss.png" alt="preview"></p>
+<h2 id="defining-vertices">Defining Vertices</h2>
+<p>Before you can draw an object, you must tell the graphics API the locations of its vertices. Vertices are normalized floating point values between -1.0f and 1.0f that define points on a surface.</p>
+<p>For example, the following define the position of a cube in 3D space:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">GLfloat</span> <span class="n">cube_verts</span><span class="p">[]</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 0 -- front
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 4 -- back
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 5
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 6
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span><span class="p">,</span>  <span class="c1">// 7
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></div><p><img src="/images/rectpts2.png" alt="verts"></p>
+<p>Any values outside -1.0f and 1.0f are discarded because these points are supposed to be normalized. They serve to describe the location of each vertex relative to other vertices on the model, but give no context about their location in the world.</p>
+<p>These floating points are bound to objects in the graphics API and are stored in GPU memory.</p>
+<p>After the models are defined in terms of vertices, the graphics API maps the object to screen space through a series of matrix transforms. If you&rsquo;re already knowledgeable in linear algebra you can <a href="#model-matrix">skip ahead</a>.</p>
+<h2 id="transform-matrices-act-like-functions">Transform Matrices Act Like Functions</h2>
+<p>A transform matrix is a mathematical construct that is used to describe how a point or a vector in one coordinate system is mapped to another coordinate system. Graphics APIs use these in order to map points on the surfaces of models in order to the 2D screen coordinates you see on your monitor. We can build a conceptual understanding of what they are by comparing them to polynomial functions.</p>
+<p>Consider the functions $f(x) = x^2$ and $g(x) = x + 2$. If we apply these in sequence, we obtain a composite function that maps each member of the set of real numbers to a single point on a line.</p>
+<p><img src="/images/fgx2.png" alt="gfx"></p>
+<p>Matrix transformations represent functions that map one point in space to another point in space. (The mechanics of the operation are nicely summarized by <a href="https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/a/multiplying-matrices">Khan Academy</a>.)</p>
+<p>As such,when you see a matrix transformation like this:</p>
+<p>$\begin{bmatrix}
+2 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 2 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 2 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}$</p>
+<p>You should be thinking of it as serving the same purpose of a polynomial function $f(x)$. This particular matrix scales up any vector in 3D space to make it twice as large and is analogous to $f(x)=2x$.</p>
+<p>And when you see matrix multiplication like this:</p>
+<p>$\begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}
+\cdot \begin{bmatrix}
+2 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 2 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 2 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}$</p>
+<p>You should think of it as the composition $f(g(x))$. The first function in this sequence is the identity matrix, which leaves any input unchanged and is analogous to $f(x) = x$.</p>
+<h2 id="model-matrix">Model Matrix</h2>
+<p>Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix&rsquo;s values to change.</p>
+<p><img src="/images/model.gif" alt="model"></p>
+<p>In the demo application, values for translation, scaling, and rotation in the x, y, and z directions are stored in a global variable.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">orientation</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// translation
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">tx</span><span class="p">;</span> <span class="kt">float</span> <span class="n">ty</span><span class="p">;</span> <span class="kt">float</span> <span class="n">tz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// scaling
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">sx</span><span class="p">;</span> <span class="kt">float</span> <span class="n">sy</span><span class="p">;</span> <span class="kt">float</span> <span class="n">sz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// rotation
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">rx</span><span class="p">;</span> <span class="kt">float</span> <span class="n">ry</span><span class="p">;</span> <span class="kt">float</span> <span class="n">rz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="k">struct</span> <span class="n">orientation</span> <span class="n">cube_transform</span><span class="p">;</span>
+</span></span></code></pre></div><p>Eventually, these get wired up to the UI with a slider.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="nf">nk_layout_row_dynamic</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nf">nk_label</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="s">&#34;Scale x&#34;</span><span class="p">,</span> <span class="n">NK_TEXT_ALIGN_LEFT</span> <span class="o">|</span> <span class="n">NK_TEXT_ALIGN_MIDDLE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nf">nk_slider_float</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cube_transform</span><span class="p">.</span><span class="n">sx</span><span class="p">,</span> <span class="mf">5.0f</span><span class="p">,</span> <span class="mf">0.01f</span><span class="p">);</span>
+</span></span></code></pre></div><p>The vector and matrix math used in the application uses <a href="https://github.com/HandmadeMath/HandmadeMath">Handmade Math</a>, which supports matrix and vector multiplication.</p>
+<h2 id="view-matrix">View Matrix</h2>
+<p>A view matrix in 3D rendering is a mathematical representation of the position and orientation of the virtual camera in the 3D scene. It defines the position and orientation of the camera in relation to the 3D world, and is used in conjunction with the model and projection matrices to transform the vertices of an object into the 2D screen space of the rendering engine. This allows the object to be accurately rendered on the screen from the perspective of the virtual camera.</p>
+<p>Changing the 3D position of the camera (sometimes referred to as the &ldquo;eye&rdquo;), or changing the direction the camera is looking (sometimes referred to as the &ldquo;center&rdquo;) is done by modifying 3D vectors which are parameters to the function that build the view matrix. In <code>HandmadeMath</code>, this is <code>HMM_LookAt</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="nf">COVERAGE</span><span class="p">(</span><span class="n">HMM_LookAt</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">HMM_INLINE</span> <span class="n">hmm_mat4</span> <span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">LookAt</span><span class="p">)(</span><span class="n">hmm_vec3</span> <span class="n">Eye</span><span class="p">,</span> <span class="n">hmm_vec3</span> <span class="n">Center</span><span class="p">,</span> <span class="n">hmm_vec3</span> <span class="n">Up</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">ASSERT_COVERED</span><span class="p">(</span><span class="n">HMM_LookAt</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">hmm_mat4</span> <span class="n">Result</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">hmm_vec3</span> <span class="n">F</span> <span class="o">=</span> <span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">NormalizeVec3</span><span class="p">)(</span><span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">SubtractVec3</span><span class="p">)(</span><span class="n">Center</span><span class="p">,</span> <span class="n">Eye</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hmm_vec3</span> <span class="n">S</span> <span class="o">=</span> <span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">NormalizeVec3</span><span class="p">)(</span><span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">Cross</span><span class="p">)(</span><span class="n">F</span><span class="p">,</span> <span class="n">Up</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hmm_vec3</span> <span class="n">U</span> <span class="o">=</span> <span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">Cross</span><span class="p">)(</span><span class="n">S</span><span class="p">,</span> <span class="n">F</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">.</span><span class="n">X</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">.</span><span class="n">X</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">F</span><span class="p">.</span><span class="n">X</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">.</span><span class="n">Y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">.</span><span class="n">Y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">F</span><span class="p">.</span><span class="n">Y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">.</span><span class="n">Z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">.</span><span class="n">Z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">F</span><span class="p">.</span><span class="n">Z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">DotVec3</span><span class="p">)(</span><span class="n">S</span><span class="p">,</span> <span class="n">Eye</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">DotVec3</span><span class="p">)(</span><span class="n">U</span><span class="p">,</span> <span class="n">Eye</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nf">HMM_PREFIX</span><span class="p">(</span><span class="n">DotVec3</span><span class="p">)(</span><span class="n">F</span><span class="p">,</span> <span class="n">Eye</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Result</span><span class="p">.</span><span class="n">Elements</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">(</span><span class="n">Result</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>In the gif below, the free roam camera is implemented by changing the camera&rsquo;s position in response to keyboard and mouse input. You can observe that when the camera pans around the cube, only the view transform is changing.</p>
+<p><img src="/images/view.gif" alt="view"></p>
+<h2 id="projection-matrix">Projection Matrix</h2>
+<p>The view matrix defines the location of the observer and where they are looking, but that&rsquo;s not enough to convert their line of sight to a 2D image. You also need to know the angle of how far they can see into their periphery, how close an object can come to their nose before it drops out of sight, and how far into the horizon they can see.</p>
+<p>These are all described by the projection matrix. In many graphics libraries you specify a field of view, distance to a near plane, and distance to a far plane, and the graphics library will use these to draw a frustum pointing from the camera&rsquo;s eye to the location that it&rsquo;s looking.</p>
+<p>The word &ldquo;frustum&rdquo; comes from the same Latin word meaning a removed slice. It is a 3D shape that is aligned with the oberserver&rsquo;s eye and serves to capture a portion of 3D world space which will be rendered to the screen. That is, anything that is inside the current frustum may be drawn, but anything outside of it will not.</p>
+<p>You&rsquo;ll often see them shown as a square shape, such as the yellow frustum in the image below, but they can have different shapes as well.</p>
+<p><img src="/images/frustum.png" alt="projection"></p>
+<h1 id="drawing-the-scene">Drawing the scene</h1>
+<p>To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you&rsquo;ll see they often conditionally use <a href="https://www.intel.com/content/www/us/en/support/articles/000005779/processors.html">instruction set extensions</a> when the user&rsquo;s hardware supports them to calculate the transformation more quickly and efficiently. Below you can see CGLM&rsquo;s matrix multiplication function, which checks for extensions that can speed up the operation.</p>
+<p>The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.</p>
+<p>The programmer utilizes it by creating a shader program, such as the one below, that sits in GPU memory and is executed on the GPU every frame.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">const</span> <span class="kt">char</span>
+</span></span><span class="line"><span class="cl"><span class="n">frustum_vert_shader</span><span class="p">[]</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;precision mediump float;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;uniform mat4 mvp;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;attribute vec4 a_position;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;attribute vec4 a_color;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;varying vec4 v_color;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;void main()&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;{&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;gl_Position = mvp * a_position;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;v_color = a_color;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;}&#34;</span><span class="p">;</span>
+</span></span></code></pre></div><p>You might notice that technically we could pass in 3 (or any number) of mat4s to the GPU and calculate them there instead of on the CPU. But that would not be an effective use of resources, because the shader program is executed individually on each vertex, and you would be recalculating the same matrix transformations many times.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><a href="https://learnopengl.com/Getting-started/OpenGL">OpenGL tutorials</a></li>
+<li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">Video series on linear algebra</a></li>
+<li><a href="https://developer.tizen.org/dev-guide/2.4.0/org.tizen.tutorials/html/native/graphics/opengl_tutorial_n.htm#cube">OpenGL ES example application</a></li>
+</ul>
+<p><em>Thanks to Sam Cho and Stephen Eskin for helping with editing</em></p>
+
+</content>
+<p>
+  
+</p>
+
+  </main>
+
+    
+</body>
+
+</html>

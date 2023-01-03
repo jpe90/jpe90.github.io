@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
+<title>Debugging Emacs Lisp | Jon Eskin&#39;s Website</title>
+<meta name="title" content="Debugging Emacs Lisp" />
+<meta name="description" content="In this post, I&rsquo;ll show how I used basic capabilities of the built-in Emacs Lisp debugger such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.
+Downloading Problems I recently stumbled upon an Advent of Code utility which lets you authenticate with the advent of code server via M-x advent-login and download your daily input file with M-x advent-input.
+When I ran advent-login followed by advent-input, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:title" content="Debugging Emacs Lisp" />
+<meta property="og:description" content="In this post, I&rsquo;ll show how I used basic capabilities of the built-in Emacs Lisp debugger such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.
+Downloading Problems I recently stumbled upon an Advent of Code utility which lets you authenticate with the advent of code server via M-x advent-login and download your daily input file with M-x advent-input.
+When I ran advent-login followed by advent-input, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jeskin.net/blog/debugging-emacs/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-12-06T12:58:42-05:00" />
+<meta property="article:modified_time" content="2022-12-06T12:58:42-05:00" /><meta property="og:site_name" content="Jon Eskin&#39;s Blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
+
+<meta name="twitter:title" content="Debugging Emacs Lisp"/>
+<meta name="twitter:description" content="In this post, I&rsquo;ll show how I used basic capabilities of the built-in Emacs Lisp debugger such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.
+Downloading Problems I recently stumbled upon an Advent of Code utility which lets you authenticate with the advent of code server via M-x advent-login and download your daily input file with M-x advent-input.
+When I ran advent-login followed by advent-input, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area."/>
+
+
+
+<meta itemprop="name" content="Debugging Emacs Lisp">
+<meta itemprop="description" content="In this post, I&rsquo;ll show how I used basic capabilities of the built-in Emacs Lisp debugger such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.
+Downloading Problems I recently stumbled upon an Advent of Code utility which lets you authenticate with the advent of code server via M-x advent-login and download your daily input file with M-x advent-input.
+When I ran advent-login followed by advent-input, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area."><meta itemprop="datePublished" content="2022-12-06T12:58:42-05:00" />
+<meta itemprop="dateModified" content="2022-12-06T12:58:42-05:00" />
+<meta itemprop="wordCount" content="837"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="keywords" content="" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+      padding: 2px 5px;
+	  background-color: #eeeeec
+  }
+
+  pre code {
+     
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: light) {
+    /* Background */ .bg { background-color: #ffffff; }
+/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err {  }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #204a87 }
+/* KeywordConstant */ .chroma .kc { color: #204a87 }
+/* KeywordDeclaration */ .chroma .kd { color: #204a87 }
+/* KeywordNamespace */ .chroma .kn { color: #204a87 }
+/* KeywordPseudo */ .chroma .kp { color: #204a87 }
+/* KeywordReserved */ .chroma .kr { color: #204a87 }
+/* KeywordType */ .chroma .kt { color: #3465a4}
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na {  }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #2b91af }
+/* NameConstant */ .chroma .no {  }
+/* NameDecorator */ .chroma .nd {  }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne {  }
+/* NameFunction */ .chroma .nf {  }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx {  }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt {  }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l {  }
+/* LiteralDate */ .chroma .ld {  }
+/* LiteralString */ .chroma .s { color: #4e8a06; font-style: italic; }
+/* LiteralStringAffix */ .chroma .sa { color: #4e8a06; font-style: italic; }
+/* LiteralStringBacktick */ .chroma .sb { color: #4e8a06; font-style: italic; }
+/* LiteralStringChar */ .chroma .sc { color: #4e8a06; font-style: italic; }
+/* LiteralStringDelimiter */ .chroma .dl { color: #4e8a06; font-style: italic; }
+/* LiteralStringDoc */ .chroma .sd { color: #4e8a06; font-style: italic; }
+/* LiteralStringDouble */ .chroma .s2 { color: #4e8a06; font-style: italic; }
+/* LiteralStringEscape */ .chroma .se { color: #2e3436 }
+/* LiteralStringHeredoc */ .chroma .sh { color: #4e8a06; font-style: italic; }
+/* LiteralStringInterpol */ .chroma .si { color: #4e8a06; font-style: italic; }
+/* LiteralStringOther */ .chroma .sx { color: #4e8a06; font-style: italic; }
+/* LiteralStringRegex */ .chroma .sr { color: #4e8a06; font-style: italic; }
+/* LiteralStringSingle */ .chroma .s1 { color: #4e8a06; font-style: italic; }
+/* LiteralStringSymbol */ .chroma .ss { color: #4e8a06; font-style: italic; }
+/* LiteralNumber */ .chroma .m {  }
+/* LiteralNumberBin */ .chroma .mb {  }
+/* LiteralNumberFloat */ .chroma .mf {  }
+/* LiteralNumberHex */ .chroma .mh {  }
+/* LiteralNumberInteger */ .chroma .mi {  }
+/* LiteralNumberIntegerLong */ .chroma .il {  }
+/* LiteralNumberOct */ .chroma .mo {  }
+/* Operator */ .chroma .o {  }
+/* OperatorWord */ .chroma .ow { color: #204a87 }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #008000 }
+/* CommentHashbang */ .chroma .ch { color: #333; font-style: italic;}
+/* CommentMultiline */ .chroma .cm { color: #333; font-style: italic;}
+/* CommentSingle */ .chroma .c1 { color: #333; font-style: italic;}
+/* CommentSpecial */ .chroma .cs { color: #333; font-style: italic;}
+/* CommentPreproc */ .chroma .cp { color: #a40000 }
+/* CommentPreprocFile */ .chroma .cpf { }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { color: #cc0000 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { color: green }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp { font-weight: bold }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { font-weight: bold }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #272822;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+	/* Background */ .bg { color: #f8f8f2; background-color: #777; }
+/* PreWrapper */ .chroma { color: #f8f8f2; background-color: #777; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #afaf87 }
+/* KeywordConstant */ .chroma .kc { color: #d7afaf }
+/* KeywordDeclaration */ .chroma .kd { color: #afaf87 }
+/* KeywordNamespace */ .chroma .kn { color: #f92672 }
+/* KeywordPseudo */ .chroma .kp { color: #afaf87 }
+/* KeywordReserved */ .chroma .kr { color: #afaf87 }
+/* KeywordType */ .chroma .kt { color: #afaf87 }
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na { color: #d7d7af }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #d7d7af }
+/* NameConstant */ .chroma .no { color: #d7afaf }
+/* NameDecorator */ .chroma .nd { color: #d7d7af }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne { color: #d7d7af }
+/* NameFunction */ .chroma .nf { color: #d7d7af }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx { color: #d7d7af }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt { color: #f92672 }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l { color: #87d7d7 }
+/* LiteralDate */ .chroma .ld { color: #d78787 }
+/* LiteralString */ .chroma .s { color: #d78787 }
+/* LiteralStringAffix */ .chroma .sa { color: #d78787 }
+/* LiteralStringBacktick */ .chroma .sb { color: #d78787 }
+/* LiteralStringChar */ .chroma .sc { color: #d78787 }
+/* LiteralStringDelimiter */ .chroma .dl { color: #d78787 }
+/* LiteralStringDoc */ .chroma .sd { color: #d78787 }
+/* LiteralStringDouble */ .chroma .s2 { color: #d78787 }
+/* LiteralStringEscape */ .chroma .se { color: #d7afaf }
+/* LiteralStringHeredoc */ .chroma .sh { color: #d78787 }
+/* LiteralStringInterpol */ .chroma .si { color: #d78787 }
+/* LiteralStringOther */ .chroma .sx { color: #d78787 }
+/* LiteralStringRegex */ .chroma .sr { color: #d78787 }
+/* LiteralStringSingle */ .chroma .s1 { color: #d78787 }
+/* LiteralStringSymbol */ .chroma .ss { color: #d78787 }
+/* LiteralNumber */ .chroma .m { color: #87d7d7 }
+/* LiteralNumberBin */ .chroma .mb { color: #87d7d7 }
+/* LiteralNumberFloat */ .chroma .mf { color: #87d7d7 }
+/* LiteralNumberHex */ .chroma .mh { color: #87d7d7 }
+/* LiteralNumberInteger */ .chroma .mi { color: #87d7d7 }
+/* LiteralNumberIntegerLong */ .chroma .il { color: #87d7d7 }
+/* LiteralNumberOct */ .chroma .mo { color: #87d7d7 }
+/* Operator */ .chroma .o { }
+/* OperatorWord */ .chroma .ow {  }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #87af87 }
+/* CommentHashbang */ .chroma .ch { color: #87af87 }
+/* CommentMultiline */ .chroma .cm { color: #87af87 }
+/* CommentSingle */ .chroma .c1 { color: #999 }
+/* CommentSpecial */ .chroma .cs { color: #87af87 }
+/* CommentPreproc */ .chroma .cp { color: #db8 }
+/* CommentPreprocFile */ .chroma .cpf { color: #87af87 }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { background-color: #9C6363 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { background-color: #7F9F7F }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp {  }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { color: #87af87 }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header>
+
+<nav><a href="/">About</a>
+
+
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Debugging Emacs Lisp</h1>
+<p>
+  <i>
+    <time datetime='2022-12-06' pubdate>
+      06 Dec, 2022
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>In this post, I&rsquo;ll show how I used basic capabilities of the built-in <a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Edebug.html">Emacs Lisp debugger</a> such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.</p>
+<h2 id="downloading-problems">Downloading Problems</h2>
+<p>I recently stumbled upon an <a href="https://github.com/keegancsmith/advent/blob/master/advent.el">Advent of Code utility</a> which lets you authenticate with the advent of code server via <code>M-x advent-login</code> and download your daily input file with <code>M-x advent-input</code>.</p>
+<p>When I ran <code>advent-login</code> followed by <code>advent-input</code>, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area.</p>
+<p>To find out why, I opened up <code>advent.el</code> and started with the function definition of <code>advent-login</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Elisp" data-lang="Elisp"><span class="line"><span class="cl"><span class="p">(</span><span class="nb">defun</span> <span class="nv">advent-login</span> <span class="p">(</span><span class="nv">session</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="s">&#34;Login to adventofcode.com.
+</span></span></span><span class="line"><span class="cl"><span class="s">Argument SESSION session cookie value.&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">(</span><span class="nb">interactive</span> <span class="s">&#34;sValue of session cookie from logged in browser: &#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">(</span><span class="nv">url-cookie-store</span> <span class="s">&#34;session&#34;</span> <span class="nv">session</span> <span class="s">&#34;Thu, 25 Dec 2027 20:17:36 -0000&#34;</span> <span class="s">&#34;.adventofcode.com&#34;</span> <span class="s">&#34;/&#34;</span> <span class="no">t</span><span class="p">))</span>
+</span></span></code></pre></div><p>I wasn&rsquo;t familiar with the <code>url-cookie-store</code>, or Emacs&rsquo;s URL capabilities in general, so I placed my cursor on <code>url-cookie-store</code> and hit <code>M-.</code> to hop to its definition. I skimmed the <a href="https://github.com/emacs-mirror/emacs/blob/master/lisp/url/url-cookie.el">source file</a> it&rsquo;s found in, noting the top-level functions and variables and reading their docstrings.</p>
+<p>From the source code, I noted that cookies stored in variables <code>url-cookie-storage</code> and <code>url-secure-cookie-storage</code>, and that you can list currently stored cookies with <code>M-x url-cookie-list</code>.</p>
+<h2 id="step-debugging-a-function">Step Debugging a Function</h2>
+<p>Next I decided to step through the execution of the function <code>url-cookie-store</code>. To debug a Lisp function in Emacs, you can move your cursor inside the function and enter <code>C-u C-M-x</code>, which executes <code>eval-defun</code> with a prefix argument.</p>
+<p>The next time the function is called, Emacs will switch to a source buffer showing the code you are debugging. Execution is stopped, and the editor is awaiting a <a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Debugger-Commands.html">debugger command</a>.</p>
+<p>The function will continue to trigger debugging each time it&rsquo;s run until you re-evaluate it without a prefix argument by placing your cursor inside the function and entering just <code>C-M-x</code>.</p>
+<p>After instrumenting <code>url-cookie-store</code> for debugging, I triggered it by invoking <code>advent-input</code>. Here&rsquo;s how that looks in practice:</p>
+<p><img src="/images/edebug_intro.gif" alt="edebug-intro"></p>
+<p>Stepping through Lisp code follows the rules of <a href="https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/full-text/book/book-Z-H-10.html#%25_sec_1.1.5">applicative order evaluation</a>, meaning form arguments are evaluated first, followed by the form itself.</p>
+<p>(There are a few exceptions to the evaluation order, such as the special form <code>if</code> or the macro <code>when</code>, which modify the flow of control, as you can see above.)</p>
+<p>Each time an argument or form is evaluated, the result is displayed in the bottom message area.</p>
+<p><img src="/images/edebug2.gif" alt="edebug2"></p>
+<p>By repeatedly pressing <code>n</code>, I was able to step through and see that <code>url-cookie-create</code> called, and its return value (stored in the variable <code>tmp</code>) is bound to <code>url-cookie-secure-storage</code> in a <code>setq</code> expression.</p>
+<p>After the function finished, I ran <code>url-cookie-list</code> and saw that a cookie for domain <code>.adventofcode.com</code> was indeed created.</p>
+<p><img src="/images/cookies.gif" alt="cookies"></p>
+<p>With the cookie visible, <code>advent-input</code> still failed with a 400 error.</p>
+<p>At this point, I re-ran <code>url-cookie-list</code> and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie even though I hadn&rsquo;t visited the site between the two commands.</p>
+<p><img src="/images/stackoverflow.png" alt="stackoverflow"></p>
+<p><em>Note: session token modified to protect the innocent</em></p>
+<p>At some point during the execution of <code>advent-input</code>, my session cookie was inputting was being replaced.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Elisp" data-lang="Elisp"><span class="line"><span class="cl"><span class="p">(</span><span class="nb">defun</span> <span class="nv">advent-input</span> <span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">day</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="s">&#34;Load todays adventofcode.com input in other window.
+</span></span></span><span class="line"><span class="cl"><span class="s">Optional argument DAY Load this day instead.  Defaults to today.&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">(</span><span class="nb">interactive</span> <span class="s">&#34;P&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">(</span><span class="nb">let*</span> <span class="p">((</span><span class="nv">year</span> <span class="p">(</span><span class="nf">format-time-string</span> <span class="s">&#34;%Y&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">         <span class="p">(</span><span class="nv">day</span> <span class="p">(</span><span class="nb">or</span> <span class="nv">day</span> <span class="p">(</span><span class="nv">advent--day</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">         <span class="p">(</span><span class="nv">url</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&#34;https://adventofcode.com/%s/day/%d/input&#34;</span> <span class="nv">year</span> <span class="nv">day</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">         <span class="p">(</span><span class="nv">dir</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&#34;%s/%s/%d&#34;</span> <span class="p">(</span><span class="nf">expand-file-name</span> <span class="nv">advent-dir</span><span class="p">)</span> <span class="nv">year</span> <span class="nv">day</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">         <span class="p">(</span><span class="nv">file</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&#34;%s/input&#34;</span> <span class="nv">dir</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="nb">if</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nf">file-exists-p</span> <span class="nv">file</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="nv">url-retrieve</span> <span class="nv">url</span> <span class="ss">&#39;advent--download-callback</span> <span class="p">(</span><span class="nf">list</span> <span class="nv">file</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">      <span class="p">(</span><span class="nv">find-file-other-window</span> <span class="nv">file</span><span class="p">))))</span>
+</span></span></code></pre></div><p>The problem was almost certainly going to be found somewhere in <code>url-retrieve</code>. But rather than hunt through the source, I decided to use a watchpoint to more easily track down what was changing <code>url-cookie-secure-storage</code>.</p>
+<h2 id="adding-a-watchpoint">Adding a Watchpoint</h2>
+<p>In debuggers, a &ldquo;watch&rdquo; refers to a mechanism that helps you observe when a variable changes.</p>
+<p>In Emacs, adding a watch to a variable is done with <code>M-x debug-watch</code>, and it will cause the editor to enter the debugger when the target variable changes. You&rsquo;re provided with a stack trace that you can use to explore the problem.</p>
+<p>I set a watch on the variable <code>url-cookie-secure-storage</code>, where I knew my advent cookie was stored, and then called <code>advent-input</code> to trigger it:</p>
+<p><img src="/images/debugwatch.gif" alt="debugwatch"></p>
+<p>From the stack trace, I could see that a file <code>~/.emacs.d/url/cookies</code> was being parsed and loaded, and as a result  expression <code>(setq url-cookie-secure-storage 'nil)</code> was being evaluated, which was blowing away the session token I had previously entered.</p>
+<p>I opened up <code>~/.emacs.d/url/cookies</code> and saw what was being loaded and executed:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Elisp" data-lang="Elisp"><span class="line"><span class="cl"><span class="c1">;; Emacs-W3 HTTP cookies file</span>
+</span></span><span class="line"><span class="cl"><span class="c1">;; Automatically generated file!!! DO NOT EDIT!!!</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="nb">setq</span> <span class="nv">url-cookie-storage</span>
+</span></span><span class="line"><span class="cl"> <span class="o">&#39;</span><span class="p">((</span><span class="s">&#34;.stackoverflow.com&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nv">url-cookie</span> <span class="s">&#34;prov&#34;</span> <span class="s">&#34;dramatic-reenactment&#34;</span> <span class="s">&#34;Fri, 01-Jan-2055 00:00:00 GMT&#34;</span> <span class="s">&#34;/&#34;</span> <span class="s">&#34;.stackoverflow.com&#34;</span> <span class="no">nil</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="nb">setq</span> <span class="nv">url-cookie-secure-storage</span>
+</span></span><span class="line"><span class="cl"> <span class="ss">&#39;nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">;; Local Variables:</span>
+</span></span><span class="line"><span class="cl"><span class="c1">;; version-control: never</span>
+</span></span><span class="line"><span class="cl"><span class="c1">;; no-byte-compile: t</span>
+</span></span><span class="line"><span class="cl"><span class="c1">;; End:</span>
+</span></span></code></pre></div><p>I&rsquo;m not sure how the file was created, but I suspected that removing it would resolve my issue. Once I did, I was able to successfully download my input.</p>
+<p>As a bonus, I created a new cookies file that contained my advent of code session cookie to save myself the trouble of logging in.</p>
+<p>Thanks for reading!</p>
+
+</content>
+<p>
+  
+</p>
+
+  </main>
+
+    
+</body>
+
+</html>

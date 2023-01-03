@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
+<title>Self Hosting Git Repositories with Stagit | Jon Eskin&#39;s Website</title>
+<meta name="title" content="Self Hosting Git Repositories with Stagit" />
+<meta name="description" content="Introduction An alternative to hosting your source code on forges like Github is use your own server. This commonly involves running git as a daemon and deploying a web interface such as gitea, gitlab, cgit, or sourcehut. These projects essentially serve web applications that interface with the git server.
+However, if you&rsquo;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is stagit." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:title" content="Self Hosting Git Repositories with Stagit" />
+<meta property="og:description" content="Introduction An alternative to hosting your source code on forges like Github is use your own server. This commonly involves running git as a daemon and deploying a web interface such as gitea, gitlab, cgit, or sourcehut. These projects essentially serve web applications that interface with the git server.
+However, if you&rsquo;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is stagit." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jeskin.net/blog/self-hosting-git-with-stagit/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-10-06T14:29:45-04:00" />
+<meta property="article:modified_time" content="2022-10-06T14:29:45-04:00" /><meta property="og:site_name" content="Jon Eskin&#39;s Blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
+
+<meta name="twitter:title" content="Self Hosting Git Repositories with Stagit"/>
+<meta name="twitter:description" content="Introduction An alternative to hosting your source code on forges like Github is use your own server. This commonly involves running git as a daemon and deploying a web interface such as gitea, gitlab, cgit, or sourcehut. These projects essentially serve web applications that interface with the git server.
+However, if you&rsquo;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is stagit."/>
+
+
+
+<meta itemprop="name" content="Self Hosting Git Repositories with Stagit">
+<meta itemprop="description" content="Introduction An alternative to hosting your source code on forges like Github is use your own server. This commonly involves running git as a daemon and deploying a web interface such as gitea, gitlab, cgit, or sourcehut. These projects essentially serve web applications that interface with the git server.
+However, if you&rsquo;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is stagit."><meta itemprop="datePublished" content="2022-10-06T14:29:45-04:00" />
+<meta itemprop="dateModified" content="2022-10-06T14:29:45-04:00" />
+<meta itemprop="wordCount" content="789"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="keywords" content="" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+      padding: 2px 5px;
+	  background-color: #eeeeec
+  }
+
+  pre code {
+     
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: light) {
+    /* Background */ .bg { background-color: #ffffff; }
+/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err {  }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #204a87 }
+/* KeywordConstant */ .chroma .kc { color: #204a87 }
+/* KeywordDeclaration */ .chroma .kd { color: #204a87 }
+/* KeywordNamespace */ .chroma .kn { color: #204a87 }
+/* KeywordPseudo */ .chroma .kp { color: #204a87 }
+/* KeywordReserved */ .chroma .kr { color: #204a87 }
+/* KeywordType */ .chroma .kt { color: #3465a4}
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na {  }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #2b91af }
+/* NameConstant */ .chroma .no {  }
+/* NameDecorator */ .chroma .nd {  }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne {  }
+/* NameFunction */ .chroma .nf {  }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx {  }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt {  }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l {  }
+/* LiteralDate */ .chroma .ld {  }
+/* LiteralString */ .chroma .s { color: #4e8a06; font-style: italic; }
+/* LiteralStringAffix */ .chroma .sa { color: #4e8a06; font-style: italic; }
+/* LiteralStringBacktick */ .chroma .sb { color: #4e8a06; font-style: italic; }
+/* LiteralStringChar */ .chroma .sc { color: #4e8a06; font-style: italic; }
+/* LiteralStringDelimiter */ .chroma .dl { color: #4e8a06; font-style: italic; }
+/* LiteralStringDoc */ .chroma .sd { color: #4e8a06; font-style: italic; }
+/* LiteralStringDouble */ .chroma .s2 { color: #4e8a06; font-style: italic; }
+/* LiteralStringEscape */ .chroma .se { color: #2e3436 }
+/* LiteralStringHeredoc */ .chroma .sh { color: #4e8a06; font-style: italic; }
+/* LiteralStringInterpol */ .chroma .si { color: #4e8a06; font-style: italic; }
+/* LiteralStringOther */ .chroma .sx { color: #4e8a06; font-style: italic; }
+/* LiteralStringRegex */ .chroma .sr { color: #4e8a06; font-style: italic; }
+/* LiteralStringSingle */ .chroma .s1 { color: #4e8a06; font-style: italic; }
+/* LiteralStringSymbol */ .chroma .ss { color: #4e8a06; font-style: italic; }
+/* LiteralNumber */ .chroma .m {  }
+/* LiteralNumberBin */ .chroma .mb {  }
+/* LiteralNumberFloat */ .chroma .mf {  }
+/* LiteralNumberHex */ .chroma .mh {  }
+/* LiteralNumberInteger */ .chroma .mi {  }
+/* LiteralNumberIntegerLong */ .chroma .il {  }
+/* LiteralNumberOct */ .chroma .mo {  }
+/* Operator */ .chroma .o {  }
+/* OperatorWord */ .chroma .ow { color: #204a87 }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #008000 }
+/* CommentHashbang */ .chroma .ch { color: #333; font-style: italic;}
+/* CommentMultiline */ .chroma .cm { color: #333; font-style: italic;}
+/* CommentSingle */ .chroma .c1 { color: #333; font-style: italic;}
+/* CommentSpecial */ .chroma .cs { color: #333; font-style: italic;}
+/* CommentPreproc */ .chroma .cp { color: #a40000 }
+/* CommentPreprocFile */ .chroma .cpf { }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { color: #cc0000 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { color: green }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp { font-weight: bold }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { font-weight: bold }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #272822;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+	/* Background */ .bg { color: #f8f8f2; background-color: #777; }
+/* PreWrapper */ .chroma { color: #f8f8f2; background-color: #777; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #afaf87 }
+/* KeywordConstant */ .chroma .kc { color: #d7afaf }
+/* KeywordDeclaration */ .chroma .kd { color: #afaf87 }
+/* KeywordNamespace */ .chroma .kn { color: #f92672 }
+/* KeywordPseudo */ .chroma .kp { color: #afaf87 }
+/* KeywordReserved */ .chroma .kr { color: #afaf87 }
+/* KeywordType */ .chroma .kt { color: #afaf87 }
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na { color: #d7d7af }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #d7d7af }
+/* NameConstant */ .chroma .no { color: #d7afaf }
+/* NameDecorator */ .chroma .nd { color: #d7d7af }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne { color: #d7d7af }
+/* NameFunction */ .chroma .nf { color: #d7d7af }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx { color: #d7d7af }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt { color: #f92672 }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l { color: #87d7d7 }
+/* LiteralDate */ .chroma .ld { color: #d78787 }
+/* LiteralString */ .chroma .s { color: #d78787 }
+/* LiteralStringAffix */ .chroma .sa { color: #d78787 }
+/* LiteralStringBacktick */ .chroma .sb { color: #d78787 }
+/* LiteralStringChar */ .chroma .sc { color: #d78787 }
+/* LiteralStringDelimiter */ .chroma .dl { color: #d78787 }
+/* LiteralStringDoc */ .chroma .sd { color: #d78787 }
+/* LiteralStringDouble */ .chroma .s2 { color: #d78787 }
+/* LiteralStringEscape */ .chroma .se { color: #d7afaf }
+/* LiteralStringHeredoc */ .chroma .sh { color: #d78787 }
+/* LiteralStringInterpol */ .chroma .si { color: #d78787 }
+/* LiteralStringOther */ .chroma .sx { color: #d78787 }
+/* LiteralStringRegex */ .chroma .sr { color: #d78787 }
+/* LiteralStringSingle */ .chroma .s1 { color: #d78787 }
+/* LiteralStringSymbol */ .chroma .ss { color: #d78787 }
+/* LiteralNumber */ .chroma .m { color: #87d7d7 }
+/* LiteralNumberBin */ .chroma .mb { color: #87d7d7 }
+/* LiteralNumberFloat */ .chroma .mf { color: #87d7d7 }
+/* LiteralNumberHex */ .chroma .mh { color: #87d7d7 }
+/* LiteralNumberInteger */ .chroma .mi { color: #87d7d7 }
+/* LiteralNumberIntegerLong */ .chroma .il { color: #87d7d7 }
+/* LiteralNumberOct */ .chroma .mo { color: #87d7d7 }
+/* Operator */ .chroma .o { }
+/* OperatorWord */ .chroma .ow {  }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #87af87 }
+/* CommentHashbang */ .chroma .ch { color: #87af87 }
+/* CommentMultiline */ .chroma .cm { color: #87af87 }
+/* CommentSingle */ .chroma .c1 { color: #999 }
+/* CommentSpecial */ .chroma .cs { color: #87af87 }
+/* CommentPreproc */ .chroma .cp { color: #db8 }
+/* CommentPreprocFile */ .chroma .cpf { color: #87af87 }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { background-color: #9C6363 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { background-color: #7F9F7F }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp {  }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { color: #87af87 }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header>
+
+<nav><a href="/">About</a>
+
+
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Self Hosting Git Repositories with Stagit</h1>
+<p>
+  <i>
+    <time datetime='2022-10-06' pubdate>
+      06 Oct, 2022
+    </time>
+  </i>
+</p>
+
+<content>
+  <h2 id="introduction">Introduction</h2>
+<p>An alternative to hosting your source code on forges like <a href="https://github.com/">Github</a> is use your own server. This commonly involves running <a href="https://git-scm.com/book/en/v2/Git-on-the-Server-Git-Daemon">git as a daemon</a> and deploying a web interface such as <a href="https://gitea.io/en-us/">gitea</a>, <a href="https://about.gitlab.com/install/">gitlab</a>, <a href="https://git.zx2c4.com/cgit/about/">cgit</a>, or <a href="https://sourcehut.org">sourcehut</a>. These projects essentially serve web applications that interface with the git server.</p>
+<p>However, if you&rsquo;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is <a href="https://codemadness.org/stagit.html">stagit</a>. Unlike the aforementioned projects, stagit does not serve dynamic web content; it&rsquo;s a C program that traverses git repositories using <a href="https://libgit2.org">libgit2</a> and writes data to HTML files as it reads it. It doesn&rsquo;t run constantly and listen for filesystem changes, but is instead invoked manually or as a <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_post_receive">git hook</a>.</p>
+<h2 id="a-quick-tour-of-stagit">A quick tour of Stagit</h2>
+<h3 id="index-page">Index Page</h3>
+<p>The index page sits atop a collection of repositories. It displays the name, description, owner, and last commit date of each repository with a link to each.</p>
+<p><img src="/images/index.png" alt="index"></p>
+<h3 id="log-page">Log Page</h3>
+<p>The log page is the default page that you arrive at when you visit a repository from the index page. It shows the same information you would see running <code>git log</code> in a repository on the master branch.</p>
+<p><img src="/images/log.png" alt="log"></p>
+<h3 id="files-page">Files Page</h3>
+<p>A listing of all files on the latest commit of the master branch, alongside filesizes and file modes. It didn&rsquo;t occur to me before seeing this that git has account for file permissions.</p>
+<p><img src="/images/files.png" alt="files"></p>
+<h3 id="refs-page">Refs Page</h3>
+<p>A list of all branches and tags pushed to the server. You can see them listed out here, but you can&rsquo;t actually browse anything other than master.</p>
+<p>In order to display other branches, Stagit would need to write a ton of additional pages, and it&rsquo;s very likely that other branches would very rarely be used.</p>
+<p>Instead, if you want to view repository history related to other refs, you&rsquo;re expected to just clone it and look locally.</p>
+<p>I think it&rsquo;s an excellent tradeoff.</p>
+<p><img src="/images/refs.png" alt="refs"></p>
+<h3 id="readme-page">Readme Page</h3>
+<p>The README file, if present, is readable in text form on a dedicated page. It&rsquo;s probably the first thing you want to read, so it definitely deserves the real estate.</p>
+<p><img src="/images/readme.png" alt="readme"></p>
+<h3 id="license-page">License Page</h3>
+<p>The license, if present, is important enough to get its own dedicated page. It&rsquo;s crucial to highlight this information so that visitors intending to leverage code from the repository know the terms.</p>
+<p><img src="/images/license.png" alt="license"></p>
+<h2 id="running-the-program">Running the Program</h2>
+<p>Stagit consists of two commands: <code>stagit-index</code>,which produces an index page that points to all your repositories, and <code>stagit</code>, which builds HTML pages for a single repository.</p>
+<p>Using them works as follows: you first run <code>stagit-index</code> passing in all of your git repositories as command line arguments, and then run <code>stagit</code> separately for each individual repository. There&rsquo;s a <a href="https://codemadness.org/git/stagit/file/example_create.sh.html">shell script</a> in the stagit repo that will do both of these for you.</p>
+<p>This will create the HTML pages that describe the current state of all repositories, but it won&rsquo;t update them for you when the repositories change. For this, you use git&rsquo;s server-side <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_post_receive">post-receive hook</a> to update HTML pages for the index and the repository receiving the commit. Stagit provides another <a href="https://codemadness.org/git/stagit/file/example_post-receive.sh.html">sample script</a> that you can tweak and use for this as well.</p>
+<h2 id="modest-modifications">Modest Modifications</h2>
+<p>I&rsquo;m maintaining <a href="https://github.com/jpe90/stagit">a fork</a> of stagit that I use for my personal git server.</p>
+<p><em>Update: I&rsquo;ve since moved off my VPS and no longer run the git server.</em></p>
+<p>Below is an overview of the features I added in.</p>
+<h3 id="changes-to-readmes">Changes to READMEs</h3>
+<p>The first thing I customized was to have repositories open straight to the README from the index page. If there is no README, it opens the log page just like upstream.</p>
+<p>I also leaned on <a href="https://github.com/mity/md4c">md4c</a> to parse markdown into HTML instead of plaintext because I think it&rsquo;s useful to be able to display screenshots and links.</p>
+<p><img src="/images/mdrender.png" alt="mdrender"></p>
+<h3 id="syntax-highlighting-on-files-with-customized-colors">Syntax Highlighting on Files with Customized Colors</h3>
+<p>Instead of just writing out plaintext file contents, I changed stagit to use chroma to output HTML with syntax highlighting. To support this use, I upstreamed a <a href="https://github.com/alecthomas/chroma/commit/d38b87110b078027006bc34aa27a065fa22295a1">small enhancement</a> to the chroma repository that allows you to use linkable lines in HTML output.</p>
+<p>Finally, I changed Stagit&rsquo;s light and dark themes to match the themes I use on my blog.</p>
+<p><img src="/images/themes.gif" alt="themes"></p>
+<h2 id="closing-thoughts">Closing Thoughts</h2>
+<p>Stagit&rsquo;s HTML pages appear to be designed with careful thought as to what someone viewing a repository would be interested in quickly learning. The commit log, README, files, license, and repository URL are never more than a click away, and the interface is free from clutter.</p>
+<p>The source code is very clear and readable. I was able to understand and modify it without significant C experience and the codebase was a pleasure to work with.</p>
+<p>Definitely give Stagit a try if you&rsquo;re interested. You may want to read through the documentation&rsquo;s <a href="https://codemadness.org/stagit.html">list of pros and cons</a> to make sure it fits your needs.</p>
+
+</content>
+<p>
+  
+</p>
+
+  </main>
+
+    
+</body>
+
+</html>

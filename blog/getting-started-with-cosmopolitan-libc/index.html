@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
+<title>Getting Started with Cosmopolitan Libc | Jon Eskin&#39;s Website</title>
+<meta name="title" content="Getting Started with Cosmopolitan Libc" />
+<meta name="description" content="I recently learned a little bit about Cosmopolitan Libc in order to make a portable executable of clp, a small program written for POSIX systems.
+I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.
+In this blog post I&rsquo;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:title" content="Getting Started with Cosmopolitan Libc" />
+<meta property="og:description" content="I recently learned a little bit about Cosmopolitan Libc in order to make a portable executable of clp, a small program written for POSIX systems.
+I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.
+In this blog post I&rsquo;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-09-04T05:59:22-04:00" />
+<meta property="article:modified_time" content="2022-09-04T05:59:22-04:00" /><meta property="og:site_name" content="Jon Eskin&#39;s Blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
+
+<meta name="twitter:title" content="Getting Started with Cosmopolitan Libc"/>
+<meta name="twitter:description" content="I recently learned a little bit about Cosmopolitan Libc in order to make a portable executable of clp, a small program written for POSIX systems.
+I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.
+In this blog post I&rsquo;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it."/>
+
+
+
+<meta itemprop="name" content="Getting Started with Cosmopolitan Libc">
+<meta itemprop="description" content="I recently learned a little bit about Cosmopolitan Libc in order to make a portable executable of clp, a small program written for POSIX systems.
+I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.
+In this blog post I&rsquo;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it."><meta itemprop="datePublished" content="2022-09-04T05:59:22-04:00" />
+<meta itemprop="dateModified" content="2022-09-04T05:59:22-04:00" />
+<meta itemprop="wordCount" content="1667"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="keywords" content="" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+      padding: 2px 5px;
+	  background-color: #eeeeec
+  }
+
+  pre code {
+     
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: light) {
+    /* Background */ .bg { background-color: #ffffff; }
+/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err {  }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #204a87 }
+/* KeywordConstant */ .chroma .kc { color: #204a87 }
+/* KeywordDeclaration */ .chroma .kd { color: #204a87 }
+/* KeywordNamespace */ .chroma .kn { color: #204a87 }
+/* KeywordPseudo */ .chroma .kp { color: #204a87 }
+/* KeywordReserved */ .chroma .kr { color: #204a87 }
+/* KeywordType */ .chroma .kt { color: #3465a4}
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na {  }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #2b91af }
+/* NameConstant */ .chroma .no {  }
+/* NameDecorator */ .chroma .nd {  }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne {  }
+/* NameFunction */ .chroma .nf {  }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx {  }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt {  }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l {  }
+/* LiteralDate */ .chroma .ld {  }
+/* LiteralString */ .chroma .s { color: #4e8a06; font-style: italic; }
+/* LiteralStringAffix */ .chroma .sa { color: #4e8a06; font-style: italic; }
+/* LiteralStringBacktick */ .chroma .sb { color: #4e8a06; font-style: italic; }
+/* LiteralStringChar */ .chroma .sc { color: #4e8a06; font-style: italic; }
+/* LiteralStringDelimiter */ .chroma .dl { color: #4e8a06; font-style: italic; }
+/* LiteralStringDoc */ .chroma .sd { color: #4e8a06; font-style: italic; }
+/* LiteralStringDouble */ .chroma .s2 { color: #4e8a06; font-style: italic; }
+/* LiteralStringEscape */ .chroma .se { color: #2e3436 }
+/* LiteralStringHeredoc */ .chroma .sh { color: #4e8a06; font-style: italic; }
+/* LiteralStringInterpol */ .chroma .si { color: #4e8a06; font-style: italic; }
+/* LiteralStringOther */ .chroma .sx { color: #4e8a06; font-style: italic; }
+/* LiteralStringRegex */ .chroma .sr { color: #4e8a06; font-style: italic; }
+/* LiteralStringSingle */ .chroma .s1 { color: #4e8a06; font-style: italic; }
+/* LiteralStringSymbol */ .chroma .ss { color: #4e8a06; font-style: italic; }
+/* LiteralNumber */ .chroma .m {  }
+/* LiteralNumberBin */ .chroma .mb {  }
+/* LiteralNumberFloat */ .chroma .mf {  }
+/* LiteralNumberHex */ .chroma .mh {  }
+/* LiteralNumberInteger */ .chroma .mi {  }
+/* LiteralNumberIntegerLong */ .chroma .il {  }
+/* LiteralNumberOct */ .chroma .mo {  }
+/* Operator */ .chroma .o {  }
+/* OperatorWord */ .chroma .ow { color: #204a87 }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #008000 }
+/* CommentHashbang */ .chroma .ch { color: #333; font-style: italic;}
+/* CommentMultiline */ .chroma .cm { color: #333; font-style: italic;}
+/* CommentSingle */ .chroma .c1 { color: #333; font-style: italic;}
+/* CommentSpecial */ .chroma .cs { color: #333; font-style: italic;}
+/* CommentPreproc */ .chroma .cp { color: #a40000 }
+/* CommentPreprocFile */ .chroma .cpf { }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { color: #cc0000 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { color: green }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp { font-weight: bold }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { font-weight: bold }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #272822;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+	/* Background */ .bg { color: #f8f8f2; background-color: #777; }
+/* PreWrapper */ .chroma { color: #f8f8f2; background-color: #777; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #afaf87 }
+/* KeywordConstant */ .chroma .kc { color: #d7afaf }
+/* KeywordDeclaration */ .chroma .kd { color: #afaf87 }
+/* KeywordNamespace */ .chroma .kn { color: #f92672 }
+/* KeywordPseudo */ .chroma .kp { color: #afaf87 }
+/* KeywordReserved */ .chroma .kr { color: #afaf87 }
+/* KeywordType */ .chroma .kt { color: #afaf87 }
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na { color: #d7d7af }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #d7d7af }
+/* NameConstant */ .chroma .no { color: #d7afaf }
+/* NameDecorator */ .chroma .nd { color: #d7d7af }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne { color: #d7d7af }
+/* NameFunction */ .chroma .nf { color: #d7d7af }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx { color: #d7d7af }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt { color: #f92672 }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l { color: #87d7d7 }
+/* LiteralDate */ .chroma .ld { color: #d78787 }
+/* LiteralString */ .chroma .s { color: #d78787 }
+/* LiteralStringAffix */ .chroma .sa { color: #d78787 }
+/* LiteralStringBacktick */ .chroma .sb { color: #d78787 }
+/* LiteralStringChar */ .chroma .sc { color: #d78787 }
+/* LiteralStringDelimiter */ .chroma .dl { color: #d78787 }
+/* LiteralStringDoc */ .chroma .sd { color: #d78787 }
+/* LiteralStringDouble */ .chroma .s2 { color: #d78787 }
+/* LiteralStringEscape */ .chroma .se { color: #d7afaf }
+/* LiteralStringHeredoc */ .chroma .sh { color: #d78787 }
+/* LiteralStringInterpol */ .chroma .si { color: #d78787 }
+/* LiteralStringOther */ .chroma .sx { color: #d78787 }
+/* LiteralStringRegex */ .chroma .sr { color: #d78787 }
+/* LiteralStringSingle */ .chroma .s1 { color: #d78787 }
+/* LiteralStringSymbol */ .chroma .ss { color: #d78787 }
+/* LiteralNumber */ .chroma .m { color: #87d7d7 }
+/* LiteralNumberBin */ .chroma .mb { color: #87d7d7 }
+/* LiteralNumberFloat */ .chroma .mf { color: #87d7d7 }
+/* LiteralNumberHex */ .chroma .mh { color: #87d7d7 }
+/* LiteralNumberInteger */ .chroma .mi { color: #87d7d7 }
+/* LiteralNumberIntegerLong */ .chroma .il { color: #87d7d7 }
+/* LiteralNumberOct */ .chroma .mo { color: #87d7d7 }
+/* Operator */ .chroma .o { }
+/* OperatorWord */ .chroma .ow {  }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #87af87 }
+/* CommentHashbang */ .chroma .ch { color: #87af87 }
+/* CommentMultiline */ .chroma .cm { color: #87af87 }
+/* CommentSingle */ .chroma .c1 { color: #999 }
+/* CommentSpecial */ .chroma .cs { color: #87af87 }
+/* CommentPreproc */ .chroma .cp { color: #db8 }
+/* CommentPreprocFile */ .chroma .cpf { color: #87af87 }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { background-color: #9C6363 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { background-color: #7F9F7F }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp {  }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { color: #87af87 }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header>
+
+<nav><a href="/">About</a>
+
+
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Getting Started with Cosmopolitan Libc</h1>
+<p>
+  <i>
+    <time datetime='2022-09-04' pubdate>
+      04 Sep, 2022
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>I recently learned a little bit about <a href="https://justine.lol/cosmopolitan/index.html">Cosmopolitan Libc</a> in order to make a portable executable of <a href="https://jeskin.net/blog/clp/">clp</a>, a small program written for POSIX systems.</p>
+<p>I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.</p>
+<p>In this blog post I&rsquo;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it.</p>
+<ul>
+<li><a href="#introduction-to-cosmopolitan-libc" title="Introduction to Cosmopolitan Libc">Introduction to Cosmopolitan Libc</a></li>
+<li><a href="#building-programs-with-the-prebuilt-amalgamation" title="Building Programs with the Prebuilt Amalgamation">Building Programs with the Prebuilt Amalgamation</a></li>
+<li><a href="#building-programs-inside-the-hermetic-monorepo" title="Building Programs Inside the Hermetic Monorepo">Building Programs Inside the Hermetic Monorepo</a></li>
+<li><a href="#shortcut-for-portable-lua-programs" title="Shortcut for Portable Lua Programs">Shortcut for Portable Lua Programs</a></li>
+</ul>
+<h3 id="introduction-to-cosmopolitan-libc">Introduction to Cosmopolitan Libc</h3>
+<p>Cosmopolitan is a C library. When you compile your C program and link it, your executable will be:</p>
+<ul>
+<li>
+<p><strong>Runnable anywhere</strong>: it can be moved to a Linux, Mac OS X, Windows NT, FreeBSD, OpenBSD, and NetBSD and it will run.</p>
+</li>
+<li>
+<p><strong>Single-file</strong>: Cosmo can package up everything your program needs to run inside a single executable zip file. You won&rsquo;t need to script installers to move files to platform-specific locations.</p>
+</li>
+<li>
+<p><strong>Statically linked</strong>: all dependencies including libc are self contained in each executable.</p>
+</li>
+</ul>
+<p>Cosmo&rsquo;s <strong>executables are tiny</strong>- far smaller than you&rsquo;d see for comparable from Rust or Go.</p>
+<p>Binaries currently <strong>only target x86</strong>. They also run out of the box on Apple Silicon and Windows ARM thanks to their built in x86_64 emulation, and you can use explicit x86_64 emulation elsewhere.</p>
+<p>GUI programs are not in a workable state or even an officially stated goal, although they are <a href="https://github.com/jart/cosmopolitan/issues/35">being explored</a>.</p>
+<p>Build-once run-anywhere is achieved by the <strong>Actually Portable Executable (APE)</strong> format. Executables built by Cosmopolitan are interpreted by Windows as <a href="https://en.wikipedia.org/wiki/Portable_Executable">Portable Executables</a>, and on Unix they are interpreted as a shell script without a shebang line.</p>
+<p>Now let&rsquo;s take a look at how we can use Cosmopolitan to build programs.</p>
+<h3 id="building-programs-with-the-prebuilt-amalgamation">Building Programs with the Prebuilt Amalgamation</h3>
+<p>The simplest way to build APE programs is to use GCC and link the <a href="https://justine.lol/cosmopolitan/cosmopolitan.zip">prebuilt library</a>.</p>
+<p>An example of this approach can be seen in <a href="https://github.com/jpe90/hello-cosmo">this makefile project</a> consisting of two files:</p>
+<p><em>hello.c</em></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;hello world</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><em>Makefile</em>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">CC</span><span class="o">=</span>gcc
+</span></span><span class="line"><span class="cl"><span class="nv">OBJCOPY</span><span class="o">=</span>objcopy
+</span></span><span class="line"><span class="cl"><span class="nv">BASEURL</span><span class="o">=</span>https://worker.jart.workers.dev
+</span></span><span class="line"><span class="cl"><span class="nv">AMALGAMATION</span><span class="o">=</span>cosmopolitan-amalgamation-2.0.zip
+</span></span><span class="line"><span class="cl"><span class="nv">LIBCOSMO_SHA256_EXPECTED</span><span class="o">=</span><span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>2228cd5924c001b2d8c8efcc9ddacaab354ba4c99a3e0c8858098e2c3f2e3fdb
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">hello.com: libcosmo hello.c
+</span></span><span class="line"><span class="cl">	<span class="k">$(</span>CC<span class="k">)</span> -g -Os -static -fno-pie -no-pie -nostdlib -nostdinc                  <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>		-fno-omit-frame-pointer -pg -mnop-mcount -mno-tls-direct-seg-refs -o   <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld<span class="o">=</span>bfd -Wl,--gc-sections <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>		-Wl,-T,libcosmo/ape.lds -include libcosmo/cosmopolitan.h         <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>		libcosmo/crt.o libcosmo/ape-no-modify-self.o                     <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>		libcosmo/cosmopolitan.a
+</span></span><span class="line"><span class="cl">	<span class="k">$(</span>OBJCOPY<span class="k">)</span> -S -O binary hello.com.dbg hello.com
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">libcosmo: <span class="k">$(</span>AMALGAMATION<span class="k">)</span>
+</span></span><span class="line"><span class="cl">	@libcosmo_sha256_actual<span class="o">=</span><span class="sb">`</span>sha256sum <span class="k">$(</span>AMALGAMATION<span class="k">)</span> <span class="p">|</span> cut -d <span class="s1">&#39; &#39;</span> -f 1<span class="sb">`</span><span class="p">;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="nb">echo</span> <span class="s2">&#34;expected sha256sum: </span><span class="k">$(</span>LIBCOSMO_SHA256_EXPECTED<span class="k">)</span><span class="s2">&#34;</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s2">&#34;actual   sha256sum: </span><span class="nv">$$</span><span class="s2">libcosmo_sha256_actual&#34;</span><span class="p">;</span> <span class="k">if</span>	 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="o">[</span> <span class="s2">&#34;</span><span class="nv">$$</span><span class="s2">libcosmo_sha256_actual&#34;</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="k">$(</span>LIBCOSMO_SHA256_EXPECTED<span class="k">)</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span> <span class="nb">echo</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s2">&#34;checksums match&#34;</span><span class="p">;</span> <span class="k">else</span> <span class="nb">echo</span> <span class="s2">&#34;checksums don&#39;t match, aborting&#34;</span> <span class="o">&amp;&amp;</span> <span class="nb">exit</span> 1<span class="p">;</span> <span class="k">fi</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	unzip -d libcosmo <span class="k">$(</span>AMALGAMATION<span class="k">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">$(</span>AMALGAMATION<span class="k">)</span>:
+</span></span><span class="line"><span class="cl">	wget <span class="s2">&#34;</span><span class="k">$(</span>BASEURL<span class="k">)</span><span class="s2">/</span><span class="k">$(</span>AMALGAMATION<span class="k">)</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">clean:
+</span></span><span class="line"><span class="cl">	rm -f hello.com.dbg hello.com
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">distclean: clean
+</span></span><span class="line"><span class="cl">	rm -rf cosmopolitan* libcosmo</span></span></code></pre></div></p>
+<p>You might notice that hello.c does not contain a <code>#include &lt;stdio.h&gt;</code> line to provide the header for printf. Ordinarily, the c compiler would search the system headers for this file, which would provide the function declaration for <code>printf</code>, and then the linker would find the definition in the system standard library.</p>
+<p>In this case, the Makefile does not search the system headers because of the <code>-nostdinc</code> flag,  and it doesn&rsquo;t link the system standard library because of the <code>-nostdlib</code> flag.</p>
+<p>Instead, the makefile specifies an include for <code>cosmopolitan.h</code>, which provides declarations for all libc functions including <code>printf</code>, while the function definitions are provided by <code>cosmopolitan.a</code>.</p>
+<p>Because of the <code>-nostdinc</code> flag, if we added the include line to <code>hello.c</code>, we would get an error:</p>
+<pre tabindex="0"><code>hello.c:1:19: error: no include path in which to search for stdio.h
+    1 | #include &lt;stdio.h&gt;
+</code></pre><p>As you might imagine, this will cause issues when you&rsquo;re trying to port existing code written against the standard library. In some cases, there&rsquo;s quite a few of them- too many to remove by hand. And we can&rsquo;t just remove the <code>-nostdinc</code> flag, otherwise the compiler would find conflicting function declarations.</p>
+<p>A workaround is to create a folder in your project, fill it empty files that have names of all the system headers your code is looking for, and include that folder in the build path.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gs">---
+</span></span></span><span class="line"><span class="cl"><span class="gs"></span> Makefile             | 2 +-
+</span></span><span class="line"><span class="cl"> header_stubs/stdio.h | 0
+</span></span><span class="line"><span class="cl"> hello.c              | 2 ++
+</span></span><span class="line"><span class="cl"> 3 files changed, 3 insertions(+), 1 deletion(-)
+</span></span><span class="line"><span class="cl"> create mode 100644 header_stubs/stdio.h
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gh">diff --git a/Makefile b/Makefile
+</span></span></span><span class="line"><span class="cl"><span class="gh">index 4bd867d..f7d3623 100644
+</span></span></span><span class="line"><span class="cl"><span class="gh"></span><span class="gd">--- a/Makefile
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/Makefile
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -10,7 +10,7 @@ hello.com: libcosmo hello.c
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span> 		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld=bfd -Wl,--gc-sections \
+</span></span><span class="line"><span class="cl"> 		-Wl,-T,libcosmo/ape.lds -include libcosmo/cosmopolitan.h         \
+</span></span><span class="line"><span class="cl"> 		libcosmo/crt.o libcosmo/ape-no-modify-self.o                     \
+</span></span><span class="line"><span class="cl"><span class="gd">-		libcosmo/cosmopolitan.a
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+		libcosmo/cosmopolitan.a -Iheader_stubs/
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span> 	$(OBJCOPY) -S -O binary hello.com.dbg hello.com
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"> libcosmo: $(AMALGAMATION)
+</span></span><span class="line"><span class="cl"><span class="gh">diff --git a/header_stubs/stdio.h b/header_stubs/stdio.h
+</span></span></span><span class="line"><span class="cl"><span class="gh"></span>new file mode 100644
+</span></span><span class="line"><span class="cl"><span class="gh">index 0000000..e69de29
+</span></span></span><span class="line"><span class="cl"><span class="gh">diff --git a/hello.c b/hello.c
+</span></span></span><span class="line"><span class="cl"><span class="gh">index d07c467..11f7c99 100644
+</span></span></span><span class="line"><span class="cl"><span class="gh"></span><span class="gd">--- a/hello.c
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/hello.c
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -1,3 +1,5 @@
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span><span class="gi">+#include &lt;stdio.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="gi">+
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span> int main() {
+</span></span><span class="line"><span class="cl">     printf(&#34;hello world\n&#34;);
+</span></span><span class="line"><span class="cl"> }
+</span></span><span class="line"><span class="cl"><span class="gd">--
+</span></span></span></code></pre></div><p>This way the includes specified by the source code are found, but they&rsquo;re replaced with empty content during preprocessing. This is what you want, since the declarations that the includes usually contain are already provided by <code>cosmopolitan.h</code>.</p>
+<p>I think building with the prebuilt amalgamation makes sense for small projects with few dependencies. It keeps the size of the source repository small and builds quickly.</p>
+<p>I was able to build <code>clp</code> with this approach by forking <a href="https://github.com/ahgamut/lua/tree/cosmopolitan">another project</a> which built Lua using the amalgamation prior to its inclusion in the hermetic monorepo. You can see the result <a href="https://github.com/jpe90/clp-prebuilt-cosmo/tree/clp">here</a>.</p>
+<p>Without that fork existing, I wouldn&rsquo;t have been able to compile clp this way. If your projects require non-trivial external dependencies, you&rsquo;ll really need to know what you&rsquo;re doing to get it to build.</p>
+<p>Luckily for me, there&rsquo;s a different option that provides additional batteries.</p>
+<h3 id="building-programs-inside-the-hermetic-monorepo">Building Programs Inside the Hermetic Monorepo</h3>
+<p>Another way to build APE programs is to use the <a href="https://github.com/jart/cosmopolitan">hermetic monorepo</a>. You&rsquo;ll only need make installed on your system to build it; it uses a vendored GCC to bootstrap itself.</p>
+<p>The repository is managed with an interconnected system of makefiles which is documented <a href="https://github.com/jart/cosmopolitan/blob/master/Makefile#L99-L230">within the main Makefile</a> that you use for building.</p>
+<p>In addition to providing core system functionality, the repository contains many programs, utilities, libraries, including the <a href="https://redbean.dev">redbean single file web server</a>, a <a href="https://justine.lol/blinkenlights/">command line debugger</a>, an <a href="https://justine.lol/nesemu1.html">nes emulator that runs in a terminal</a>, implementations of sed, awk, and make, and much more. The code in all these projects is tailored to Cosmopolitan, which is nice because it makes it easier to yoink from them compared to external code that might need some finangling.</p>
+<p>For quick and dirty programs, you can drop a C file inside <a href="https://github.com/jart/cosmopolitan/tree/master/examples">the examples folder</a> and it&rsquo;ll get picked up and built inside <code>o/examples</code>. That can be nice for trying out ideas or getting up and running quickly.</p>
+<p>For more involved projects, or for adding re-usable libraries, you will probably want to add a third_party module.</p>
+<p>Third_party modules follow repository-wide conventions where they include Makefiles that declare their source files, header files, dependencies on other packages, and more.</p>
+<p>To add a third_party module, you&rsquo;ll want to study the <a href="https://github.com/jart/cosmopolitan/tree/master/examples/package">example library package</a> and some of the programs packaged in the repository. You can also check out <a href="https://github.com/jpe90/cosmopolitan/tree/clp">my fork</a>, where I added a clp third_party.</p>
+<p>I&rsquo;d love to give a detailed breakdown of how to properly write a makefile for a third party, but I pretty much just copied sed&rsquo;s, changed stuff, and hacked in some extras.</p>
+<p>Maintaining a personal fork of the monorepo and adding your own packages to it looks like a good way to manage projects. The repository appears designed to be modular and extensible, so upstream changes seem unlikely to break your code. If you want to core parts of the monorepo for a single package, you could always do so on another branch.</p>
+<p>Using the hermetic monorepo might seem like overkill for a tiny program. It&rsquo;s pretty big repository, and the initial build can be kind of long. On the other hand, the executables it produces are tiny, iterative builds are quick, it gives nice options for tuning build output, and in general it makes maintainence easier.</p>
+<p>There&rsquo;s another option for building software that I think is worth mentioning.</p>
+<h3 id="shortcut-for-portable-lua-programs">Shortcut for Portable Lua Programs</h3>
+<p>Here&rsquo;s a quick demonstration of how to package portable Lua programs. In this section we&rsquo;ll build the Lua interpreter, copy it to the base of the repository, zip up a lua file into the executable, and configure it to run the lua file when the file is run.</p>
+<p>First, grab the monorepo if you haven&rsquo;t already.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/jart/cosmopolitan.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> cosmopolitan
+</span></span></code></pre></div><p>From this point on, all commands should be run from the base of the repository.</p>
+<p>Build the Lua interpreter, and copy it to the base of the repo.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">build/bootstrap/make.com -j<span class="k">$(</span>nproc<span class="k">)</span> o//third_party/lua
+</span></span><span class="line"><span class="cl">cp o//third_party/lua/lua.com .
+</span></span></code></pre></div><p>Next, make a <code>.lua</code> folder and build the <code>zip.com</code> program.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p .lua
+</span></span><span class="line"><span class="cl">build/bootstrap/make.com -j<span class="k">$(</span>nproc<span class="k">)</span> o//third_party/zip
+</span></span></code></pre></div><p>Now create a file <code>mymodule.lua</code> inside <code>.lua</code> by pasting the following text into your shell.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">printf</span> %s <span class="s1">&#39;local mymodule = {}
+</span></span></span><span class="line"><span class="cl"><span class="s1">
+</span></span></span><span class="line"><span class="cl"><span class="s1">function mymodule.hello()
+</span></span></span><span class="line"><span class="cl"><span class="s1">   print(&#34;Hello World!&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s1">end
+</span></span></span><span class="line"><span class="cl"><span class="s1">
+</span></span></span><span class="line"><span class="cl"><span class="s1">return mymodule&#39;</span> &gt; .lua/mymodule.lua
+</span></span></code></pre></div><p>Next create a file <code>.args</code> in the base of the repository by again pasting the following text into your shell.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">printf</span> %s <span class="s1">&#39;-l
+</span></span></span><span class="line"><span class="cl"><span class="s1">mymodule
+</span></span></span><span class="line"><span class="cl"><span class="s1">-e
+</span></span></span><span class="line"><span class="cl"><span class="s1">require&#34;mymodule&#34;.hello()&#39;</span> &gt; .args
+</span></span></code></pre></div><p>This file will tell be loaded by the modified interpreter and the arguments will be presented to the interpreter as if they came from the command line.</p>
+<p>Finally, we&rsquo;ll  use the <code>zip.com</code> program to load a <code>.lua</code> directory containing your lua files and the <code>.args</code> file which launches your program into the Lua interpreter binary.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">./o/third_party/zip/zip.com -r lua.com .lua/
+</span></span><span class="line"><span class="cl">./o/third_party/zip/zip.com -r lua.com .args
+</span></span></code></pre></div><p>Now if you run <code>lua.com</code>, the program will run the lua file and print &ldquo;Hello World!&rdquo; as if you had run it with <code>lua.com -l mymodule -e 'require&quot;mymodule&quot;.hello()'</code>.</p>
+<p>You can read more about these in the <code>/.args</code> and the <code>/.lua/...</code> sections of <a href="https://redbean.dev/#specials">redbean&rsquo;s documenation</a>; just be aware that not all of redbean&rsquo;s functionality is available to the Lua interpreter out of the box.</p>
+<h3 id="wrap-up">Wrap Up</h3>
+<p>That covers most of what I figured out on my own while playing around with Cosmopolitan.</p>
+<p>If you want to see what other people have done, check out some of the projects here: <a href="https://github.com/shmup/awesome-cosmopolitan">https://github.com/shmup/awesome-cosmopolitan</a></p>
+<h3 id="acknowledgements">Acknowledgements</h3>
+<p>Thanks to <a href="https://justine.lol">Justine Tunney</a> for guidance on porting clp.</p>
+
+</content>
+<p>
+  
+</p>
+
+  </main>
+
+    
+</body>
+
+</html>

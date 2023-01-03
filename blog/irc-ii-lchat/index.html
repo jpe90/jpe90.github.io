@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
+<title>FIFO based IRC with ii and lchat | Jon Eskin&#39;s Website</title>
+<meta name="title" content="FIFO based IRC with ii and lchat" />
+<meta name="description" content="Introduction lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.
+ii A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.
+For example, the popular client weechat draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:title" content="FIFO based IRC with ii and lchat" />
+<meta property="og:description" content="Introduction lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.
+ii A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.
+For example, the popular client weechat draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jeskin.net/blog/irc-ii-lchat/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2023-01-03T13:34:15-05:00" />
+<meta property="article:modified_time" content="2023-01-03T13:34:15-05:00" /><meta property="og:site_name" content="Jon Eskin&#39;s Blog" />
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
+
+<meta name="twitter:title" content="FIFO based IRC with ii and lchat"/>
+<meta name="twitter:description" content="Introduction lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.
+ii A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.
+For example, the popular client weechat draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on."/>
+
+
+
+<meta itemprop="name" content="FIFO based IRC with ii and lchat">
+<meta itemprop="description" content="Introduction lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.
+ii A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.
+For example, the popular client weechat draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on."><meta itemprop="datePublished" content="2023-01-03T13:34:15-05:00" />
+<meta itemprop="dateModified" content="2023-01-03T13:34:15-05:00" />
+<meta itemprop="wordCount" content="687"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="keywords" content="" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+      padding: 2px 5px;
+	  background-color: #eeeeec
+  }
+
+  pre code {
+     
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: light) {
+    /* Background */ .bg { background-color: #ffffff; }
+/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err {  }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #204a87 }
+/* KeywordConstant */ .chroma .kc { color: #204a87 }
+/* KeywordDeclaration */ .chroma .kd { color: #204a87 }
+/* KeywordNamespace */ .chroma .kn { color: #204a87 }
+/* KeywordPseudo */ .chroma .kp { color: #204a87 }
+/* KeywordReserved */ .chroma .kr { color: #204a87 }
+/* KeywordType */ .chroma .kt { color: #3465a4}
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na {  }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #2b91af }
+/* NameConstant */ .chroma .no {  }
+/* NameDecorator */ .chroma .nd {  }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne {  }
+/* NameFunction */ .chroma .nf {  }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx {  }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt {  }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l {  }
+/* LiteralDate */ .chroma .ld {  }
+/* LiteralString */ .chroma .s { color: #4e8a06; font-style: italic; }
+/* LiteralStringAffix */ .chroma .sa { color: #4e8a06; font-style: italic; }
+/* LiteralStringBacktick */ .chroma .sb { color: #4e8a06; font-style: italic; }
+/* LiteralStringChar */ .chroma .sc { color: #4e8a06; font-style: italic; }
+/* LiteralStringDelimiter */ .chroma .dl { color: #4e8a06; font-style: italic; }
+/* LiteralStringDoc */ .chroma .sd { color: #4e8a06; font-style: italic; }
+/* LiteralStringDouble */ .chroma .s2 { color: #4e8a06; font-style: italic; }
+/* LiteralStringEscape */ .chroma .se { color: #2e3436 }
+/* LiteralStringHeredoc */ .chroma .sh { color: #4e8a06; font-style: italic; }
+/* LiteralStringInterpol */ .chroma .si { color: #4e8a06; font-style: italic; }
+/* LiteralStringOther */ .chroma .sx { color: #4e8a06; font-style: italic; }
+/* LiteralStringRegex */ .chroma .sr { color: #4e8a06; font-style: italic; }
+/* LiteralStringSingle */ .chroma .s1 { color: #4e8a06; font-style: italic; }
+/* LiteralStringSymbol */ .chroma .ss { color: #4e8a06; font-style: italic; }
+/* LiteralNumber */ .chroma .m {  }
+/* LiteralNumberBin */ .chroma .mb {  }
+/* LiteralNumberFloat */ .chroma .mf {  }
+/* LiteralNumberHex */ .chroma .mh {  }
+/* LiteralNumberInteger */ .chroma .mi {  }
+/* LiteralNumberIntegerLong */ .chroma .il {  }
+/* LiteralNumberOct */ .chroma .mo {  }
+/* Operator */ .chroma .o {  }
+/* OperatorWord */ .chroma .ow { color: #204a87 }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #008000 }
+/* CommentHashbang */ .chroma .ch { color: #333; font-style: italic;}
+/* CommentMultiline */ .chroma .cm { color: #333; font-style: italic;}
+/* CommentSingle */ .chroma .c1 { color: #333; font-style: italic;}
+/* CommentSpecial */ .chroma .cs { color: #333; font-style: italic;}
+/* CommentPreproc */ .chroma .cp { color: #a40000 }
+/* CommentPreprocFile */ .chroma .cpf { }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { color: #cc0000 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { color: green }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp { font-weight: bold }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { font-weight: bold }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #272822;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+	/* Background */ .bg { color: #f8f8f2; background-color: #777; }
+/* PreWrapper */ .chroma { color: #f8f8f2; background-color: #777; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #afaf87 }
+/* KeywordConstant */ .chroma .kc { color: #d7afaf }
+/* KeywordDeclaration */ .chroma .kd { color: #afaf87 }
+/* KeywordNamespace */ .chroma .kn { color: #f92672 }
+/* KeywordPseudo */ .chroma .kp { color: #afaf87 }
+/* KeywordReserved */ .chroma .kr { color: #afaf87 }
+/* KeywordType */ .chroma .kt { color: #afaf87 }
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na { color: #d7d7af }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #d7d7af }
+/* NameConstant */ .chroma .no { color: #d7afaf }
+/* NameDecorator */ .chroma .nd { color: #d7d7af }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne { color: #d7d7af }
+/* NameFunction */ .chroma .nf { color: #d7d7af }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx { color: #d7d7af }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt { color: #f92672 }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l { color: #87d7d7 }
+/* LiteralDate */ .chroma .ld { color: #d78787 }
+/* LiteralString */ .chroma .s { color: #d78787 }
+/* LiteralStringAffix */ .chroma .sa { color: #d78787 }
+/* LiteralStringBacktick */ .chroma .sb { color: #d78787 }
+/* LiteralStringChar */ .chroma .sc { color: #d78787 }
+/* LiteralStringDelimiter */ .chroma .dl { color: #d78787 }
+/* LiteralStringDoc */ .chroma .sd { color: #d78787 }
+/* LiteralStringDouble */ .chroma .s2 { color: #d78787 }
+/* LiteralStringEscape */ .chroma .se { color: #d7afaf }
+/* LiteralStringHeredoc */ .chroma .sh { color: #d78787 }
+/* LiteralStringInterpol */ .chroma .si { color: #d78787 }
+/* LiteralStringOther */ .chroma .sx { color: #d78787 }
+/* LiteralStringRegex */ .chroma .sr { color: #d78787 }
+/* LiteralStringSingle */ .chroma .s1 { color: #d78787 }
+/* LiteralStringSymbol */ .chroma .ss { color: #d78787 }
+/* LiteralNumber */ .chroma .m { color: #87d7d7 }
+/* LiteralNumberBin */ .chroma .mb { color: #87d7d7 }
+/* LiteralNumberFloat */ .chroma .mf { color: #87d7d7 }
+/* LiteralNumberHex */ .chroma .mh { color: #87d7d7 }
+/* LiteralNumberInteger */ .chroma .mi { color: #87d7d7 }
+/* LiteralNumberIntegerLong */ .chroma .il { color: #87d7d7 }
+/* LiteralNumberOct */ .chroma .mo { color: #87d7d7 }
+/* Operator */ .chroma .o { }
+/* OperatorWord */ .chroma .ow {  }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #87af87 }
+/* CommentHashbang */ .chroma .ch { color: #87af87 }
+/* CommentMultiline */ .chroma .cm { color: #87af87 }
+/* CommentSingle */ .chroma .c1 { color: #999 }
+/* CommentSpecial */ .chroma .cs { color: #87af87 }
+/* CommentPreproc */ .chroma .cp { color: #db8 }
+/* CommentPreprocFile */ .chroma .cpf { color: #87af87 }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { background-color: #9C6363 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { background-color: #7F9F7F }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp {  }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { color: #87af87 }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header>
+<script src="https://jeskin.net/js/lightense.min.js"></script>
+<script>
+    window.addEventListener('load', function () {
+        Lightense('img:not(.no-lightense),.lightense');
+    }, false);
+</script>
+
+<nav><a href="/">About</a>
+
+
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>FIFO based IRC with ii and lchat</h1>
+<p>
+  <i>
+    <time datetime='2023-01-03' pubdate>
+      03 Jan, 2023
+    </time>
+  </i>
+</p>
+
+<content>
+  <h1 id="introduction">Introduction</h1>
+<p>lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.</p>
+<p><img src="/images/lchat_preview.png" alt="lchat_preview"></p>
+<h1 id="ii">ii</h1>
+<p>A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.</p>
+<p>For example, the popular client <a href="https://weechat.org/">weechat</a> draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on.</p>
+<p>Similar to many other interactive programs, it continually listens for the user’s keyboard input. When the user enters messages or commands, weechat marshals information back and forth between the IRC server, updates its internal state, and redraws its interface.</p>
+<p>ii (short for “irc it”) is an IRC client which works at a much lower level. It doesn’t draw anything or listen for keyboard or mouse input at all.</p>
+<p>Instead, represents your connection to an IRC server as a hierarchy of files.</p>
+<p>Each entity that you interact with in IRC, be it the server (to issue commands), or a channel, or a user, gets its own directory and its own pair of files.</p>
+<p>One file is named <code>in</code>, and anything written to that file is sent to the process. Another file is named <code>out</code>, and anything received from the process is written to it.</p>
+<p>Reading and writing to these files is not done by <code>ii</code> itself, but by some other existing part of the system, such as <code>echo</code> for writing and <code>cat</code> for reading.</p>
+<p>Representing processes by files in this manner is known as using a “Named Pipe” or a “FIFO” in Unix systems.</p>
+<h1 id="using-ii">using ii</h1>
+<p>If you run <code>ii</code> on its own, you’ll see a concise summary of its usage:</p>
+<pre tabindex="0"><code>usage: ii -s host [-p port | -u sockname] [-i ircdir]
+[-n nickname] [-f fullname] [-k env_pass]
+</code></pre><p>When I run <code>ii -s irc.libera.chat -n eskin</code>, ii connects me to libera.chat. By default this creates a few folders in “~/irc”:</p>
+<p><img src="/images/ii1.png" alt="ii1"></p>
+<p>The tty that I ran <code>ii</code> from is now taken over by a process that maintains a connection to the server and displays all messages from the server. To interact with ii, I switch to another terminal and interact with the <code>in</code> and <code>out</code> files created for the server I joined.</p>
+<p>Here’s me failing to login:</p>
+<p><img src="/images/ii2.png" alt="ii2"></p>
+<p>And here’s me joining a room:</p>
+<p><img src="/images/ii3.png" alt="ii3"></p>
+<p>Writing to <code>in</code> files and reading from <code>out</code> files with <code>echo</code> and <code>cat</code> are a little unwieldly, which is where <code>lchat</code> comes in.</p>
+<h1 id="lchat">lchat</h1>
+<p>lchat expects a command line argument containing the location of a directory containing <code>in</code> and <code>out</code> files.</p>
+<p>The command starts a process that continually reads from the <code>out</code> file and displaying its content in the terminal. At the same time, it continually provides a message area for you to type messages and submit them by pressing ‘Enter’. When you do, the contents of the message area are sent to the <code>in</code> file.</p>
+<p>In the image below, I navigate to the #linux subdirectory which is where the <code>in</code> and <code>out</code> files for the linux channel exist on my filesystem and the enter <code>lchat .</code> to start lchat in that location.</p>
+<p><img src="/images/lc.png" alt="lc"></p>
+<p>lchat will work with any program that uses FIFO this way, including a few programs listed on the <a href="https://tools.suckless.org/lchat/">lchat homepage</a>.</p>
+<h1 id="installation">Installation</h1>
+<p>If you&rsquo;d like to try out lchat, you&rsquo;ll first need to grab ii:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">git clone https://git.suckless.org/ii
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> ii
+</span></span></code></pre></div><p>If you want to use SSL, you&rsquo;ll want to apply a patch to the repository:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">wget https://tools.suckless.org/ii/patches/ssl/ii-2.0-ssl.diff
+</span></span><span class="line"><span class="cl">git apply ii-2.0-ssl.diff
+</span></span></code></pre></div><p>Then build and install ii:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">make
+</span></span><span class="line"><span class="cl">sudo make install
+</span></span></code></pre></div><p>Finally, you&rsquo;ll want to clone, build, make, and install lchat:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">git clone https://git.suckless.org/lchat
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> lchat
+</span></span><span class="line"><span class="cl">make
+</span></span><span class="line"><span class="cl">sudo make install
+</span></span></code></pre></div><h1 id="conclusion">Conclusion</h1>
+<p>I&rsquo;m a fan of the filebased approach to irc, so that I can keep it passively running without keeping track of an active window.</p>
+<p><code>ii</code> and <code>lchat</code> are fun, hackable projects that are fun to play around with. <code>lchat</code> was the first use I saw of <a href="https://libs.suckless.org/libgrapheme/">libgrapheme</a> in the wild, so that was cool to see. Check it out if you&rsquo;re in to that sort of stuff!</p>
+
+</content>
+<p>
+  
+</p>
+
+  </main>
+
+    
+</body>
+
+</html>
