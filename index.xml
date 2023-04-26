@@ -20,17 +20,6 @@ Makes it easy to persist conversations to the filesystem and decrease costs for 
     </item>
     
     <item>
-      <title>Projects</title>
-      <link>https://jeskin.net/projects/</link>
-      <pubDate>Wed, 19 Apr 2023 04:10:13 -0400</pubDate>
-      
-      <guid>https://jeskin.net/projects/</guid>
-      <description>Projects sf-parser [Java] Scrapes web data, extracts semantic data, and serializes it to JSON for usage in web/mobile apps.
-Demonstrates Object Oriented program design, input validation, JUnit testing, and various libraries in the JVM ecosystem. OpenAI API CLI Client [Golang] Communicate with the OpenAI Chat Completion API by parsing message chains from stdin and writing them to stdout.
-Makes it easy to persist conversations to the filesystem and decrease costs for large inputs.</description>
-    </item>
-    
-    <item>
       <title>Running Dreambooth in Stable Diffusion with Low VRAM</title>
       <link>https://jeskin.net/blog/dreambooth-low-vram/</link>
       <pubDate>Sat, 14 Jan 2023 03:13:30 -0500</pubDate>
