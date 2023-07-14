@@ -40,7 +40,11 @@ A series of implementations were quickly built, finding their way to the Stable 
 Introduction In a recent whitepaper, researchers described a technique to take existing pre-trained text-to-image models and embed new subjects, adding the capability to synthesize photorealistic images of the subject contextualized in the model&rsquo;s output.
 A series of implementations were quickly built, finding their way to the Stable Diffusion web UI project in the form of the sd_dreambooth_extension."><meta itemprop="datePublished" content="2023-01-14T03:13:30-05:00" />
 <meta itemprop="dateModified" content="2023-01-14T03:13:30-05:00" />
+<<<<<<< HEAD
 <meta itemprop="wordCount" content="1061"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+=======
+<meta itemprop="wordCount" content="1029"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+>>>>>>> a7c8aa9 (update)
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -416,9 +420,12 @@ A series of implementations were quickly built, finding their way to the Stable 
 <p>A series of implementations were quickly built, finding their way to the <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">Stable Diffusion web UI</a> project in the form of the <a href="https://github.com/d8ahazard/sd_dreambooth_extension">sd_dreambooth_extension</a>.</p>
 <p>This adds the ability to fine-tune models on images of particular subjects.</p>
 <p>Images generated this way come out much better than the baseline model, especially when you start adding additional context.</p>
+<<<<<<< HEAD
 <p>For example, here&rsquo;s an image I was able to produce locally by fine-tuning SD1.5 on Gillain Anderson:</p>
 <p><img src="/images/ga_starfleet.png" alt="gillian anderson as a starfleet officer"></p>
 <p>Without fine-tuning, images it&rsquo;s usually difficult to get a good capture of an individual&rsquo;s likeness.</p>
+=======
+>>>>>>> a7c8aa9 (update)
 <p>Unfortunately, the process is resource-intensive, and if your system low VRAM it&rsquo;s easy for dreambooth to crash with an error like this:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">RuntimeError: No executable batch size found, reached zero.
 </span></span></code></pre></div><p>In this blog post, I&rsquo;ll show a few of the optimizations I used to fix this error and get dreambooth running with on my 8GB Nvidia Geforce 1070. I&rsquo;ll also show a few of the problems I encountered along the way and how I fixed them.</p>
