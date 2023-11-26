@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
+<title>Playing with the Meta Quest XR SDK | Jon Eskin&#39;s Website</title>
+<meta name="title" content="Playing with the Meta Quest XR SDK" />
+<meta name="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
+The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
+For example, one project builds out a working virtual keyboard from scratch:
+Your browser does not support the video tag." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:title" content="Playing with the Meta Quest XR SDK" />
+<meta property="og:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
+The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
+For example, one project builds out a working virtual keyboard from scratch:
+Your browser does not support the video tag." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jeskin.net/blog/playing-with-meta-quest-sdk/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2023-11-22T05:59:06-05:00" />
+<meta property="article:modified_time" content="2023-11-22T05:59:06-05:00" /><meta property="og:site_name" content="Jon Eskin&#39;s Blog" />
+
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
+
+<meta name="twitter:title" content="Playing with the Meta Quest XR SDK"/>
+<meta name="twitter:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
+The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
+For example, one project builds out a working virtual keyboard from scratch:
+Your browser does not support the video tag."/>
+
+
+
+<meta itemprop="name" content="Playing with the Meta Quest XR SDK">
+<meta itemprop="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
+The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
+For example, one project builds out a working virtual keyboard from scratch:
+Your browser does not support the video tag."><meta itemprop="datePublished" content="2023-11-22T05:59:06-05:00" />
+<meta itemprop="dateModified" content="2023-11-22T05:59:06-05:00" />
+<meta itemprop="wordCount" content="1739"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="keywords" content="" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  body {
+    font-family: sans-serif;
+    margin: auto;
+    padding: 20px;
+    max-width: 720px;
+    text-align: left;
+    background-color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: #444;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  b {
+    color: #222;
+  }
+
+  a {
+    color: #3273dc;
+  }
+
+  .title {
+    text-decoration: none;
+    border: 0;
+  }
+
+  .title span {
+    font-weight: 400;
+  }
+
+  nav a {
+    margin-right: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  input {
+    font-size: 16px;
+  }
+
+  content {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+      padding: 2px 5px;
+	  background-color: #eeeeec
+  }
+
+  pre code {
+     
+    display: block;
+    padding: 20px;
+    white-space: pre-wrap;
+    font-size: 14px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: #222;
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .helptext {
+    color: #777;
+    font-size: small;
+  }
+
+  .errorlist {
+    color: #eba613;
+    font-size: small;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: #8b6fcb;
+  }
+
+  @media (prefers-color-scheme: light) {
+    /* Background */ .bg { background-color: #ffffff; }
+/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err {  }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #204a87 }
+/* KeywordConstant */ .chroma .kc { color: #204a87 }
+/* KeywordDeclaration */ .chroma .kd { color: #204a87 }
+/* KeywordNamespace */ .chroma .kn { color: #204a87 }
+/* KeywordPseudo */ .chroma .kp { color: #204a87 }
+/* KeywordReserved */ .chroma .kr { color: #204a87 }
+/* KeywordType */ .chroma .kt { color: #3465a4}
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na {  }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #2b91af }
+/* NameConstant */ .chroma .no {  }
+/* NameDecorator */ .chroma .nd {  }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne {  }
+/* NameFunction */ .chroma .nf {  }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx {  }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt {  }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l {  }
+/* LiteralDate */ .chroma .ld {  }
+/* LiteralString */ .chroma .s { color: #4e8a06; font-style: italic; }
+/* LiteralStringAffix */ .chroma .sa { color: #4e8a06; font-style: italic; }
+/* LiteralStringBacktick */ .chroma .sb { color: #4e8a06; font-style: italic; }
+/* LiteralStringChar */ .chroma .sc { color: #4e8a06; font-style: italic; }
+/* LiteralStringDelimiter */ .chroma .dl { color: #4e8a06; font-style: italic; }
+/* LiteralStringDoc */ .chroma .sd { color: #4e8a06; font-style: italic; }
+/* LiteralStringDouble */ .chroma .s2 { color: #4e8a06; font-style: italic; }
+/* LiteralStringEscape */ .chroma .se { color: #2e3436 }
+/* LiteralStringHeredoc */ .chroma .sh { color: #4e8a06; font-style: italic; }
+/* LiteralStringInterpol */ .chroma .si { color: #4e8a06; font-style: italic; }
+/* LiteralStringOther */ .chroma .sx { color: #4e8a06; font-style: italic; }
+/* LiteralStringRegex */ .chroma .sr { color: #4e8a06; font-style: italic; }
+/* LiteralStringSingle */ .chroma .s1 { color: #4e8a06; font-style: italic; }
+/* LiteralStringSymbol */ .chroma .ss { color: #4e8a06; font-style: italic; }
+/* LiteralNumber */ .chroma .m {  }
+/* LiteralNumberBin */ .chroma .mb {  }
+/* LiteralNumberFloat */ .chroma .mf {  }
+/* LiteralNumberHex */ .chroma .mh {  }
+/* LiteralNumberInteger */ .chroma .mi {  }
+/* LiteralNumberIntegerLong */ .chroma .il {  }
+/* LiteralNumberOct */ .chroma .mo {  }
+/* Operator */ .chroma .o {  }
+/* OperatorWord */ .chroma .ow { color: #204a87 }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #008000 }
+/* CommentHashbang */ .chroma .ch { color: #333; font-style: italic;}
+/* CommentMultiline */ .chroma .cm { color: #333; font-style: italic;}
+/* CommentSingle */ .chroma .c1 { color: #333; font-style: italic;}
+/* CommentSpecial */ .chroma .cs { color: #333; font-style: italic;}
+/* CommentPreproc */ .chroma .cp { color: #a40000 }
+/* CommentPreprocFile */ .chroma .cpf { }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { color: #cc0000 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { color: green }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp { font-weight: bold }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { font-weight: bold }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #333;
+      color: #ddd;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+      color: #eee;
+    }
+
+    a {
+      color: #8cc2dd;
+    }
+
+    code {
+      background-color: #272822;
+    }
+
+    blockquote {
+      color: #ccc;
+    }
+
+    textarea,
+    input {
+      background-color: #252525;
+      color: #ddd;
+    }
+
+    .helptext {
+      color: #aaa;
+    }
+	/* Background */ .bg { color: #f8f8f2; background-color: #777; }
+/* PreWrapper */ .chroma { color: #f8f8f2; background-color: #777; }
+/* Other */ .chroma .x {  }
+/* Error */ .chroma .err { color: #960050; background-color: #1e0010 }
+/* CodeLine */ .chroma .cl {  }
+/* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+/* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+/* LineHighlight */ .chroma .hl { background-color: #ffffcc }
+/* LineNumbersTable */ .chroma .lnt { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* LineNumbers */ .chroma .ln { white-space: pre; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
+/* Line */ .chroma .line { display: flex; }
+/* Keyword */ .chroma .k { color: #afaf87 }
+/* KeywordConstant */ .chroma .kc { color: #d7afaf }
+/* KeywordDeclaration */ .chroma .kd { color: #afaf87 }
+/* KeywordNamespace */ .chroma .kn { color: #f92672 }
+/* KeywordPseudo */ .chroma .kp { color: #afaf87 }
+/* KeywordReserved */ .chroma .kr { color: #afaf87 }
+/* KeywordType */ .chroma .kt { color: #afaf87 }
+/* Name */ .chroma .n {  }
+/* NameAttribute */ .chroma .na { color: #d7d7af }
+/* NameBuiltin */ .chroma .nb {  }
+/* NameBuiltinPseudo */ .chroma .bp {  }
+/* NameClass */ .chroma .nc { color: #d7d7af }
+/* NameConstant */ .chroma .no { color: #d7afaf }
+/* NameDecorator */ .chroma .nd { color: #d7d7af }
+/* NameEntity */ .chroma .ni {  }
+/* NameException */ .chroma .ne { color: #d7d7af }
+/* NameFunction */ .chroma .nf { color: #d7d7af }
+/* NameFunctionMagic */ .chroma .fm {  }
+/* NameLabel */ .chroma .nl {  }
+/* NameNamespace */ .chroma .nn {  }
+/* NameOther */ .chroma .nx { color: #d7d7af }
+/* NameProperty */ .chroma .py {  }
+/* NameTag */ .chroma .nt { color: #f92672 }
+/* NameVariable */ .chroma .nv {  }
+/* NameVariableClass */ .chroma .vc {  }
+/* NameVariableGlobal */ .chroma .vg {  }
+/* NameVariableInstance */ .chroma .vi {  }
+/* NameVariableMagic */ .chroma .vm {  }
+/* Literal */ .chroma .l { color: #87d7d7 }
+/* LiteralDate */ .chroma .ld { color: #d78787 }
+/* LiteralString */ .chroma .s { color: #d78787 }
+/* LiteralStringAffix */ .chroma .sa { color: #d78787 }
+/* LiteralStringBacktick */ .chroma .sb { color: #d78787 }
+/* LiteralStringChar */ .chroma .sc { color: #d78787 }
+/* LiteralStringDelimiter */ .chroma .dl { color: #d78787 }
+/* LiteralStringDoc */ .chroma .sd { color: #d78787 }
+/* LiteralStringDouble */ .chroma .s2 { color: #d78787 }
+/* LiteralStringEscape */ .chroma .se { color: #d7afaf }
+/* LiteralStringHeredoc */ .chroma .sh { color: #d78787 }
+/* LiteralStringInterpol */ .chroma .si { color: #d78787 }
+/* LiteralStringOther */ .chroma .sx { color: #d78787 }
+/* LiteralStringRegex */ .chroma .sr { color: #d78787 }
+/* LiteralStringSingle */ .chroma .s1 { color: #d78787 }
+/* LiteralStringSymbol */ .chroma .ss { color: #d78787 }
+/* LiteralNumber */ .chroma .m { color: #87d7d7 }
+/* LiteralNumberBin */ .chroma .mb { color: #87d7d7 }
+/* LiteralNumberFloat */ .chroma .mf { color: #87d7d7 }
+/* LiteralNumberHex */ .chroma .mh { color: #87d7d7 }
+/* LiteralNumberInteger */ .chroma .mi { color: #87d7d7 }
+/* LiteralNumberIntegerLong */ .chroma .il { color: #87d7d7 }
+/* LiteralNumberOct */ .chroma .mo { color: #87d7d7 }
+/* Operator */ .chroma .o { }
+/* OperatorWord */ .chroma .ow {  }
+/* Punctuation */ .chroma .p {  }
+/* Comment */ .chroma .c { color: #87af87 }
+/* CommentHashbang */ .chroma .ch { color: #87af87 }
+/* CommentMultiline */ .chroma .cm { color: #87af87 }
+/* CommentSingle */ .chroma .c1 { color: #999 }
+/* CommentSpecial */ .chroma .cs { color: #87af87 }
+/* CommentPreproc */ .chroma .cp { color: #db8 }
+/* CommentPreprocFile */ .chroma .cpf { color: #87af87 }
+/* Generic */ .chroma .g {  }
+/* GenericDeleted */ .chroma .gd { background-color: #9C6363 }
+/* GenericEmph */ .chroma .ge { font-style: italic }
+/* GenericError */ .chroma .gr {  }
+/* GenericHeading */ .chroma .gh { font-weight: bold }
+/* GenericInserted */ .chroma .gi { background-color: #7F9F7F }
+/* GenericOutput */ .chroma .go {  }
+/* GenericPrompt */ .chroma .gp {  }
+/* GenericStrong */ .chroma .gs { font-weight: bold }
+/* GenericSubheading */ .chroma .gu { color: #87af87 }
+/* GenericTraceback */ .chroma .gt {  }
+/* GenericUnderline */ .chroma .gl {  }
+/* TextWhitespace */ .chroma .w {  }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header>
+
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Playing with the Meta Quest XR SDK</h1>
+<p>
+  <i>
+    <time datetime='2023-11-22' pubdate>
+      22 Nov, 2023
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a> .</p>
+<p>The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.</p>
+<p>For example, one project builds out a working virtual keyboard from scratch:</p>
+
+ 
+
+<video width=75% controls autoplay>
+    <source src="/videos/xrkeyboard.mp4" type="video/mp4">
+    Your browser does not support the video tag.  
+</video>
+
+
+
+<p>Another demonstrates manipulating passthrough:</p>
+
+ 
+
+<video width=75% controls autoplay>
+    <source src="/videos/xrpassthrough.mp4" type="video/mp4">
+    Your browser does not support the video tag.  
+</video>
+
+
+
+<p>And another demonstrates how to use spatial anchors:</p>
+
+ 
+
+<video width=75% controls autoplay>
+    <source src="/videos/spatial1.webm" type="video/webm">
+    Your browser does not support the video tag.  
+</video>
+
+
+
+<p>You&rsquo;ll find plenty more in the project.</p>
+<p>For people who are curious about VR development, enjoy low-level programming, and have at least glanced at the core topics covered by OpenGL tutorials that are floating around online (<a href="https://learnopengl.com/Getting-started/OpenGL">1</a>,<a href="https://www.opengl-tutorial.org/">2</a>), these devices are a slam dunk for hands-on learning.</p>
+<p>I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:</p>
+<ol>
+<li>It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs.</li>
+<li>It significantly improved my understanding of OpenGL ES. I&rsquo;ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.</li>
+<li>I really liked the code. You get a set of of small, readable pgorams written by skilled programmers in C or C-flavored C++. If you value this sort of code, it is a hot commodity in low supply.</li>
+<li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
+</ol>
+<p>In this blog post I&rsquo;ll briefly talk about the architecture of the SDK and what you&rsquo;ll find inside it.</p>
+<h1 id="meta-xr-moble-sdk">Meta XR Moble SDK</h1>
+<p>Meta Quest devices run a modified version of Android operating system. Many Android programs are developed using the official SDK or one of several cross-platform toolkits. These use high level languages and make use of extensive pre-built UI libraries to build applications.</p>
+<p>An alternative option for building Android programs is to use what&rsquo;s called the &ldquo;Native Development Kit&rdquo; or NDK. The way this works is that you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entrypoint and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
+<p>Some of the samples are completely standalone, particularly the older ones, while others factor out some code into libraries that abstract code that was directly written into earlier projects.</p>
+<h1 id="minimal-complexity">Minimal Complexity</h1>
+<p>The example projects are blue collar C++, making minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
+<p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. If something really stuck out as being likely to be re-used in a very similar manner, it was factored out.</p>
+<p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
+<p>A benefit of this readability is that you end up build a lot of intuition on &ldquo;how VR works&rdquo; by making superficial observations. Take for example the following code from the main render loop of one of the samples.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="nc">XrPosef</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">XrQuaternionf</span>    <span class="n">orientation</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">XrVector3f</span>       <span class="n">position</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">XrPosef</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ... 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">XrPosef</span> <span class="n">xfLocalFromEye</span><span class="p">[</span><span class="n">NUM_EYES</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">eye</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">eye</span> <span class="o">&lt;</span> <span class="n">NUM_EYES</span><span class="p">;</span> <span class="n">eye</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// LOG_POSE( &#34;viewTransform&#34;, &amp;projectionInfo.projections[eye].viewTransform );
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">XrPosef</span> <span class="n">xfHeadFromEye</span> <span class="o">=</span> <span class="n">projections</span><span class="p">[</span><span class="n">eye</span><span class="p">].</span><span class="n">pose</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">XrPosef_Multiply</span><span class="p">(</span><span class="o">&amp;</span><span class="n">xfLocalFromEye</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">xfLocalFromHead</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">xfHeadFromEye</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">XrPosef</span> <span class="n">xfEyeFromLocal</span> <span class="o">=</span> <span class="n">XrPosef_Inverse</span><span class="p">(</span><span class="n">xfLocalFromEye</span><span class="p">[</span><span class="n">eye</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">XrMatrix4x4f</span> <span class="n">viewMat</span><span class="p">{};</span>
+</span></span><span class="line"><span class="cl">    <span class="n">XrMatrix4x4f_CreateFromRigidTransform</span><span class="p">(</span><span class="o">&amp;</span><span class="n">viewMat</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">xfEyeFromLocal</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">XrFovf</span> <span class="n">fov</span> <span class="o">=</span> <span class="n">projections</span><span class="p">[</span><span class="n">eye</span><span class="p">].</span><span class="n">fov</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">XrMatrix4x4f</span> <span class="n">projMat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">XrMatrix4x4f_CreateProjectionFov</span><span class="p">(</span><span class="o">&amp;</span><span class="n">projMat</span><span class="p">,</span> <span class="n">GRAPHICS_OPENGL_ES</span><span class="p">,</span> <span class="n">fov</span><span class="p">,</span> <span class="mf">0.1f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">frameIn</span><span class="p">.</span><span class="n">View</span><span class="p">[</span><span class="n">eye</span><span class="p">]</span> <span class="o">=</span> <span class="n">OvrFromXr</span><span class="p">(</span><span class="n">viewMat</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">frameIn</span><span class="p">.</span><span class="n">Proj</span><span class="p">[</span><span class="n">eye</span><span class="p">]</span> <span class="o">=</span> <span class="n">OvrFromXr</span><span class="p">(</span><span class="n">projMat</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>It becomes immediately clear when reading the above that the position for each eye is independently tracked, and as you might guess, independent frames are rendered for each eye.</p>
+<p>You can verify this by looking at that project&rsquo;s vertex shader (seen below) and note that each eye gets its own matrix transforms:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-GLSL" data-lang="GLSL"><span class="line"><span class="cl"><span class="cp">#define NUM_VIEWS 2</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define VIEW_ID gl_ViewID_OVR</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#extension GL_OVR_multiview2 : require</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">num_views</span><span class="o">=</span><span class="n">NUM_VIEWS</span><span class="p">)</span> <span class="k">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">in</span> <span class="k">vec3</span> <span class="n">vertexPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">in</span> <span class="k">vec4</span> <span class="n">vertexColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">uniform</span> <span class="n">mat4</span> <span class="n">ModelMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">uniform</span> <span class="k">vec4</span> <span class="n">ColorScale</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">uniform</span> <span class="k">vec4</span> <span class="n">ColorBias</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">uniform</span> <span class="n">SceneMatrices</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">uniform</span> <span class="n">mat4</span> <span class="n">ViewMatrix</span><span class="p">[</span><span class="n">NUM_VIEWS</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="k">uniform</span> <span class="n">mat4</span> <span class="n">ProjectionMatrix</span><span class="p">[</span><span class="n">NUM_VIEWS</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">sm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">out</span> <span class="k">vec4</span> <span class="n">fragmentColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">gl_Position</span> <span class="o">=</span> <span class="n">sm</span><span class="p">.</span><span class="n">ProjectionMatrix</span><span class="p">[</span><span class="n">VIEW_ID</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">sm</span><span class="p">.</span><span class="n">ViewMatrix</span><span class="p">[</span><span class="n">VIEW_ID</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">ModelMatrix</span> <span class="o">*</span> <span class="k">vec4</span><span class="p">(</span> <span class="n">vertexPosition</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">)</span> <span class="p">)</span> <span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">fragmentColor</span> <span class="o">=</span> <span class="n">vertexColor</span> <span class="o">*</span> <span class="n">ColorScale</span> <span class="o">+</span> <span class="n">ColorBias</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>In hindsight, it should be obvious that this is something you do for VR, but I hadn&rsquo;t really thought about it. I find that the code conveys the concept more clearly and completely than words.</p>
+<h2 id="structure-of-sample-projects">Structure of Sample Projects</h2>
+<p>Here is an overview of some representative files of a sample project:</p>
+<pre tabindex="0"><code>XrVirtualKeyboard
+├── Projects
+│   └── Android
+│       ├── AndroidManifest.xml
+│       ├── build
+│       ├── build.bat
+│       ├── build.gradle
+│       ├── build.py
+│       ├── jni
+│       │   ├── Android.mk
+│       │   └── Application.mk
+│       ├── local.properties
+│       └── settings.gradle
+├── Src
+│   ├── VirtualKeyboardModelRenderer.cpp
+│   ├── VirtualKeyboardModelRenderer.h
+│   ├── XrHandHelper.h
+│   ├── XrHelper.h
+│   ├── XrRenderModelHelper.cpp
+│   ├── XrRenderModelHelper.h
+│   ├── XrVirtualKeyboardHelper.cpp
+│   ├── XrVirtualKeyboardHelper.h
+│   └── main.cpp
+├── assets
+│   └── panel.ktx
+├── java
+│   └── MainActivity.java
+└── res
+    └── values
+        └── strings.xml
+</code></pre><p>Android.mk contains the Makefile that you&rsquo;ll be the most interested in. When you add source code or libraries, you&rsquo;ll be changing this file. They generally look like this:</p>
+<pre tabindex="0"><code>LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := xrvirtualkeyboard
+
+include ../../../../cflags.mk
+
+LOCAL_C_INCLUDES := \
+                    $(LOCAL_PATH)/../../../../../SampleCommon/Src \
+                    $(LOCAL_PATH)/../../../../../SampleXrFramework/Src \
+                    $(LOCAL_PATH)/../../../../../1stParty/OVR/Include \
+                    $(LOCAL_PATH)/../../../../../1stParty/utilities/include \
+                    $(LOCAL_PATH)/../../../../../3rdParty/stb/src \
+                    $(LOCAL_PATH)/../../../../../3rdParty/khronos/openxr/OpenXR-SDK/include \
+                    $(LOCAL_PATH)/../../../../../3rdParty/khronos/openxr/OpenXR-SDK/src/common
+
+# 
+LOCAL_SRC_FILES     :=  ../../../Src/main.cpp \
+                        ../../../Src/VirtualKeyboardModelRenderer.cpp \
+                        ../../../Src/XrRenderModelHelper.cpp \
+                        ../../../Src/XrVirtualKeyboardHelper.cpp \
+
+# include default libraries
+LOCAL_LDLIBS            := -llog -landroid -lGLESv3 -lEGL
+LOCAL_STATIC_LIBRARIES  := samplexrframework
+LOCAL_SHARED_LIBRARIES  := openxr_loader
+
+include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,SampleXrFramework/Projects/Android/jni)
+$(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
+</code></pre><p>The entry point of each project contains OpenGL and OXR initialization before entering the game loop.</p>
+<p>Graphics initialization is done with EGL in the same manner as on other embedded systems (or the desktop):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">ovrEgl</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Clear</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">CreateContext</span><span class="p">(</span><span class="k">const</span> <span class="n">ovrEgl</span><span class="o">*</span> <span class="n">shareEgl</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">DestroyContext</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">EGLint</span> <span class="n">MajorVersion</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLint</span> <span class="n">MinorVersion</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLDisplay</span> <span class="n">Display</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLConfig</span> <span class="n">Config</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLSurface</span> <span class="n">TinySurface</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLSurface</span> <span class="n">MainSurface</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLContext</span> <span class="n">Context</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#elif defined(XR_USE_GRAPHICS_API_OPENGL)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">HDC</span> <span class="n">hDC</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HGLRC</span> <span class="n">hGLRC</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif </span><span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="kt">void</span> <span class="n">ovrEgl</span><span class="o">::</span><span class="n">CreateContext</span><span class="p">(</span><span class="k">const</span> <span class="n">ovrEgl</span><span class="o">*</span> <span class="n">shareEgl</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">Display</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Display</span> <span class="o">=</span> <span class="n">eglGetDisplay</span><span class="p">(</span><span class="n">EGL_DEFAULT_DISPLAY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ALOGV</span><span class="p">(</span><span class="s">&#34;        eglInitialize( Display, &amp;MajorVersion, &amp;MinorVersion )&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">eglInitialize</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MajorVersion</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MinorVersion</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// flags in eglChooseConfig if the user has selected the &#34;force 4x MSAA&#34; option in
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// settings, and that is completely wasted for our warp target.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="kt">int</span> <span class="n">MAX_CONFIGS</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLConfig</span> <span class="n">configs</span><span class="p">[</span><span class="n">MAX_CONFIGS</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">EGLint</span> <span class="n">numConfigs</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">eglGetConfigs</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">configs</span><span class="p">,</span> <span class="n">MAX_CONFIGS</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">numConfigs</span><span class="p">)</span> <span class="o">==</span> <span class="n">EGL_FALSE</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;        eglGetConfigs() failed: %s&#34;</span><span class="p">,</span> <span class="n">EglErrorString</span><span class="p">(</span><span class="n">eglGetError</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// blah blah
+</span></span></span></code></pre></div><p>Logging is done with a macro that delegates to NDK&rsquo;s provided logging facilities when the code is running on Android, otherwise it just falls back on printf.</p>
+<pre tabindex="0"><code>ALOGV(&#34;Creating passthrough layer&#34;);
+</code></pre><p>And OpenGL function calls use the common idiom of being wrapped in a macro that executes the OpenGL function, checks the global error message after execution, and prints an error message if an error flag is set after the line executes.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ARRAY_BUFFER</span><span class="p">,</span> <span class="n">VertexBuffer</span><span class="p">));</span>
+</span></span></code></pre></div><p>Code that calls into OXR functionality work similar to OpenGL in a few ways.</p>
+<p><code>OXR</code> is an error checking macro that behaves in the sammer manner as <code>GL</code>.</p>
+<p>And like with OpenGL, functions from the OpenXR specification are are dynamically linked to at runtime. This means you won&rsquo;t find their implementation in the SDK; they are running in their own address space outside of the program and are available to all applications on the device.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">OXR</span><span class="p">(</span><span class="n">xrLocateViews</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">app</span><span class="p">.</span><span class="n">Session</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">projectionInfo</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">viewState</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">projectionCapacityInput</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">projectionCountOutput</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">projections</span><span class="p">));</span>
+</span></span></code></pre></div><h1 id="making-modifications-to-code-samples">Making Modifications to Code Samples</h1>
+<p>Since the samples are small and easy to read, making small changes to them is easy to do. If you want to add external code or libraries that are easy to build, you can drop additional source code right alongside project files, add them to the Makefile, and you&rsquo;re good to go.</p>
+<p>Some of the changes I played around with included adding new objects to scenes, changing how existing objects were rendered, and wiring up new and existing objects to XR controls in interesting and changing how existing objects were rendered.</p>
+
+ 
+
+<video width=75% controls autoplay>
+    <source src="/videos/spatial2.mp4" type="video/mp4">
+    Your browser does not support the video tag.  
+</video>
+
+
+
+<p>Some of the code I changed invalidated the design of portions of the sample projects, and it was a fun learning exercise to think about the best way to implement the changes I wanted to make without resorting to code that was hacky or out of place.</p>
+<p>After many black screens and flickering, I got a better understanding of how to work wtih OpenGL ES and how its state management works.</p>
+<p>It was also fun to spin my brain on ways to use the Quest&rsquo;s sensors to tie motions and buttons to the virtual world.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>I think that Quest devices are a great way to learn about graphics programming and VR development. The availability of OpenGL ES and Vulkan and use of Make make for a comfortable development environment, especially if you&rsquo;ve developed on Linux.</p>
+<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. I&rsquo;ve seen many arguments in favor of languages with thick syntax that makes very heavy use of either OOP or FP because the domain they deal in has a lot of essential complexity, and so it makes sense to dump complexity into the language in order to address it.</p>
+<p>But these projects are doing 3D rendering, and interfacing with numerous sensors, on a tight frame budget, at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping). I find myself very convinced by the coding style of these projects.</p>
+<p>Overall, I learned a lot, and really enjoy working with my Quest 3. You probably already know if you would enjoy hacking on one.</p>
+
+</content>
+<p>
+  
+</p>
+
+  </main>
+
+    
+</body>
+
+</html>
