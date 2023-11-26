@@ -45,7 +45,7 @@ The SDK includes a collection of small programs, each consisting of an NDK proje
 For example, one project builds out a working virtual keyboard from scratch:
 Your browser does not support the video tag."><meta itemprop="datePublished" content="2023-11-22T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-22T05:59:06-05:00" />
-<meta itemprop="wordCount" content="1776"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="1806"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -452,11 +452,11 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 <li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
 </ol>
 <p>In this blog post I&rsquo;ll briefly talk about the architecture of the SDK and what you&rsquo;ll find inside it.</p>
-<h1 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h1>
+<h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
 <p>Meta Quest devices run a modified version of Android operating system. Many Android programs are developed using the official SDK or one of several cross-platform toolkits. These use high level languages and make use of extensive pre-built UI libraries to build applications.</p>
 <p>An alternative option for building Android programs is to use what&rsquo;s called the &ldquo;Native Development Kit&rdquo; or NDK. The way this works is that you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entrypoint and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
 <p>Some of the samples are completely standalone, particularly the older ones, while others factor out some code into libraries that abstract code that was directly written into earlier projects.</p>
-<h1 id="minimal-complexity">Minimal Complexity</h1>
+<h2 id="minimal-complexity">Minimal Complexity</h2>
 <p>The example projects are blue collar C++, making minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
 <p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. If something really stuck out as being likely to be re-used in a very similar manner, it was factored out.</p>
 <p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
@@ -630,9 +630,10 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </span></span><span class="line"><span class="cl">    <span class="n">projectionCapacityInput</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">projectionCountOutput</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">projections</span><span class="p">));</span>
-</span></span></code></pre></div><h1 id="making-modifications-to-code-samples">Making Modifications to Code Samples</h1>
+</span></span></code></pre></div><h2 id="making-modifications-to-code-samples">Making Modifications to Code Samples</h2>
 <p>Since the samples are small and easy to read, making small changes to them is easy to do. If you want to add external code or libraries that are easy to build, you can drop additional source code right alongside project files, add them to the Makefile, and you&rsquo;re good to go.</p>
 <p>Some of the changes I played around with included adding new objects to scenes, changing how existing objects were rendered, and wiring up new and existing objects to XR controls in interesting and changing how existing objects were rendered.</p>
+<p>Here are some changes to the spatial anchors project shown above. I squished the rectangular prisms, stretched them out, and modified the code to draw a texture on one face.</p>
 
  
 
@@ -646,7 +647,7 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 <p>Some of the code I changed invalidated the design of portions of the sample projects, and it was a fun learning exercise to think about the best way to implement the changes I wanted to make without resorting to code that was hacky or out of place.</p>
 <p>After many black screens and flickering, I got a better understanding of how to work wtih OpenGL ES and how its state management works.</p>
 <p>It was also fun to spin my brain on ways to use the Quest&rsquo;s sensors to tie motions and buttons to the virtual world.</p>
-<h1 id="conclusion">Conclusion</h1>
+<h2 id="conclusion">Conclusion</h2>
 <p>I think that Quest devices are a great way to learn about graphics programming and VR development. The availability of OpenGL ES and Vulkan and use of Make make for a comfortable development environment, especially if you&rsquo;ve developed on Linux.</p>
 <p>I found it personally extremely cool to see how much is accomplished with code that is this simple. I&rsquo;ve seen many arguments in favor of languages with thick syntax that makes very heavy use of either OOP or FP because the domain they deal in has a lot of essential complexity, and so it makes sense to dump complexity into the language in order to address it.</p>
 <p>But these projects are doing 3D rendering, and interfacing with numerous sensors, on a tight frame budget, at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping). I find myself very convinced by the coding style of these projects.</p>
