@@ -45,7 +45,7 @@ The SDK includes a collection of small programs, each consisting of an NDK proje
 For example, one project builds out a working virtual keyboard from scratch:
 Your browser does not support the video tag."><meta itemprop="datePublished" content="2023-11-22T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-22T05:59:06-05:00" />
-<meta itemprop="wordCount" content="1739"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="1776"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -452,7 +452,7 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 <li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
 </ol>
 <p>In this blog post I&rsquo;ll briefly talk about the architecture of the SDK and what you&rsquo;ll find inside it.</p>
-<h1 id="meta-xr-moble-sdk">Meta XR Moble SDK</h1>
+<h1 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h1>
 <p>Meta Quest devices run a modified version of Android operating system. Many Android programs are developed using the official SDK or one of several cross-platform toolkits. These use high level languages and make use of extensive pre-built UI libraries to build applications.</p>
 <p>An alternative option for building Android programs is to use what&rsquo;s called the &ldquo;Native Development Kit&rdquo; or NDK. The way this works is that you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entrypoint and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
 <p>Some of the samples are completely standalone, particularly the older ones, while others factor out some code into libraries that abstract code that was directly written into earlier projects.</p>
@@ -511,7 +511,7 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>In hindsight, it should be obvious that this is something you do for VR, but I hadn&rsquo;t really thought about it. I find that the code conveys the concept more clearly and completely than words.</p>
 <h2 id="structure-of-sample-projects">Structure of Sample Projects</h2>
-<p>Here is an overview of some representative files of a sample project:</p>
+<p>Below is an overview of some representative files of a sample project. To build one of the same projects, you can grab a copy of Android Studio Bumblebee (2021.1.1) or earlier, and open settings.gradle. I ran projects in that IDE and worked on them in a separate text editor.</p>
 <pre tabindex="0"><code>XrVirtualKeyboard
 ├── Projects
 │   └── Android
