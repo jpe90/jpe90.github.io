@@ -7,12 +7,12 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
     <copyright>Copyright CC-BY-SA © 2022, Jon Eskin.</copyright>
-    <lastBuildDate>Wed, 22 Nov 2023 05:59:06 -0500</lastBuildDate>
+    <lastBuildDate>Sun, 26 Nov 2023 05:59:06 -0500</lastBuildDate>
     <atom:link href="https://jeskin.net/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Playing with the Meta Quest XR SDK</title>
       <link>https://jeskin.net/blog/playing-with-meta-quest-sdk/</link>
-      <pubDate>Wed, 22 Nov 2023 05:59:06 -0500</pubDate>
+      <pubDate>Sun, 26 Nov 2023 05:59:06 -0500</pubDate>
       <guid>https://jeskin.net/blog/playing-with-meta-quest-sdk/</guid>
       <description>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
 The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.

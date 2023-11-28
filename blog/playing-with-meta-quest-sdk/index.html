@@ -45,7 +45,7 @@ The SDK includes a collection of small programs, each consisting of an NDK proje
 For example, one project builds out a working virtual keyboard from scratch:
 Your browser does not support the video tag."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-26T05:59:06-05:00" />
-<meta itemprop="wordCount" content="1803"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="1806"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -444,17 +444,17 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 
 <p>You&rsquo;ll find plenty more in the project.</p>
 <p>For people who are curious about VR development, enjoy low-level programming, and have at least glanced at the core topics covered by OpenGL tutorials that are floating around online (<a href="https://learnopengl.com/Getting-started/OpenGL">1</a>,<a href="https://www.opengl-tutorial.org/">2</a>), these devices are a slam dunk for hands-on learning.</p>
-<p>I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:</p>
+<p>I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:</p>
 <ol>
 <li>It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs.</li>
 <li>It significantly improved my understanding of OpenGL ES. I&rsquo;ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.</li>
-<li>I really liked the code. You get a set of of small, readable pgorams written by skilled programmers in C or C-flavored C++. If you value this sort of code, it is a hot commodity in low supply.</li>
+<li>I found the code to be very valuable - it can be hard to find C and C++ programs that are written in this style to learn from. I reflected a lot on my personal projects after reading it.</li>
 <li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
 </ol>
 <p>In this blog post I&rsquo;ll briefly talk about the architecture of the SDK and what you&rsquo;ll find inside it.</p>
 <h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
 <p>Meta Quest devices run a modified version of Android operating system. Many Android programs are developed using the official SDK or one of several cross-platform toolkits. These use high level languages and make use of extensive pre-built UI libraries to build applications.</p>
-<p>An alternative option for building Android programs is to use what&rsquo;s called the &ldquo;Native Development Kit&rdquo; or NDK. The way this works is that you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entrypoint and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
+<p>An alternative option for building Android programs is to use what&rsquo;s called the &ldquo;Native Development Kit&rdquo; or NDK. The way this works is that you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
 <p>Some of the samples are completely standalone, particularly the older ones, while others factor out some code into libraries that abstract code that was directly written into earlier projects.</p>
 <h2 id="minimal-complexity">Minimal Complexity</h2>
 <p>The example projects are blue collar C++, making minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
@@ -621,7 +621,7 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </code></pre><p>And OpenGL function calls use the common idiom of being wrapped in a macro that executes the OpenGL function, checks the global error message after execution, and prints an error message if an error flag is set after the line executes.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ARRAY_BUFFER</span><span class="p">,</span> <span class="n">VertexBuffer</span><span class="p">));</span>
 </span></span></code></pre></div><p>Code that calls into OXR functionality work similar to OpenGL in a few ways.</p>
-<p><code>OXR</code> is an error checking macro that behaves in the sammer manner as <code>GL</code>.</p>
+<p><code>OXR</code> is an error checking macro that behaves in the same manner as <code>GL</code>.</p>
 <p>And like with OpenGL, functions from the OpenXR specification are are dynamically linked to at runtime. This means you won&rsquo;t find their implementation in the SDK; they are running in their own address space outside of the program and are available to all applications on the device.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">OXR</span><span class="p">(</span><span class="n">xrLocateViews</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">app</span><span class="p">.</span><span class="n">Session</span><span class="p">,</span>
@@ -645,7 +645,7 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 
 
 <p>Some of the code I changed invalidated the design of portions of the sample projects, and it was a fun learning exercise to think about the best way to implement the changes I wanted to make without resorting to code that was hacky or out of place.</p>
-<p>After many black screens and flickering, I got a better understanding of how to work wtih OpenGL ES and how its state management works.</p>
+<p>After encountering many black screens and flickering, I got a better understanding of how to work with OpenGL ES and how its state management works.</p>
 <p>It was also fun to spin my brain on ways to use the Quest&rsquo;s sensors to tie motions and buttons to the virtual world.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>I think that Quest devices are a great way to learn about graphics programming and VR development. The availability of OpenGL ES and Vulkan and use of Make make for a comfortable development environment, especially if you&rsquo;ve developed on Linux.</p>
