@@ -45,7 +45,7 @@ The SDK includes a collection of small programs, each consisting of an NDK proje
 For example, one project builds out a working virtual keyboard from scratch:
 Your browser does not support the video tag."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-26T05:59:06-05:00" />
-<meta itemprop="wordCount" content="1786"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="1807"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -453,12 +453,14 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 </ol>
 <p>In this blog post I&rsquo;ll briefly talk about the architecture of the SDK and what you&rsquo;ll find inside it.</p>
 <h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
-<p>Meta Quest devices run a modified version of Android operating system. Many Android programs are developed using the official SDK or one of several cross-platform toolkits. These use high level languages and make use of extensive pre-built UI libraries to build applications.</p>
-<p>An alternative option for building Android programs is to use what&rsquo;s called the &ldquo;Native Development Kit&rdquo; or NDK. The way this works is that you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
-<p>Some of the samples are completely standalone, particularly the older ones, while others factor out some code into libraries that abstract code that was directly written into earlier projects.</p>
+<p>Meta Quest devices run a modified version of Android operating system. I think it&rsquo;s helpful to build an understanding of how graphics work in the Android ecosystem at large to gain a deeper understanding of how Quest devices work.</p>
+<p>There are three ways you can draw to the screen in Android-land: with the [Canvas API], <a href="https://source.android.com/docs/core/graphics/arch-egl-opengl">OpenGL ES</a>, and <a href="https://source.android.com/docs/core/graphics/arch-vulkan">Vulkan</a>.</p>
+<p>The Canvas API is built upon the <a href="https://skia.org/">Skia Graphics Library</a>, a cross-platform rendering engine. Android programs that use the Canvas API typically use the official SDK or a cross-platform toolkit like Flutter.</p>
+<p>Such toolkits offer pre-built UI components that facilitate basic 2D rendering. They offer solutions for simple graphics, text rendering, and basic animations.</p>
+<p>Instead of using the Canvas, you can opt to draw by directly calling into the OpenGL ES and Vulkan runtimes on the device. If you want this level of control over drawing, you probably want to use the &ldquo;Native Development Kit&rdquo; or NDK. Unlike with the traditional SDK, the NDK has you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
 <h2 id="minimal-complexity">Minimal Complexity</h2>
 <p>The example projects are blue collar C++, making minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
-<p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. If something really stuck out as being likely to be re-used in a very similar manner, it was factored out.</p>
+<p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.</p>
 <p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
 <p>A benefit of this readability is that you end up build a lot of intuition on &ldquo;how VR works&rdquo; by making superficial observations. Take for example the following code from the main render loop of one of the samples.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="nc">XrPosef</span> <span class="p">{</span>
@@ -648,9 +650,8 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 <p>After encountering many black screens and flickering, I got a better understanding of how to work with OpenGL ES and how its state management works.</p>
 <p>It was also fun to spin my brain on ways to use the Quest&rsquo;s sensors to tie motions and buttons to the virtual world.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>I think that Quest devices are a great way to learn about graphics programming and VR development. The availability of OpenGL ES and Vulkan and use of Make make for a comfortable development environment, especially if you&rsquo;ve developed on Linux.</p>
-<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. I&rsquo;ve seen many arguments in favor of languages with thick syntax that makes very heavy use of either OOP or FP because the domain they deal in has a lot of essential complexity, and so it makes sense to dump complexity into the language in order to address it.</p>
-<p>But these projects are doing 3D rendering, and interfacing with numerous sensors, on a tight frame budget, at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping). I find myself very convinced by the coding style of these projects.</p>
+<p>Developing for the Quest has been such a fun way to learn more about graphics programming and VR development. Since I&rsquo;m used to OpenGL and developing on linux, the code and build system felt very comfortable to me.</p>
+<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping). I find myself very convinced by the coding style of these projects.</p>
 <p>Overall, I learned a lot, and really enjoy working with my Quest 3. You probably already know if you would enjoy hacking on one.</p>
 
 </content>
