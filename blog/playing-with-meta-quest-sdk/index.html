@@ -8,18 +8,16 @@
 <link rel="shortcut icon" href="https://jeskin.net/images/favicon.png" />
 <title>Playing with the Meta Quest XR SDK | Jon Eskin&#39;s Website</title>
 <meta name="title" content="Playing with the Meta Quest XR SDK" />
-<meta name="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
-The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
-For example, one project builds out a working virtual keyboard from scratch:
-Your browser does not support the video tag." />
+<meta name="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
+I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
+It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs." />
 <meta name="keywords" content="" />
 
 
 <meta property="og:title" content="Playing with the Meta Quest XR SDK" />
-<meta property="og:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
-The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
-For example, one project builds out a working virtual keyboard from scratch:
-Your browser does not support the video tag." />
+<meta property="og:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
+I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
+It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jeskin.net/blog/playing-with-meta-quest-sdk/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2023-11-26T05:59:06-05:00" />
@@ -32,20 +30,18 @@ Your browser does not support the video tag." />
 <meta name="twitter:image" content="https://jeskin.net/images/share.png"/>
 
 <meta name="twitter:title" content="Playing with the Meta Quest XR SDK"/>
-<meta name="twitter:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
-The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
-For example, one project builds out a working virtual keyboard from scratch:
-Your browser does not support the video tag."/>
+<meta name="twitter:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
+I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
+It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs."/>
 
 
 
 <meta itemprop="name" content="Playing with the Meta Quest XR SDK">
-<meta itemprop="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
-The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
-For example, one project builds out a working virtual keyboard from scratch:
-Your browser does not support the video tag."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
+<meta itemprop="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
+I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
+It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-26T05:59:06-05:00" />
-<meta itemprop="wordCount" content="1807"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="2691"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -407,7 +403,17 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 </p>
 
 <content>
-  <p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a> .</p>
+  <p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a>.</p>
+<p>I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:</p>
+<ol>
+<li>It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs.</li>
+<li>It significantly improved my understanding of OpenGL ES. I&rsquo;ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.</li>
+<li>I learned a lot about how to structure programs in C and C-flavored C++ from the SDK example programs.</li>
+<li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
+</ol>
+<p>Given how powerful these devices are, and how much fun they are to hack on, it&rsquo;s kind of crazy to me how little community or discourse there is online surrounding them.</p>
+<p>In this blog post I&rsquo;ll introduce how developing on Quest devices works. I&rsquo;ll touch on the inner workings of the SDK, cover the structure of sample projects, and go over a small set of changes I made to one of them.</p>
+<h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
 <p>The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.</p>
 <p>For example, one project builds out a working virtual keyboard from scratch:</p>
 
@@ -442,22 +448,15 @@ Your browser does not support the video tag."><meta itemprop="datePublished" con
 
 
 
-<p>You&rsquo;ll find plenty more in the project.</p>
+<p>In total, you&rsquo;ll find 18 such projects in the SDK.</p>
 <p>For people who are curious about VR development, enjoy low-level programming, and have at least glanced at the core topics covered by OpenGL tutorials that are floating around online (<a href="https://learnopengl.com/Getting-started/OpenGL">1</a>,<a href="https://www.opengl-tutorial.org/">2</a>), these devices are a slam dunk for hands-on learning.</p>
-<p>I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:</p>
-<ol>
-<li>It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs.</li>
-<li>It significantly improved my understanding of OpenGL ES. I&rsquo;ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.</li>
-<li>I learned a lot about how to structure programs in C and C-flavored C++ from the SDK example programs.</li>
-<li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
-</ol>
-<p>In this blog post I&rsquo;ll briefly talk about the architecture of the SDK and what you&rsquo;ll find inside it.</p>
-<h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
+<h3 id="meta-quest--android--beefy-gpu--sensors">Meta Quest = Android + Beefy GPU + Sensors</h3>
 <p>Meta Quest devices run a modified version of Android operating system. I think it&rsquo;s helpful to build an understanding of how graphics work in the Android ecosystem at large to gain a deeper understanding of how Quest devices work.</p>
-<p>There are three ways you can draw to the screen in Android-land: with the [Canvas API], <a href="https://source.android.com/docs/core/graphics/arch-egl-opengl">OpenGL ES</a>, and <a href="https://source.android.com/docs/core/graphics/arch-vulkan">Vulkan</a>.</p>
+<p>There are three ways you can draw to the screen in Android-land: with the <a href="https://source.android.com/docs/core/graphics/arch-sh#canvas">Canvas API</a>, <a href="https://source.android.com/docs/core/graphics/arch-egl-opengl">OpenGL ES</a>, and <a href="https://source.android.com/docs/core/graphics/arch-vulkan">Vulkan</a>.</p>
 <p>The Canvas API is built upon the <a href="https://skia.org/">Skia Graphics Library</a>, a cross-platform rendering engine. Android programs that use the Canvas API typically use the official SDK or a cross-platform toolkit like Flutter.</p>
 <p>Such toolkits offer pre-built UI components that facilitate basic 2D rendering. They offer solutions for simple graphics, text rendering, and basic animations.</p>
-<p>Instead of using the Canvas, you can opt to draw by directly calling into the OpenGL ES and Vulkan runtimes on the device. If you want this level of control over drawing, you probably want to use the &ldquo;Native Development Kit&rdquo; or NDK. Unlike with the traditional SDK, the NDK has you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
+<p>Instead of using the Canvas, you can opt to draw by directly calling into the OpenGL ES and Vulkan runtimes on the device. If you want this level of control over drawing, you probably want to use the &ldquo;Native Development Kit&rdquo; or NDK.</p>
+<p>Unlike with the traditional SDK, the NDK has you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
 <h2 id="minimal-complexity">Minimal Complexity</h2>
 <p>The example projects are blue collar C++, making minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
 <p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.</p>
@@ -576,7 +575,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,SampleXrFramework/Projects/Android/jni)
 $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
-</code></pre><p>The entry point of each project contains OpenGL and OXR initialization before entering the game loop.</p>
+</code></pre><p>The entry point of each project contains OpenGL and OXR initialization before entering the event loop.</p>
 <p>Graphics initialization is done with EGL in the same manner as on other embedded systems (or the desktop):</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">ovrEgl</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">Clear</span><span class="p">();</span>
@@ -632,10 +631,10 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </span></span><span class="line"><span class="cl">    <span class="n">projectionCapacityInput</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">projectionCountOutput</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">projections</span><span class="p">));</span>
-</span></span></code></pre></div><h2 id="making-modifications-to-code-samples">Making Modifications to Code Samples</h2>
-<p>Since the samples are small and easy to read, making small changes to them is easy to do. If you want to add external code or libraries that are easy to build, you can drop additional source code right alongside project files, add them to the Makefile, and you&rsquo;re good to go.</p>
-<p>Some of the changes I played around with included adding new objects to scenes, changing how existing objects were rendered, and wiring up new and existing objects to XR controls in interesting and changing how existing objects were rendered.</p>
-<p>Here are some changes to the spatial anchors project shown above. I changed their shape and modified the rendering code to draw a texture on one face.</p>
+</span></span></code></pre></div><h2 id="making-modifications-to-sample-projects">Making Modifications to Sample Projects</h2>
+<p>Some codebases can be very daunting, and it can take a long time before you feel comfortable making changes.</p>
+<p>In this case, after skimming the code for a few of the samples, I was able to dive in and start poking at stuff.</p>
+<p>One of the first things I did was to modify the spatial anchors project shown above to change the dimensions of the anchors and to draw a texture on one side of the cube.</p>
 
  
 
@@ -646,13 +645,253 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 
 
 
-<p>Some of the code I changed invalidated the design of portions of the sample projects, and it was a fun learning exercise to think about the best way to implement the changes I wanted to make without resorting to code that was hacky or out of place.</p>
-<p>After encountering many black screens and flickering, I got a better understanding of how to work with OpenGL ES and how its state management works.</p>
-<p>It was also fun to spin my brain on ways to use the Quest&rsquo;s sensors to tie motions and buttons to the virtual world.</p>
+<p>Here are what the changes to make this work look like:</p>
+<p>The dimensions and colors were single line changes in the event loop.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); // Orange
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); // Brown
+</span></span></span></code></pre></div><p>I dropped stb_image.h into the project and added some code that loads textures from images on the device and maintains a pool of the loaded textures which is cycled through during rendering.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;TexturePool.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;android/log.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define STB_IMAGE_IMPLEMENTATION
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;stb_image.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;android/asset_manager_jni.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;android/asset_manager.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">texture_filenames</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#34;NASA1.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA2.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA3.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA4.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA5.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA6.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA7.jpg&#34;</span><span class="p">,</span> <span class="s">&#34;NASA8.jpg&#34;</span>  <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">size_t</span> <span class="n">texture_pointer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">GLuint</span><span class="o">&gt;</span> <span class="n">texture_ids</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">texture_pool_init</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">AAssetManager</span> <span class="o">*</span><span class="n">amgr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="nl">filename</span> <span class="p">:</span> <span class="n">filenames</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GLuint</span> <span class="n">texture_id</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glGenTextures</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">texture_id</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">texture_ids</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">texture_id</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glBindTexture</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="n">texture_id</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glTexParameteri</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="n">GL_TEXTURE_MIN_FILTER</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                           <span class="n">GL_LINEAR_MIPMAP_LINEAR</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glTexParameteri</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="n">GL_TEXTURE_MAG_FILTER</span><span class="p">,</span> <span class="n">GL_LINEAR</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glTexParameteri</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="n">GL_TEXTURE_WRAP_S</span><span class="p">,</span> <span class="n">GL_REPEAT</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glTexParameteri</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="n">GL_TEXTURE_WRAP_T</span><span class="p">,</span> <span class="n">GL_REPEAT</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GLenum</span> <span class="n">format</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">		<span class="n">AAsset</span><span class="o">*</span> <span class="n">asset</span> <span class="o">=</span> <span class="n">AAssetManager_open</span><span class="p">(</span><span class="n">amgr</span><span class="p">,</span> <span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">AASSET_MODE_BUFFER</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">asset</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Failed to open %s&#34;</span><span class="p">,</span> <span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">ALOGV</span><span class="p">(</span><span class="s">&#34;opened file %s&#34;</span><span class="p">,</span> <span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="kt">int</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">channels</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">stbi_set_flip_vertically_on_load</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">void</span> <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="n">stbi_load_from_memory</span><span class="p">((</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">AAsset_getBuffer</span><span class="p">(</span><span class="n">asset</span><span class="p">),</span> <span class="n">AAsset_getLength</span><span class="p">(</span><span class="n">asset</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">width</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">height</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">channels</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Failed to load %s&#34;</span><span class="p">,</span> <span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">ALOGV</span><span class="p">(</span><span class="s">&#34;loaded file %s&#34;</span><span class="p">,</span> <span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">channels</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">format</span> <span class="o">=</span> <span class="n">GL_RGB</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">channels</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">format</span> <span class="o">=</span> <span class="n">GL_RGBA</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;Unsupported number of channels: %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">channels</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glTexImage2D</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">GL_RGB</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">GL_UNSIGNED_BYTE</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">data</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glGenerateMipmap</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">stbi_image_free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// reset at the start of each frame to keep the same rendering order
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="nf">reset_texture_pointer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ALOGV</span><span class="p">(</span><span class="s">&#34;resetting texture from %u to 0&#34;</span><span class="p">,</span><span class="n">texture_pointer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">texture_pointer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// if more textures are requested than are available, wrap around
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">GLuint</span> <span class="nf">next_texture</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">size_t</span> <span class="n">last_texture_idx</span> <span class="o">=</span> <span class="n">texture_pointer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">size_t</span> <span class="n">next_texture_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">texture_pointer</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">texture_ids</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">texture_pointer</span> <span class="o">=</span> <span class="n">next_texture_idx</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">texture_ids</span><span class="p">[</span><span class="n">last_texture_idx</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>I added uvs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">ovrGeometry</span><span class="o">::</span><span class="n">CreateCube</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="nc">ovrCubeVertices</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">signed</span> <span class="kt">char</span> <span class="n">positions</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">colors</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">uvs</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="k">const</span> <span class="n">ovrCubeVertices</span> <span class="n">cubeVertices</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// positions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">-</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">,</span> <span class="o">+</span><span class="mi">127</span><span class="p">}},</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// colors
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0xff</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0xff</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0x00</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">}},</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// uvs
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">},</span> <span class="c1">// Bottom back left corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">1.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">},</span> <span class="c1">// Bottom back right corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">},</span> <span class="c1">// Top back left corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">1.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">},</span> <span class="c1">// Top back right corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">},</span> <span class="c1">// Bottom front left corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">1.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">},</span> <span class="c1">// Bottom front right corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">},</span> <span class="c1">// Top front left corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="p">{</span><span class="mf">1.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">},</span> <span class="c1">// Top front right corner
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">cube_indices</span><span class="p">[</span><span class="mi">30</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="c1">// back
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="c1">// top
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="c1">// bottom
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="c1">// left
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span>  <span class="c1">// right
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">tex_indices</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="c1">// front
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">VertexCount</span> <span class="o">=</span> <span class="mi">8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ColorIndexCount</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TextureIndexCount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">IndexCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">Index</span> <span class="o">=</span> <span class="n">VERTEX_ATTRIBUTE_LOCATION_POSITION</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">Size</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">Type</span> <span class="o">=</span> <span class="n">GL_BYTE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">Normalized</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">Stride</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cubeVertices</span><span class="p">.</span><span class="n">positions</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">Pointer</span> <span class="o">=</span> <span class="p">(</span><span class="k">const</span> <span class="n">GLvoid</span> <span class="o">*</span><span class="p">)</span><span class="n">offsetof</span><span class="p">(</span><span class="n">ovrCubeVertices</span><span class="p">,</span> <span class="n">positions</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Index</span> <span class="o">=</span> <span class="n">VERTEX_ATTRIBUTE_LOCATION_COLOR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Size</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Type</span> <span class="o">=</span> <span class="n">GL_UNSIGNED_BYTE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Normalized</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Stride</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cubeVertices</span><span class="p">.</span><span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Pointer</span> <span class="o">=</span> <span class="p">(</span><span class="k">const</span> <span class="n">GLvoid</span> <span class="o">*</span><span class="p">)</span><span class="n">offsetof</span><span class="p">(</span><span class="n">ovrCubeVertices</span><span class="p">,</span> <span class="n">colors</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Index</span> <span class="o">=</span> <span class="n">VERTEX_ATTRIBUTE_LOCATION_UV</span><span class="p">;</span> <span class="c1">// UV attribute
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Size</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Type</span> <span class="o">=</span> <span class="n">GL_FLOAT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Normalized</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Stride</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cubeVertices</span><span class="p">.</span><span class="n">uvs</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">VertexAttribs</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">Pointer</span> <span class="o">=</span> <span class="p">(</span><span class="k">const</span> <span class="n">GLvoid</span> <span class="o">*</span><span class="p">)</span><span class="n">offsetof</span><span class="p">(</span><span class="n">ovrCubeVertices</span><span class="p">,</span> <span class="n">uvs</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glGenBuffers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">VertexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ARRAY_BUFFER</span><span class="p">,</span> <span class="n">VertexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBufferData</span><span class="p">(</span><span class="n">GL_ARRAY_BUFFER</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cubeVertices</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">cubeVertices</span><span class="p">,</span> <span class="n">GL_STATIC_DRAW</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ARRAY_BUFFER</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glGenBuffers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ColorIndexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="n">ColorIndexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBufferData</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cube_indices</span><span class="p">),</span> <span class="n">cube_indices</span><span class="p">,</span> <span class="n">GL_STATIC_DRAW</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glGenBuffers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">TextureIndexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="n">TextureIndexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBufferData</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">tex_indices</span><span class="p">),</span> <span class="n">tex_indices</span><span class="p">,</span> <span class="n">GL_STATIC_DRAW</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>I re-used the existing color shaders and added new ones for the texture face:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">CUBE_TEX_VERTEX_SHADER</span><span class="p">[]</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="n">R</span><span class="s">&#34;GLSL(</span>
+</span></span><span class="line"><span class="cl">        <span class="cp">#define NUM_VIEWS 2
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="cp">#define VIEW_ID gl_ViewID_OVR
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="cp">#extension GL_OVR_multiview2 : require
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="n">layout</span><span class="p">(</span><span class="n">num_views</span><span class="o">=</span><span class="n">NUM_VIEWS</span><span class="p">)</span> <span class="n">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">in</span> <span class="n">vec3</span> <span class="n">vertexPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">in</span> <span class="n">vec2</span> <span class="n">vertexUv</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">uniform</span> <span class="n">mat4</span> <span class="n">ModelMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">uniform</span> <span class="n">SceneMatrices</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">uniform</span> <span class="n">mat4</span> <span class="n">ViewMatrix</span><span class="p">[</span><span class="n">NUM_VIEWS</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">            <span class="n">uniform</span> <span class="n">mat4</span> <span class="n">ProjectionMatrix</span><span class="p">[</span><span class="n">NUM_VIEWS</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="n">sm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">out</span> <span class="n">vec2</span> <span class="n">UV</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">gl_Position</span> <span class="o">=</span> <span class="n">sm</span><span class="p">.</span><span class="n">ProjectionMatrix</span><span class="p">[</span><span class="n">VIEW_ID</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">sm</span><span class="p">.</span><span class="n">ViewMatrix</span><span class="p">[</span><span class="n">VIEW_ID</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">ModelMatrix</span> <span class="o">*</span> <span class="n">vec4</span><span class="p">(</span> <span class="n">vertexPosition</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">)</span> <span class="p">)</span> <span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">UV</span> <span class="o">=</span> <span class="n">vertexUv</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span><span class="n">GLSL</span><span class="s">&#34;;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">CUBE_TEX_FRAGMENT_SHADER</span><span class="p">[]</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="n">R</span><span class="s">&#34;GLSL(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">in</span> <span class="n">vec2</span> <span class="n">UV</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">out</span> <span class="n">vec4</span> <span class="n">color</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="n">uniform</span> <span class="n">sampler2D</span> <span class="n">Texture0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">color</span> <span class="o">=</span> <span class="n">vec4</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span> <span class="n">Texture0</span><span class="p">,</span> <span class="n">UV</span> <span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="n">GLSL</span><span class="s">&#34;;</span>
+</span></span></code></pre></div><p>The main other substanative change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glUseProgram</span><span class="p">(</span><span class="n">Scene</span><span class="p">.</span><span class="n">TextureProgram</span><span class="p">.</span><span class="n">Program</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBufferBase</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">           <span class="n">GL_UNIFORM_BUFFER</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">           <span class="n">Scene</span><span class="p">.</span><span class="n">TextureProgram</span><span class="p">.</span><span class="n">UniformBinding</span><span class="p">[</span><span class="n">ovrUniform</span><span class="o">::</span><span class="n">Index</span><span class="o">::</span><span class="n">SCENE_MATRICES</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">           <span class="n">Scene</span><span class="p">.</span><span class="n">SceneMatrices</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">Scene</span><span class="p">.</span><span class="n">TextureProgram</span><span class="p">.</span><span class="n">UniformLocation</span><span class="p">[</span><span class="n">ovrUniform</span><span class="o">::</span><span class="n">Index</span><span class="o">::</span><span class="n">VIEW_ID</span><span class="p">]</span> <span class="o">&gt;=</span>
+</span></span><span class="line"><span class="cl">        <span class="mi">0</span><span class="p">)</span> <span class="c1">// NOTE: will not be present when multiview path is enabled.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glUniform1i</span><span class="p">(</span><span class="n">Scene</span><span class="p">.</span><span class="n">TextureProgram</span><span class="p">.</span><span class="n">UniformLocation</span><span class="p">[</span><span class="n">ovrUniform</span><span class="o">::</span><span class="n">Index</span><span class="o">::</span><span class="n">VIEW_ID</span><span class="p">],</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">c</span> <span class="p">:</span> <span class="n">Scene</span><span class="p">.</span><span class="n">CubeData</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glBindVertexArray</span><span class="p">(</span><span class="n">Scene</span><span class="p">.</span><span class="n">Cube</span><span class="p">.</span><span class="n">VertexArrayObject</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GLint</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">.</span><span class="n">TextureProgram</span><span class="p">.</span><span class="n">UniformLocation</span><span class="p">[</span><span class="n">ovrUniform</span><span class="o">::</span><span class="n">Index</span><span class="o">::</span><span class="n">MODEL_MATRIX</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">loc</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">GL</span><span class="p">(</span><span class="n">glUniformMatrix4fv</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GL_TRUE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">c</span><span class="p">.</span><span class="n">Model</span><span class="p">.</span><span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glBindBuffer</span><span class="p">(</span><span class="n">GL_ELEMENT_ARRAY_BUFFER</span><span class="p">,</span> <span class="n">Scene</span><span class="p">.</span><span class="n">Cube</span><span class="p">.</span><span class="n">TextureIndexBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glActiveTexture</span><span class="p">(</span><span class="n">GL_TEXTURE0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glBindTexture</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="n">KaiTextureID</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GL</span><span class="p">(</span><span class="n">glDrawElements</span><span class="p">(</span><span class="n">GL_TRIANGLES</span><span class="p">,</span> <span class="n">Scene</span><span class="p">.</span><span class="n">Cube</span><span class="p">.</span><span class="n">TextureIndexCount</span><span class="p">,</span> <span class="n">GL_UNSIGNED_SHORT</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">glBindTexture</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindVertexArray</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glUseProgram</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+</span></span></code></pre></div><p>These changes look very similar to run of the mill changes you would make to any rendering code. For the fancy stuff, like per-eye transforms, you have a great foundation to start from, so it doesn&rsquo;t feel difficult to work with.</p>
+<p>In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>Developing for the Quest has been such a fun way to learn more about graphics programming and VR development. Since I&rsquo;m used to OpenGL and developing on linux, the code and build system felt very comfortable to me.</p>
-<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping). I find myself very convinced by the coding style of these projects.</p>
-<p>Overall, I learned a lot, and really enjoy working with my Quest 3. You probably already know if you would enjoy hacking on one.</p>
+<p>Developing for the Quest has been such a fun way to learn more about graphics programming and VR development. Since I&rsquo;m used to OpenGL and developing on Linux, the code and build system felt very comfortable to me.</p>
+<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping).</p>
+<p>You probably already know if you would enjoy hacking on one. If so, I&rsquo;d definitely recommend picking one up. Quest 2&rsquo;s are pretty cheap these days, and you&rsquo;ve always got the return period if you&rsquo;re not feeling it.</p>
 
 </content>
 <p>

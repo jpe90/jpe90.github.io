@@ -14,10 +14,9 @@
       <link>https://jeskin.net/blog/playing-with-meta-quest-sdk/</link>
       <pubDate>Sun, 26 Nov 2023 05:59:06 -0500</pubDate>
       <guid>https://jeskin.net/blog/playing-with-meta-quest-sdk/</guid>
-      <description>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK .
-The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.
-For example, one project builds out a working virtual keyboard from scratch:
-Your browser does not support the video tag.</description>
+      <description>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
+I bought a Quest 3 at launch, and I&amp;rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
+It moved my understanding of the OpenXR specification from &amp;ldquo;vague sounding buzzwords&amp;rdquo; to actually understanding what it is, how it&amp;rsquo;s implemented on Quest, and how to use it in real programs.</description>
     </item>
     <item>
       <title>Running Dreambooth in Stable Diffusion with Low VRAM</title>
