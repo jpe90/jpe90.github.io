@@ -37,7 +37,7 @@ the programmer defines the vertices that define the model and passes them to the
 <meta itemprop="description" content="Introduction When a 3D model is rendered using a modern graphics API, three things typically occur:
 the programmer defines the vertices that define the model and passes them to the graphics API a transform matrix is created in the application and sent to the GPU the GPU calculates the screen position and color of each visible point on the object&rsquo;s surface using the vertices and transform matrix This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering."><meta itemprop="datePublished" content="2022-11-23T11:07:54-04:00" />
 <meta itemprop="dateModified" content="2022-11-23T11:07:54-04:00" />
-<meta itemprop="wordCount" content="1599"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="1708"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -543,7 +543,7 @@ the programmer defines the vertices that define the model and passes them to the
 <p>You&rsquo;ll often see them shown as a square shape, such as the yellow frustum in the image below, but they can have different shapes as well.</p>
 <p><img src="/images/frustum.png" alt="projection"></p>
 <h1 id="drawing-the-scene">Drawing the scene</h1>
-<p>To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you&rsquo;ll see they often conditionally use <a href="https://www.intel.com/content/www/us/en/support/articles/000005779/processors.html">instruction set extensions</a> when the user&rsquo;s hardware supports them to calculate the transformation more quickly and efficiently. Below you can see CGLM&rsquo;s matrix multiplication function, which checks for extensions that can speed up the operation.</p>
+<p>To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you&rsquo;ll see they often conditionally use <a href="https://www.intel.com/content/www/us/en/support/articles/000005779/processors.html">instruction set extensions</a> when the user&rsquo;s hardware supports them to calculate the transformation more quickly and efficiently.</p>
 <p>The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.</p>
 <p>The programmer utilizes it by creating a shader program, such as the one below, that sits in GPU memory and is executed on the GPU every frame.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">const</span> <span class="kt">char</span>
@@ -558,7 +558,25 @@ the programmer defines the vertices that define the model and passes them to the
 </span></span><span class="line"><span class="cl">    <span class="s">&#34;gl_Position = mvp * a_position;&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="s">&#34;v_color = a_color;&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="s">&#34;}&#34;</span><span class="p">;</span>
-</span></span></code></pre></div><p>You might notice that technically we could pass in 3 (or any number) of mat4s to the GPU and calculate them there instead of on the CPU. But that would not be an effective use of resources, because the shader program is executed individually on each vertex, and you would be recalculating the same matrix transformations many times.</p>
+</span></span></code></pre></div><p>Notice that the way we&rsquo;re doing this, we multiply model * view * projection in our C code, and then pass the result to the GPU inside the shader program.</p>
+<p>What this means is that our CPU is making that calculation. Since we want to offload work to the GPU, wouldn&rsquo;t it make sense to instead just pass the model, view, and projection matrices directly to the shader and offload that computation to the GPU?</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">const</span> <span class="kt">char</span>
+</span></span><span class="line"><span class="cl"><span class="n">frustum_vert_shader</span><span class="p">[]</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;precision mediump float;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;uniform mat4 model;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;uniform mat4 view;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;uniform mat4 projection;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;attribute vec4 a_position;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;attribute vec4 a_color;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;varying vec4 v_color;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;void main()&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;{&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;gl_Position = model * view * projection * a_position;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;v_color = a_color;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;}&#34;</span><span class="p">;</span>
+</span></span></code></pre></div><p>The answer is no. Although the GPU has specialized hardware that&rsquo;s extremely effecient at matrix operations, this change would be re-calculated at every vertex, which would wipe out any potential benefit.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>If you&rsquo;re trying to get started with graphics rendering, I hope this was helpful in solidifying your understanding. If there are any other topics in this area you have trouble with, feel free to <a href="mailto:~eskin/public-inbox@lists.sr.ht">reach out</a>.</p>
 <h2 id="additional-resources">Additional Resources</h2>
 <ul>
 <li><a href="https://learnopengl.com/Getting-started/OpenGL">OpenGL tutorials</a></li>
