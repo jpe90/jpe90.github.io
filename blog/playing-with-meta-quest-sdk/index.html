@@ -9,15 +9,15 @@
 <title>Getting Started with VR in C&#43;&#43; on Meta Quest | Jon Eskin&#39;s Website</title>
 <meta name="title" content="Getting Started with VR in C&#43;&#43; on Meta Quest" />
 <meta name="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
-I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
-It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs." />
+I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:
+It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware." />
 <meta name="keywords" content="" />
 
 
 <meta property="og:title" content="Getting Started with VR in C&#43;&#43; on Meta Quest" />
 <meta property="og:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
-I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
-It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs." />
+I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:
+It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jeskin.net/blog/playing-with-meta-quest-sdk/" /><meta property="og:image" content="https://jeskin.net/images/share.png"/><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2023-11-26T05:59:06-05:00" />
@@ -31,17 +31,17 @@ It moved my understanding of the OpenXR specification from &ldquo;vague sounding
 
 <meta name="twitter:title" content="Getting Started with VR in C&#43;&#43; on Meta Quest"/>
 <meta name="twitter:description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
-I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
-It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs."/>
+I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:
+It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware."/>
 
 
 
 <meta itemprop="name" content="Getting Started with VR in C&#43;&#43; on Meta Quest">
 <meta itemprop="description" content="Meta Quest headsets let you write 3D programs in C or C&#43;&#43;, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the XR Mobile SDK.
-I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:
-It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
+I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:
+It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-26T05:59:06-05:00" />
-<meta itemprop="wordCount" content="2691"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="2755"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -404,11 +404,11 @@ It moved my understanding of the OpenXR specification from &ldquo;vague sounding
 
 <content>
   <p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a>.</p>
-<p>I bought a Quest 3 at launch, and I&rsquo;ve benefitted a lot from studying the SDK and experimenting with the sample programs:</p>
+<p>I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:</p>
 <ol>
-<li>It moved my understanding of the OpenXR specification from &ldquo;vague sounding buzzwords&rdquo; to actually understanding what it is, how it&rsquo;s implemented on Quest, and how to use it in real programs.</li>
+<li>It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware.</li>
 <li>It significantly improved my understanding of OpenGL ES. I&rsquo;ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.</li>
-<li>I learned a lot about how to structure programs in C and C-flavored C++ from the SDK example programs.</li>
+<li>I learned a lot about how to structure programs in C and C-flavored C++ from the simple &amp; readable SDK example programs, which were written by extremely talented graphics programmers.</li>
 <li>It was a lot of fun! The best projects are the ones you&rsquo;re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
 </ol>
 <p>Given how powerful these devices are, and how much fun they are to hack on, it&rsquo;s kind of crazy to me how little community or discourse there is online surrounding them.</p>
@@ -458,7 +458,7 @@ It moved my understanding of the OpenXR specification from &ldquo;vague sounding
 <p>Instead of using the Canvas, you can opt to draw by directly calling into the OpenGL ES and Vulkan runtimes on the device. If you want this level of control over drawing, you probably want to use the &ldquo;Native Development Kit&rdquo; or NDK.</p>
 <p>Unlike with the traditional SDK, the NDK has you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
 <h2 id="minimal-complexity">Minimal Complexity</h2>
-<p>The example projects are blue collar C++, making minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
+<p>The example projects make minimal use of C++ language features. You won&rsquo;t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
 <p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.</p>
 <p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
 <p>A benefit of this readability is that you end up build a lot of intuition on &ldquo;how VR works&rdquo; by making superficial observations. Take for example the following code from the main render loop of one of the samples.</p>
@@ -726,7 +726,7 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </span></span><span class="line"><span class="cl">    <span class="n">texture_pointer</span> <span class="o">=</span> <span class="n">next_texture_idx</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">texture_ids</span><span class="p">[</span><span class="n">last_texture_idx</span><span class="p">];</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>I added uvs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.</p>
+</span></span></code></pre></div><p>I added UVs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">ovrGeometry</span><span class="o">::</span><span class="n">CreateCube</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
@@ -858,7 +858,7 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </span></span><span class="line"><span class="cl">            <span class="n">color</span> <span class="o">=</span> <span class="n">vec4</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span> <span class="n">Texture0</span><span class="p">,</span> <span class="n">UV</span> <span class="p">).</span><span class="n">rgb</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="n">GLSL</span><span class="s">&#34;;</span>
-</span></span></code></pre></div><p>The main other substanative change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:</p>
+</span></span></code></pre></div><p>The main other substantive change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glUseProgram</span><span class="p">(</span><span class="n">Scene</span><span class="p">.</span><span class="n">TextureProgram</span><span class="p">.</span><span class="n">Program</span><span class="p">));</span>
 </span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindBufferBase</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">           <span class="n">GL_UNIFORM_BUFFER</span><span class="p">,</span>
@@ -889,8 +889,8 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </span></span></code></pre></div><p>These changes look very similar to run of the mill changes you would make to any rendering code. For the fancy stuff, like per-eye transforms, you have a great foundation to start from, so it doesn&rsquo;t feel difficult to work with.</p>
 <p>In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>Developing for the Quest has been such a fun way to learn more about graphics programming and VR development. Since I&rsquo;m used to OpenGL and developing on Linux, the code and build system felt very comfortable to me.</p>
-<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high framerate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping).</p>
+<p>There&rsquo;s a lot of overlap between the APIs, libraries, build systems used both in these projects and in other OpenGL code that has been authored over the last several decades - tutorials, example projects, open source games, and more. When you read those projects and learn from them, you eventually reach a plateau where it&rsquo;s unclear what to do next to continue learning. The answer here is just to continue getting exposure to more code and to continue building and thinking critically about what you write. This is the point where developing with Meta Quest becomes an extremely appealing.</p>
+<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high frame rate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping).</p>
 <p>You probably already know if you would enjoy hacking on one. If so, I&rsquo;d definitely recommend picking one up. Quest 2&rsquo;s are pretty cheap these days, and you&rsquo;ve always got the return period if you&rsquo;re not feeling it.</p>
 
 </content>
