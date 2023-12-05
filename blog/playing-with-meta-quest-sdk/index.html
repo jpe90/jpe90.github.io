@@ -41,7 +41,7 @@ It gave me a thorough understanding of the OpenXR specification, from its design
 I bought a Quest 3 at launch, and I&rsquo;ve benefited a lot from studying the SDK and experimenting with the sample programs:
 It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware."><meta itemprop="datePublished" content="2023-11-26T05:59:06-05:00" />
 <meta itemprop="dateModified" content="2023-11-26T05:59:06-05:00" />
-<meta itemprop="wordCount" content="2755"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
+<meta itemprop="wordCount" content="2757"><meta itemprop="image" content="https://jeskin.net/images/share.png"/>
 <meta itemprop="keywords" content="" />
 <meta name="referrer" content="no-referrer-when-downgrade" />
 
@@ -886,7 +886,7 @@ $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 </span></span><span class="line"><span class="cl">    <span class="n">glBindTexture</span><span class="p">(</span><span class="n">GL_TEXTURE_2D</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glBindVertexArray</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
 </span></span><span class="line"><span class="cl">    <span class="n">GL</span><span class="p">(</span><span class="n">glUseProgram</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
-</span></span></code></pre></div><p>These changes look very similar to run of the mill changes you would make to any rendering code. For the fancy stuff, like per-eye transforms, you have a great foundation to start from, so it doesn&rsquo;t feel difficult to work with.</p>
+</span></span></code></pre></div><p>These changes look very similar to run of the mill changes you would make to any rendering code. For the fancy stuff, like per-eye matrix transforms, you can just build off of the sample programs rather than try to implement them from scratch.</p>
 <p>In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>There&rsquo;s a lot of overlap between the APIs, libraries, build systems used both in these projects and in other OpenGL code that has been authored over the last several decades - tutorials, example projects, open source games, and more. When you read those projects and learn from them, you eventually reach a plateau where it&rsquo;s unclear what to do next to continue learning. The answer here is just to continue getting exposure to more code and to continue building and thinking critically about what you write. This is the point where developing with Meta Quest becomes an extremely appealing.</p>
