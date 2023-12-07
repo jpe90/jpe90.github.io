@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet href="https://welpo.github.io/tabi/feed_style.xsl" type="text/xsl"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xmlns:base="http://purl.org/atompub/base/1.0/" xml:lang="en" xml:base="https:&#x2F;&#x2F;welpo.github.io&#x2F;tabi">
+<?xml-stylesheet href="https://jeskin.net/feed_style.xsl" type="text/xsl"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:base="http://purl.org/atompub/base/1.0/" xml:lang="en" xml:base="https:&#x2F;&#x2F;jeskin.net">
     <str:translations xmlns:str="https://github.com/welpo/tabi">
         <str:about_feeds>This is a web feed, also known as an Atom feed. Subscribe by copying the URL from the address bar into your newsreader. Visit About Feeds to learn more and get started. It's free.</str:about_feeds>
         <str:visit_the_site>Visit website</str:visit_the_site>
         <str:recent_posts>Recent posts</str:recent_posts>
     </str:translations><title>jeskin.net - Git</title>
-        <subtitle>tabi is a fast, lightweight, and modern Zola theme with multi-language support, optional JavaScript, and a perfect Lighthouse score.</subtitle>
-    <link href="https://welpo.github.io/tabi/tags/git/atom.xml" rel="self" type="application/atom+xml"/>
-    <link href="https://welpo.github.io/tabi"/>
+        <subtitle>Jon Eskin&#x27;s personal website.</subtitle>
+    <link href="https://jeskin.net/tags/git/atom.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://jeskin.net"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
     <updated>2022-10-06T00:00:00+00:00</updated>
-    <id>https://welpo.github.io/tabi/tags/git/atom.xml</id><entry xml:lang="en">
+    <id>https://jeskin.net/tags/git/atom.xml</id><entry xml:lang="en">
         <title>Self Hosting Git Repositories with Stagit</title>
         <published>2022-10-06T00:00:00+00:00</published>
         <updated>2022-10-06T00:00:00+00:00</updated>
         <author>
-            <name>welpo</name>
+            <name>Jon Eskin</name>
         </author>
-        <link rel="alternate" href="https://welpo.github.io/tabi/blog/self-hosting-git-with-stagit/" type="text/html"/>
-        <id>https://welpo.github.io/tabi/blog/self-hosting-git-with-stagit/</id>
+        <link rel="alternate" href="https://jeskin.net/blog/self-hosting-git-with-stagit/" type="text/html"/>
+        <id>https://jeskin.net/blog/self-hosting-git-with-stagit/</id>
         <summary type="html">An overview of self hosting git and using stagit, a static site generator for git repositories, to build a web interface.</summary>
         </entry>
 </feed>

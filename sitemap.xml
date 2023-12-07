@@ -1,133 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="https://welpo.github.io/tabi/sitemap_style.xsl" type="text/xsl"?>
+<?xml-stylesheet href="https://jeskin.net/sitemap_style.xsl" type="text/xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://welpo.github.io/tabi/</loc>
+        <loc>https://jeskin.net/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/about/</loc>
+        <loc>https://jeskin.net/about/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/archive/</loc>
+        <loc>https://jeskin.net/archive/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/</loc>
+        <loc>https://jeskin.net/blog/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/clp/</loc>
+        <loc>https://jeskin.net/blog/clp/</loc>
         <lastmod>2022-07-28</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/debugging-emacs/</loc>
+        <loc>https://jeskin.net/blog/debugging-emacs/</loc>
         <lastmod>2022-12-06</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/dreambooth-low-vram/</loc>
+        <loc>https://jeskin.net/blog/dreambooth-low-vram/</loc>
         <lastmod>2023-01-14</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/getting-started-with-cosmopolitan-libc/</loc>
+        <loc>https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/</loc>
         <lastmod>2022-09-04</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/grep-fzf-clp/</loc>
+        <loc>https://jeskin.net/blog/grep-fzf-clp/</loc>
         <lastmod>2022-08-02</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/irc-ii-lchat/</loc>
+        <loc>https://jeskin.net/blog/irc-ii-lchat/</loc>
         <lastmod>2023-01-03</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/meta-quest-sdk/</loc>
+        <loc>https://jeskin.net/blog/meta-quest-sdk/</loc>
         <lastmod>2023-11-26</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/model-view-projection/</loc>
+        <loc>https://jeskin.net/blog/model-view-projection/</loc>
         <lastmod>2022-11-23</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/page/1/</loc>
+        <loc>https://jeskin.net/blog/page/1/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/page/2/</loc>
+        <loc>https://jeskin.net/blog/page/2/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/raspberry-cam-home-monitoring/</loc>
+        <loc>https://jeskin.net/blog/raspberry-cam-home-monitoring/</loc>
         <lastmod>2022-12-28</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/blog/self-hosting-git-with-stagit/</loc>
+        <loc>https://jeskin.net/blog/self-hosting-git-with-stagit/</loc>
         <lastmod>2022-10-06</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/es/about/</loc>
+        <loc>https://jeskin.net/es/about/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/es/privacy/</loc>
+        <loc>https://jeskin.net/es/privacy/</loc>
         <lastmod>2023-11-07</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/privacy/</loc>
+        <loc>https://jeskin.net/privacy/</loc>
         <lastmod>2023-11-07</lastmod>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/projects/</loc>
+        <loc>https://jeskin.net/projects/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/projects/chu/</loc>
+        <loc>https://jeskin.net/projects/chu/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/projects/nani/</loc>
+        <loc>https://jeskin.net/projects/nani/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/projects/spectro/</loc>
+        <loc>https://jeskin.net/projects/spectro/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/projects/tabi/</loc>
+        <loc>https://jeskin.net/projects/tabi/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/</loc>
+        <loc>https://jeskin.net/tags/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/ai/</loc>
+        <loc>https://jeskin.net/tags/ai/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/c/</loc>
+        <loc>https://jeskin.net/tags/c/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/clp/</loc>
+        <loc>https://jeskin.net/tags/clp/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/emacs/</loc>
+        <loc>https://jeskin.net/tags/emacs/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/fzf/</loc>
+        <loc>https://jeskin.net/tags/fzf/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/git/</loc>
+        <loc>https://jeskin.net/tags/git/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/graphics-programming/</loc>
+        <loc>https://jeskin.net/tags/graphics-programming/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/home-security/</loc>
+        <loc>https://jeskin.net/tags/home-security/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/irc/</loc>
+        <loc>https://jeskin.net/tags/irc/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/lisp/</loc>
+        <loc>https://jeskin.net/tags/lisp/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/lua/</loc>
+        <loc>https://jeskin.net/tags/lua/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/raspberry-pi/</loc>
+        <loc>https://jeskin.net/tags/raspberry-pi/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/stable-diffusion/</loc>
+        <loc>https://jeskin.net/tags/stable-diffusion/</loc>
     </url>
     <url>
-        <loc>https://welpo.github.io/tabi/tags/vr/</loc>
+        <loc>https://jeskin.net/tags/vr/</loc>
     </url>
 </urlset>

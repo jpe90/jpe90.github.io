@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 Allow: /
-Sitemap: https://welpo.github.io/tabi/sitemap.xml
+Sitemap: https://jeskin.net/sitemap.xml
