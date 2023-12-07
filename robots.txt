@@ -1,2 +1,4 @@
-User-Agent: *
-Sitemap: https://jeskin.net/sitemap.xml
+User-agent: *
+Disallow:
+Allow: /
+Sitemap: https://welpo.github.io/tabi/sitemap.xml
