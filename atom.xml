@@ -1,115 +1,1505 @@
-<?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet href="https://jeskin.net/feed_style.xsl" type="text/xsl"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xmlns:base="http://purl.org/atompub/base/1.0/" xml:lang="en" xml:base="https:&#x2F;&#x2F;jeskin.net">
-    <str:translations xmlns:str="https://github.com/welpo/tabi">
-        <str:about_feeds>This is a web feed, also known as an Atom feed. Subscribe by copying the URL from the address bar into your newsreader. Visit About Feeds to learn more and get started. It's free.</str:about_feeds>
-        <str:visit_the_site>Visit website</str:visit_the_site>
-        <str:recent_posts>Recent posts</str:recent_posts>
-    </str:translations><title>jeskin.net</title>
-        <subtitle>Jon Eskin&#x27;s personal website.</subtitle>
-    <link href="https://jeskin.net/atom.xml" rel="self" type="application/atom+xml"/>
-    <link href="https://jeskin.net"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title></title>
+    <link rel="self" type="application/atom+xml" href="https://jeskin.net/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://jeskin.net"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
     <updated>2023-11-26T00:00:00+00:00</updated>
-    <id>https://jeskin.net/atom.xml</id><entry xml:lang="en">
+    <id>https://jeskin.net/atom.xml</id>
+    <entry xml:lang="en">
         <title>Getting Started with VR in C++ on Meta Quest</title>
         <published>2023-11-26T00:00:00+00:00</published>
         <updated>2023-11-26T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/meta-quest-sdk/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/meta-quest-sdk/"/>
         <id>https://jeskin.net/blog/meta-quest-sdk/</id>
-        <summary type="html">Meta Quest headsets are excellent devices for learning about graphics programming and Khronos&#x27;s OpenXR specification.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/meta-quest-sdk/">&lt;p&gt;Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the &lt;a href=&quot;https:&#x2F;&#x2F;developer.oculus.com&#x2F;downloads&#x2F;package&#x2F;oculus-openxr-mobile-sdk&#x2F;&quot;&gt;XR Mobile SDK&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I bought a Quest 3 at launch, and I&#x27;ve benefited a lot from studying the SDK and experimenting with the sample programs:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware.&lt;&#x2F;li&gt;
+&lt;li&gt;It significantly improved my understanding of OpenGL ES. I&#x27;ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.&lt;&#x2F;li&gt;
+&lt;li&gt;I learned a lot about how to structure programs in C and C-flavored C++ from the simple &amp;amp; readable SDK example programs, which were written by extremely talented graphics programmers.&lt;&#x2F;li&gt;
+&lt;li&gt;It was a lot of fun! The best projects are the ones you&#x27;re motivated to work on, and bringing your programs to life in VR is such a cool experience.&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Given how powerful these devices are, and how much fun they are to hack on, it&#x27;s kind of crazy to me how little community or discourse there is online surrounding them.&lt;&#x2F;p&gt;
+&lt;p&gt;In this blog post I&#x27;ll introduce how developing on Quest devices works. I&#x27;ll touch on the inner workings of the SDK, cover the structure of sample projects, and go over a small set of changes I made to one of them.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;meta-xr-mobile-sdk&quot;&gt;Meta XR Mobile SDK&lt;&#x2F;h2&gt;
+&lt;p&gt;The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, one project builds out a working virtual keyboard from scratch:&lt;&#x2F;p&gt;
+&lt;video width=50% controls autoplay&gt;
+    &lt;source src=&quot;&#x2F;videos&#x2F;xrkeyboard.mp4&quot; type=&quot;video&#x2F;mp4&quot;&gt;
+    Your browser does not support the video tag.
+&lt;&#x2F;video&gt;
+&lt;p&gt;Another demonstrates manipulating passthrough:&lt;&#x2F;p&gt;
+&lt;video width=50% controls autoplay&gt;
+    &lt;source src=&quot;&#x2F;videos&#x2F;xrpassthrough.mp4&quot; type=&quot;video&#x2F;mp4&quot;&gt;
+    Your browser does not support the video tag.
+&lt;&#x2F;video&gt;
+&lt;p&gt;And another demonstrates how to use spatial anchors:&lt;&#x2F;p&gt;
+&lt;video width=50% controls autoplay&gt;
+    &lt;source src=&quot;&#x2F;videos&#x2F;spatial1.mp4&quot; type=&quot;video&#x2F;mp4&quot;&gt;
+    Your browser does not support the video tag.
+&lt;&#x2F;video&gt;
+&lt;p&gt;In total, you&#x27;ll find 18 such projects in the SDK.&lt;&#x2F;p&gt;
+&lt;p&gt;For people who are curious about VR development, enjoy low-level programming, and have at least glanced at the core topics covered by OpenGL tutorials that are floating around online (&lt;a href=&quot;https:&#x2F;&#x2F;learnopengl.com&#x2F;Getting-started&#x2F;OpenGL&quot;&gt;1&lt;&#x2F;a&gt;,&lt;a href=&quot;https:&#x2F;&#x2F;www.opengl-tutorial.org&#x2F;&quot;&gt;2&lt;&#x2F;a&gt;), these devices are a slam dunk for hands-on learning.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;meta-quest-android-beefy-gpu-sensors&quot;&gt;Meta Quest = Android + Beefy GPU + Sensors&lt;&#x2F;h3&gt;
+&lt;p&gt;Meta Quest devices run a modified version of Android operating system. I think it&#x27;s helpful to build an understanding of how graphics work in the Android ecosystem at large to gain a deeper understanding of how Quest devices work.&lt;&#x2F;p&gt;
+&lt;p&gt;There are three ways you can draw to the screen in Android-land: with the &lt;a href=&quot;https:&#x2F;&#x2F;source.android.com&#x2F;docs&#x2F;core&#x2F;graphics&#x2F;arch-sh#canvas&quot;&gt;Canvas API&lt;&#x2F;a&gt;, &lt;a href=&quot;https:&#x2F;&#x2F;source.android.com&#x2F;docs&#x2F;core&#x2F;graphics&#x2F;arch-egl-opengl&quot;&gt;OpenGL ES&lt;&#x2F;a&gt;, and &lt;a href=&quot;https:&#x2F;&#x2F;source.android.com&#x2F;docs&#x2F;core&#x2F;graphics&#x2F;arch-vulkan&quot;&gt;Vulkan&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The Canvas API is built upon the &lt;a href=&quot;https:&#x2F;&#x2F;skia.org&#x2F;&quot;&gt;Skia Graphics Library&lt;&#x2F;a&gt;, a cross-platform rendering engine. Android programs that use the Canvas API typically use the official SDK or a cross-platform toolkit like Flutter.&lt;&#x2F;p&gt;
+&lt;p&gt;Such toolkits offer pre-built UI components that facilitate basic 2D rendering. They offer solutions for simple graphics, text rendering, and basic animations.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead of using the Canvas, you can opt to draw by directly calling into the OpenGL ES and Vulkan runtimes on the device. If you want this level of control over drawing, you probably want to use the &amp;quot;Native Development Kit&amp;quot; or NDK.&lt;&#x2F;p&gt;
+&lt;p&gt;Unlike with the traditional SDK, the NDK has you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;minimal-complexity&quot;&gt;Minimal Complexity&lt;&#x2F;h2&gt;
+&lt;p&gt;The example projects make minimal use of C++ language features. You won&#x27;t find elaborate abstractions, excessive indirection, or extensive use of templates.&lt;&#x2F;p&gt;
+&lt;p&gt;For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.&lt;&#x2F;p&gt;
+&lt;p&gt;The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.&lt;&#x2F;p&gt;
+&lt;p&gt;A benefit of this readability is that you end up build a lot of intuition on &amp;quot;how VR works&amp;quot; by making superficial observations. Take for example the following code from the main render loop of one of the samples.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;typedef struct XrPosef {
+    XrQuaternionf    orientation;
+    XrVector3f       position;
+} XrPosef;
+
+&amp;#x2F;&amp;#x2F; ...
+
+XrPosef xfLocalFromEye[NUM_EYES];
+
+for (int eye = 0; eye &amp;lt; NUM_EYES; eye++) {
+    &amp;#x2F;&amp;#x2F; LOG_POSE( &amp;quot;viewTransform&amp;quot;, &amp;amp;projectionInfo.projections[eye].viewTransform );
+    XrPosef xfHeadFromEye = projections[eye].pose;
+    XrPosef_Multiply(&amp;amp;xfLocalFromEye[eye], &amp;amp;xfLocalFromHead, &amp;amp;xfHeadFromEye);
+
+    XrPosef xfEyeFromLocal = XrPosef_Inverse(xfLocalFromEye[eye]);
+
+    XrMatrix4x4f viewMat{};
+    XrMatrix4x4f_CreateFromRigidTransform(&amp;amp;viewMat, &amp;amp;xfEyeFromLocal);
+
+    const XrFovf fov = projections[eye].fov;
+    XrMatrix4x4f projMat;
+    XrMatrix4x4f_CreateProjectionFov(&amp;amp;projMat, GRAPHICS_OPENGL_ES, fov, 0.1f, 0.0f);
+
+    frameIn.View[eye] = OvrFromXr(viewMat);
+    frameIn.Proj[eye] = OvrFromXr(projMat);
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It becomes immediately clear when reading the above that the position for each eye is independently tracked, and as you might guess, independent frames are rendered for each eye.&lt;&#x2F;p&gt;
+&lt;p&gt;You can verify this by looking at that project&#x27;s vertex shader (seen below) and note that each eye gets its own matrix transforms:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;GLSL&quot; class=&quot;language-GLSL &quot;&gt;&lt;code class=&quot;language-GLSL&quot; data-lang=&quot;GLSL&quot;&gt;#define NUM_VIEWS 2
+#define VIEW_ID gl_ViewID_OVR
+#extension GL_OVR_multiview2 : require
+layout(num_views=NUM_VIEWS) in;
+in vec3 vertexPosition;
+in vec4 vertexColor;
+uniform mat4 ModelMatrix;
+uniform vec4 ColorScale;
+uniform vec4 ColorBias;
+uniform SceneMatrices
+{
+    uniform mat4 ViewMatrix[NUM_VIEWS];
+    uniform mat4 ProjectionMatrix[NUM_VIEWS];
+} sm;
+out vec4 fragmentColor;
+void main()
+{
+    gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
+    fragmentColor = vertexColor * ColorScale + ColorBias;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In hindsight, it should be obvious that this is something you do for VR, but I hadn&#x27;t really thought about it. I find that the code conveys the concept more clearly and completely than words.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;structure-of-sample-projects&quot;&gt;Structure of Sample Projects&lt;&#x2F;h2&gt;
+&lt;p&gt;Below is an overview of some representative files of a sample project. To build one of the same projects, you can grab a copy of Android Studio Bumblebee (2021.1.1) or earlier, and open settings.gradle. I ran projects in that IDE and worked on them in a separate text editor.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;XrVirtualKeyboard
+├── Projects
+│   └── Android
+│       ├── AndroidManifest.xml
+│       ├── build
+│       ├── build.bat
+│       ├── build.gradle
+│       ├── build.py
+│       ├── jni
+│       │   ├── Android.mk
+│       │   └── Application.mk
+│       ├── local.properties
+│       └── settings.gradle
+├── Src
+│   ├── VirtualKeyboardModelRenderer.cpp
+│   ├── VirtualKeyboardModelRenderer.h
+│   ├── XrHandHelper.h
+│   ├── XrHelper.h
+│   ├── XrRenderModelHelper.cpp
+│   ├── XrRenderModelHelper.h
+│   ├── XrVirtualKeyboardHelper.cpp
+│   ├── XrVirtualKeyboardHelper.h
+│   └── main.cpp
+├── assets
+│   └── panel.ktx
+├── java
+│   └── MainActivity.java
+└── res
+    └── values
+        └── strings.xml
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Android.mk contains the Makefile that you&#x27;ll be the most interested in. When you add source code or libraries, you&#x27;ll be changing this file. They generally look like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := xrvirtualkeyboard
+
+include ..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;cflags.mk
+
+LOCAL_C_INCLUDES := \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;SampleCommon&amp;#x2F;Src \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;SampleXrFramework&amp;#x2F;Src \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;1stParty&amp;#x2F;OVR&amp;#x2F;Include \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;1stParty&amp;#x2F;utilities&amp;#x2F;include \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;3rdParty&amp;#x2F;stb&amp;#x2F;src \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;3rdParty&amp;#x2F;khronos&amp;#x2F;openxr&amp;#x2F;OpenXR-SDK&amp;#x2F;include \
+                    $(LOCAL_PATH)&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;3rdParty&amp;#x2F;khronos&amp;#x2F;openxr&amp;#x2F;OpenXR-SDK&amp;#x2F;src&amp;#x2F;common
+
+#
+LOCAL_SRC_FILES     :=  ..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;Src&amp;#x2F;main.cpp \
+                        ..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;Src&amp;#x2F;VirtualKeyboardModelRenderer.cpp \
+                        ..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;Src&amp;#x2F;XrRenderModelHelper.cpp \
+                        ..&amp;#x2F;..&amp;#x2F;..&amp;#x2F;Src&amp;#x2F;XrVirtualKeyboardHelper.cpp \
+
+# include default libraries
+LOCAL_LDLIBS            := -llog -landroid -lGLESv3 -lEGL
+LOCAL_STATIC_LIBRARIES  := samplexrframework
+LOCAL_SHARED_LIBRARIES  := openxr_loader
+
+include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,SampleXrFramework&amp;#x2F;Projects&amp;#x2F;Android&amp;#x2F;jni)
+$(call import-module,OpenXR&amp;#x2F;Projects&amp;#x2F;AndroidPrebuilt&amp;#x2F;jni)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The entry point of each project contains OpenGL and OXR initialization before entering the event loop.&lt;&#x2F;p&gt;
+&lt;p&gt;Graphics initialization is done with EGL in the same manner as on other embedded systems (or the desktop):&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;struct ovrEgl {
+    void Clear();
+    void CreateContext(const ovrEgl* shareEgl);
+    void DestroyContext();
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+    EGLint MajorVersion;
+    EGLint MinorVersion;
+    EGLDisplay Display;
+    EGLConfig Config;
+    EGLSurface TinySurface;
+    EGLSurface MainSurface;
+    EGLContext Context;
+#elif defined(XR_USE_GRAPHICS_API_OPENGL)
+    HDC hDC;
+    HGLRC hGLRC;
+#endif &amp;#x2F;&amp;#x2F;
+};
+
+&amp;#x2F;&amp;#x2F; ...
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+void ovrEgl::CreateContext(const ovrEgl* shareEgl) {
+    if (Display != 0) {
+        return;
+    }
+
+    Display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    ALOGV(&amp;quot;        eglInitialize( Display, &amp;amp;MajorVersion, &amp;amp;MinorVersion )&amp;quot;);
+    eglInitialize(Display, &amp;amp;MajorVersion, &amp;amp;MinorVersion);
+    &amp;#x2F;&amp;#x2F; Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
+    &amp;#x2F;&amp;#x2F; flags in eglChooseConfig if the user has selected the &amp;quot;force 4x MSAA&amp;quot; option in
+    &amp;#x2F;&amp;#x2F; settings, and that is completely wasted for our warp target.
+    const int MAX_CONFIGS = 1024;
+    EGLConfig configs[MAX_CONFIGS];
+    EGLint numConfigs = 0;
+    if (eglGetConfigs(Display, configs, MAX_CONFIGS, &amp;amp;numConfigs) == EGL_FALSE) {
+        ALOGE(&amp;quot;        eglGetConfigs() failed: %s&amp;quot;, EglErrorString(eglGetError()));
+        return;
+    }
+    &amp;#x2F;&amp;#x2F; blah blah
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Logging is done with a macro that delegates to NDK&#x27;s provided logging facilities when the code is running on Android, otherwise it just falls back on printf.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;ALOGV(&amp;quot;Creating passthrough layer&amp;quot;);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And OpenGL function calls use the common idiom of being wrapped in a macro that executes the OpenGL function, checks the global error message after execution, and prints an error message if an error flag is set after the line executes.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Code that calls into OXR functionality work similar to OpenGL in a few ways.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;OXR&lt;&#x2F;code&gt; is an error checking macro that behaves in the same manner as &lt;code&gt;GL&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;And like with OpenGL, functions from the OpenXR specification are are dynamically linked to at runtime. This means you won&#x27;t find their implementation in the SDK; they are running in their own address space outside of the program and are available to all applications on the device.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;OXR(xrLocateViews(
+    app.Session,
+    &amp;amp;projectionInfo,
+    &amp;amp;viewState,
+    projectionCapacityInput,
+    &amp;amp;projectionCountOutput,
+    projections));
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;making-modifications-to-sample-projects&quot;&gt;Making Modifications to Sample Projects&lt;&#x2F;h2&gt;
+&lt;p&gt;Some codebases can be very daunting, and it can take a long time before you feel comfortable making changes.&lt;&#x2F;p&gt;
+&lt;p&gt;In this case, after skimming the code for a few of the samples, I was able to dive in and start poking at stuff.&lt;&#x2F;p&gt;
+&lt;p&gt;One of the first things I did was to modify the spatial anchors project shown above to change the dimensions of the anchors and to draw a texture on one side of the cube.&lt;&#x2F;p&gt;
+&lt;video width=50% controls autoplay&gt;
+    &lt;source src=&quot;&#x2F;videos&#x2F;spatial2.mp4&quot; type=&quot;video&#x2F;mp4&quot;&gt;
+    Your browser does not support the video tag.
+&lt;&#x2F;video&gt;
+&lt;p&gt;Here are what the changes to make this work look like:&lt;&#x2F;p&gt;
+&lt;p&gt;The dimensions and colors were single line changes in the event loop.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
++ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); &amp;#x2F;&amp;#x2F; Orange
++ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); &amp;#x2F;&amp;#x2F; Brown
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I dropped stb_image.h into the project and added some code that loads textures from images on the device and maintains a pool of the loaded textures which is cycled through during rendering.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;#include &amp;quot;TexturePool.h&amp;quot;
+#include &amp;lt;android&amp;#x2F;log.h&amp;gt;
+#define STB_IMAGE_IMPLEMENTATION
+#include &amp;quot;stb_image.h&amp;quot;
+#include &amp;lt;android&amp;#x2F;asset_manager_jni.h&amp;gt;
+#include &amp;lt;android&amp;#x2F;asset_manager.h&amp;gt;
+
+std::vector&amp;lt;std::string&amp;gt; texture_filenames = {&amp;quot;NASA1.jpg&amp;quot;, &amp;quot;NASA2.jpg&amp;quot;, &amp;quot;NASA3.jpg&amp;quot;, &amp;quot;NASA4.jpg&amp;quot;, &amp;quot;NASA5.jpg&amp;quot;, &amp;quot;NASA6.jpg&amp;quot;, &amp;quot;NASA7.jpg&amp;quot;, &amp;quot;NASA8.jpg&amp;quot;  };
+
+size_t texture_pointer = 0;
+
+std::vector&amp;lt;GLuint&amp;gt; texture_ids;
+
+void texture_pool_init(std::vector&amp;lt;std::string&amp;gt; filenames, AAssetManager *amgr) {
+	for (std::string filename : filenames) {
+        GLuint texture_id;
+
+        GL(glGenTextures(1, &amp;amp;texture_id));
+        texture_ids.push_back(texture_id);
+        GL(glBindTexture(GL_TEXTURE_2D, texture_id));
+
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                           GL_LINEAR_MIPMAP_LINEAR));
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+        GLenum format;
+
+		AAsset* asset = AAssetManager_open(amgr, filename.c_str(), AASSET_MODE_BUFFER);
+		if (asset == NULL) {
+			ALOGE(&amp;quot;Failed to open %s&amp;quot;, filename.c_str());
+		} else {
+			ALOGV(&amp;quot;opened file %s&amp;quot;, filename.c_str());
+		}
+
+		int width, height, channels;
+        stbi_set_flip_vertically_on_load(true);
+		void *data = stbi_load_from_memory((unsigned char*)AAsset_getBuffer(asset), AAsset_getLength(asset), &amp;amp;width, &amp;amp;height, &amp;amp;channels, 0);
+		if (data == NULL) {
+			ALOGE(&amp;quot;Failed to load %s&amp;quot;, filename.c_str());
+		} else {
+			ALOGV(&amp;quot;loaded file %s&amp;quot;, filename.c_str());
+		}
+
+        if (channels == 3) {
+            format = GL_RGB;
+        } else if (channels == 4) {
+            format = GL_RGBA;
+        } else {
+            fprintf(stderr, &amp;quot;Unsupported number of channels: %d\n&amp;quot;, channels);
+            exit(EXIT_FAILURE);
+        }
+
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE,
+                        data));
+        GL(glGenerateMipmap(GL_TEXTURE_2D));
+
+        stbi_image_free(data);
+	}
+}
+
+&amp;#x2F;&amp;#x2F; reset at the start of each frame to keep the same rendering order
+void reset_texture_pointer() {
+    ALOGV(&amp;quot;resetting texture from %u to 0&amp;quot;,texture_pointer);
+    texture_pointer = 0;
+}
+
+&amp;#x2F;&amp;#x2F; if more textures are requested than are available, wrap around
+GLuint next_texture() {
+    size_t last_texture_idx = texture_pointer;
+    size_t next_texture_idx = (texture_pointer + 1) % texture_ids.size();
+    texture_pointer = next_texture_idx;
+    return texture_ids[last_texture_idx];
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I added UVs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;
+void ovrGeometry::CreateCube()
+{
+    struct ovrCubeVertices
+    {
+        signed char positions[8][4];
+        unsigned char colors[8][4];
+        float uvs[8][2];
+    };
+
+    static const ovrCubeVertices cubeVertices = {
+        &amp;#x2F;&amp;#x2F; positions
+        {
+            {-127, -127, -127, +127},
+            {+127, -127, -127, +127},
+            {-127, +127, -127, +127},
+            {+127, +127, -127, +127},
+            {-127, -127, +127, +127},
+            {+127, -127, +127, +127},
+            {-127, +127, +127, +127},
+            {+127, +127, +127, +127}},
+        &amp;#x2F;&amp;#x2F; colors
+        {
+            {0x00, 0x00, 0x00, 0xff},
+            {0xff, 0x00, 0x00, 0xff},
+            {0x00, 0xff, 0x00, 0xff},
+            {0xff, 0xff, 0x00, 0xff},
+            {0x00, 0x00, 0xff, 0xff},
+            {0xff, 0x00, 0xff, 0xff},
+            {0x00, 0xff, 0xff, 0xff},
+            {0xff, 0xff, 0xff, 0xff}},
+        &amp;#x2F;&amp;#x2F; uvs
+        {
+            {0.0f, 0.0f}, &amp;#x2F;&amp;#x2F; Bottom back left corner
+            {1.0f, 0.0f}, &amp;#x2F;&amp;#x2F; Bottom back right corner
+            {0.0f, 1.0f}, &amp;#x2F;&amp;#x2F; Top back left corner
+            {1.0f, 1.0f}, &amp;#x2F;&amp;#x2F; Top back right corner
+            {0.0f, 0.0f}, &amp;#x2F;&amp;#x2F; Bottom front left corner
+            {1.0f, 0.0f}, &amp;#x2F;&amp;#x2F; Bottom front right corner
+            {0.0f, 1.0f}, &amp;#x2F;&amp;#x2F; Top front left corner
+            {1.0f, 1.0f}, &amp;#x2F;&amp;#x2F; Top front right corner
+        }
+    };
+
+    static const unsigned short cube_indices[30] = {
+        0, 2, 1, 2, 3, 1, &amp;#x2F;&amp;#x2F; back
+        6, 7, 2, 2, 7, 3, &amp;#x2F;&amp;#x2F; top
+        4, 0, 5, 5, 0, 1, &amp;#x2F;&amp;#x2F; bottom
+        0, 4, 2, 2, 4, 6, &amp;#x2F;&amp;#x2F; left
+        5, 1, 7, 7, 1, 3  &amp;#x2F;&amp;#x2F; right
+    };
+
+    static const unsigned short tex_indices[6] = {
+        4, 5, 6, 6, 5, 7, &amp;#x2F;&amp;#x2F; front
+    };
+
+    VertexCount = 8;
+    ColorIndexCount = 30;
+    TextureIndexCount = 6;
+    IndexCount = 0;
+
+    VertexAttribs[0].Index = VERTEX_ATTRIBUTE_LOCATION_POSITION;
+    VertexAttribs[0].Size = 4;
+    VertexAttribs[0].Type = GL_BYTE;
+    VertexAttribs[0].Normalized = true;
+    VertexAttribs[0].Stride = sizeof(cubeVertices.positions[0]);
+    VertexAttribs[0].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, positions);
+
+    VertexAttribs[1].Index = VERTEX_ATTRIBUTE_LOCATION_COLOR;
+    VertexAttribs[1].Size = 4;
+    VertexAttribs[1].Type = GL_UNSIGNED_BYTE;
+    VertexAttribs[1].Normalized = true;
+    VertexAttribs[1].Stride = sizeof(cubeVertices.colors[0]);
+    VertexAttribs[1].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, colors);
+
+    VertexAttribs[2].Index = VERTEX_ATTRIBUTE_LOCATION_UV; &amp;#x2F;&amp;#x2F; UV attribute
+    VertexAttribs[2].Size = 2;
+    VertexAttribs[2].Type = GL_FLOAT;
+    VertexAttribs[2].Normalized = false;
+    VertexAttribs[2].Stride = sizeof(cubeVertices.uvs[0]);
+    VertexAttribs[2].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, uvs);
+
+    GL(glGenBuffers(1, &amp;amp;VertexBuffer));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
+    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &amp;amp;cubeVertices, GL_STATIC_DRAW));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+    GL(glGenBuffers(1, &amp;amp;ColorIndexBuffer));
+    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ColorIndexBuffer));
+    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_indices), cube_indices, GL_STATIC_DRAW));
+    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
+    GL(glGenBuffers(1, &amp;amp;TextureIndexBuffer));
+    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextureIndexBuffer));
+    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tex_indices), tex_indices, GL_STATIC_DRAW));
+    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I re-used the existing color shaders and added new ones for the texture face:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;static const char CUBE_TEX_VERTEX_SHADER[] =
+    R&amp;quot;GLSL(
+        #define NUM_VIEWS 2
+        #define VIEW_ID gl_ViewID_OVR
+        #extension GL_OVR_multiview2 : require
+        layout(num_views=NUM_VIEWS) in;
+        in vec3 vertexPosition;
+        in vec2 vertexUv;
+        uniform mat4 ModelMatrix;
+        uniform SceneMatrices
+        {
+            uniform mat4 ViewMatrix[NUM_VIEWS];
+            uniform mat4 ProjectionMatrix[NUM_VIEWS];
+        } sm;
+        out vec2 UV;
+        void main()
+        {
+            gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
+            UV = vertexUv;
+        }
+    )GLSL&amp;quot;;
+
+static const char CUBE_TEX_FRAGMENT_SHADER[] =
+    R&amp;quot;GLSL(
+        in vec2 UV;
+        out vec4 color;
+
+        uniform sampler2D Texture0;
+        void main()
+        {
+            color = vec4(texture( Texture0, UV ).rgb, 1.0);
+        }
+        )GLSL&amp;quot;;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The main other substantive change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;cpp&quot; class=&quot;language-cpp &quot;&gt;&lt;code class=&quot;language-cpp&quot; data-lang=&quot;cpp&quot;&gt;    GL(glUseProgram(Scene.TextureProgram.Program));
+    GL(glBindBufferBase(
+           GL_UNIFORM_BUFFER,
+           Scene.TextureProgram.UniformBinding[ovrUniform::Index::SCENE_MATRICES],
+           Scene.SceneMatrices));
+    if (Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID] &amp;gt;=
+        0) &amp;#x2F;&amp;#x2F; NOTE: will not be present when multiview path is enabled.
+    {
+        GL(glUniform1i(Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID], 0));
+    }
+    for (auto c : Scene.CubeData) {
+        GL(glBindVertexArray(Scene.Cube.VertexArrayObject));
+        GLint loc = Scene.TextureProgram.UniformLocation[ovrUniform::Index::MODEL_MATRIX];
+        if (loc &amp;gt;= 0) {
+            GL(glUniformMatrix4fv(loc, 1, GL_TRUE, &amp;amp;c.Model.M[0][0]));
+        }
+
+        GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Scene.Cube.TextureIndexBuffer));
+        GL(glActiveTexture(GL_TEXTURE0));
+
+        GL(glBindTexture(GL_TEXTURE_2D, c.KaiTextureID));
+        GL(glDrawElements(GL_TRIANGLES, Scene.Cube.TextureIndexCount, GL_UNSIGNED_SHORT, nullptr));
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    GL(glBindVertexArray(0));
+    GL(glUseProgram(0));
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;These changes look very similar to run of the mill changes you would make to any rendering code. For the fancy stuff, like per-eye matrix transforms, you can just build off of the sample programs rather than try to implement them from scratch.&lt;&#x2F;p&gt;
+&lt;p&gt;In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;&#x2F;h2&gt;
+&lt;p&gt;There&#x27;s a lot of overlap between the APIs, libraries, build systems used both in these projects and in other OpenGL code that has been authored over the last several decades - tutorials, example projects, open source games, and more. When you read those projects and learn from them, you eventually reach a plateau where it&#x27;s unclear what to do next to continue learning. The answer here is just to continue getting exposure to more code and to continue building and thinking critically about what you write. This is the point where developing with Meta Quest becomes an extremely appealing.&lt;&#x2F;p&gt;
+&lt;p&gt;I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high frame rate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping).&lt;&#x2F;p&gt;
+&lt;p&gt;You probably already know if you would enjoy hacking on one. If so, I&#x27;d definitely recommend picking one up. Quest 2&#x27;s are pretty cheap these days, and you&#x27;ve always got the return period if you&#x27;re not feeling it.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Running Dreambooth in Stable Diffusion with Low VRAM</title>
         <published>2023-01-14T00:00:00+00:00</published>
         <updated>2023-01-14T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/dreambooth-low-vram/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/dreambooth-low-vram/"/>
         <id>https://jeskin.net/blog/dreambooth-low-vram/</id>
-        <summary type="html">Optimization strategies for training text-to-image models on systems with constrained resources.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/dreambooth-low-vram/">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h2&gt;
+&lt;p&gt;In a &lt;a href=&quot;https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2208.12242&quot;&gt;recent whitepaper&lt;&#x2F;a&gt;, researchers described a technique to take existing pre-trained text-to-image models and embed new subjects, adding the capability to synthesize photorealistic images of the subject contextualized in the model&#x27;s output.&lt;&#x2F;p&gt;
+&lt;p&gt;A series of implementations were quickly built, finding their way to the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;AUTOMATIC1111&#x2F;stable-diffusion-webui&quot;&gt;Stable Diffusion web UI&lt;&#x2F;a&gt; project in the form of the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;d8ahazard&#x2F;sd_dreambooth_extension&quot;&gt;sd_dreambooth_extension&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This adds the ability to fine-tune models on images of particular subjects.&lt;&#x2F;p&gt;
+&lt;p&gt;Images generated this way come out much better than the baseline model, especially when you start adding additional context.&lt;&#x2F;p&gt;
+&lt;p&gt;Unfortunately, the process is resource-intensive, and if your system low VRAM it&#x27;s easy for dreambooth to crash with an error like this:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;RuntimeError: No executable batch size found, reached zero.
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In this blog post, I&#x27;ll show a few of the optimizations I used to fix this error and get dreambooth running with on my 8GB Nvidia Geforce 1070. I&#x27;ll also show a few of the problems I encountered along the way and how I fixed them.&lt;&#x2F;p&gt;
+&lt;p&gt;An arch linux system was used, but these optimizations should work on any OS, possibly with minor modifications.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;optimizations&quot;&gt;Optimizations&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;use-xformers-for-image-generation&quot;&gt;Use xFormers for image generation&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;facebookresearch&#x2F;xformers&quot;&gt;xFormers&lt;&#x2F;a&gt; is a library written by facebook research that improves the speed and memory efficiency of image generation. To install it, stop stable-diffusion-webui if its running and build xformers from source by following &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;AUTOMATIC1111&#x2F;stable-diffusion-webui&#x2F;wiki&#x2F;Xformers&quot;&gt;these instructions&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Next, you&#x27;ll need to add a commandline parameter to enable xformers the next time you start the web ui, like in this line from my &lt;code&gt;webui-user.sh&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Bash&quot; class=&quot;language-Bash &quot;&gt;&lt;code class=&quot;language-Bash&quot; data-lang=&quot;Bash&quot;&gt;export COMMANDLINE_ARGS=&amp;quot;--medvram --xformers&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The next time you launch the web ui it should use xFormers for image generation.&lt;&#x2F;p&gt;
+&lt;p&gt;You&#x27;ll also need to make sure to explicitly use xformer when you&#x27;re training inside Dreambooth tab of the web UI under &lt;code&gt;Settings &amp;gt; Advanced &amp;gt; Memory Attention (select xformers)&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;tweak-dreambooth-settings&quot;&gt;Tweak dreambooth settings&lt;&#x2F;h3&gt;
+&lt;p&gt;Dreambooth ran succesffully when I used the following settings in the Dreambooth tab of the web ui:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;Use LORA: unchecked
+Training Steps Per Image (Epochs): 150
+batch size: 1
+Learning Rate Scheduler: constant with warmup
+Learning Rate: 0.000002
+Resolution: 512
+Use EMA: unchecked
+Use 8bit Adam: checked
+Mixed precision: fp16
+Memory Attention: xformers
+Cache Latents: unchecked
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;run-stable-diffusion-without-a-graphical-environment&quot;&gt;Run Stable Diffusion without a graphical environment&lt;&#x2F;h3&gt;
+&lt;p&gt;I need to squeeze every last meg of VRAM out of my card, so I usually opt not to run a graphical environment on the machine running stable diffusion. On Linux, this means never starting the X server&#x2F;Wayland compositor.&lt;&#x2F;p&gt;
+&lt;p&gt;To do this, first you&#x27;ll need to configure the web ui to work from another machine on your local network.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Bash&quot; class=&quot;language-Bash &quot;&gt;&lt;code class=&quot;language-Bash&quot; data-lang=&quot;Bash&quot;&gt;export COMMANDLINE_ARGS=&amp;quot;--medvram --listen --xformers&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You&#x27;ll want to disable your display manager or similar mechanism and then reboot to free up as much memory as possible.&lt;&#x2F;p&gt;
+&lt;p&gt;Then, using another machine on your network (a wifi-connected smartphone works as well), navigate to [ip address of machine running webui]:[port shown in process output] and control it from there.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;reboot-between-attempted-trainings&quot;&gt;Reboot between attempted trainings&lt;&#x2F;h3&gt;
+&lt;p&gt;I&#x27;ve found that when I attempt a training, the follow up will often run OOM even when it should not.&lt;&#x2F;p&gt;
+&lt;p&gt;Restarting webui or ensuring that there are no leaking GPU resources with &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;Syllo&#x2F;nvtop&quot;&gt;nvtop&lt;&#x2F;a&gt; do not seem to solve the issue.&lt;&#x2F;p&gt;
+&lt;p&gt;However, doing a full restart will cause the same configuration that ran OOM will succeed. Until I figure out what is leaking GPU memory like a sieve, I&#x27;ll probably continue doing full reboots between training.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;avoiding-lora&quot;&gt;Avoiding LORA&lt;&#x2F;h3&gt;
+&lt;p&gt;Many guides online recommend using LORA to reduce memory usage. However, on my setup, using LORA will cause runs to fail that succeed when I disable it.&lt;&#x2F;p&gt;
+&lt;p&gt;If LORA isn&#x27;t working for you, try turning it off.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;disabling-preview-images&quot;&gt;Disabling preview images&lt;&#x2F;h3&gt;
+&lt;p&gt;Setting &lt;code&gt;Save model frequency&lt;&#x2F;code&gt;, &lt;code&gt;Save preview frequency&lt;&#x2F;code&gt;, and &lt;code&gt;Generate Classification Images Using txt2img&lt;&#x2F;code&gt; gives you preview images at epoch checkpoints that you can view to check for overtraining.&lt;&#x2F;p&gt;
+&lt;p&gt;Unfortunately the preview images seem to use GPU memory and cause my trainings to fail.&lt;&#x2F;p&gt;
+&lt;p&gt;As a result, I end up only setting &lt;code&gt;Save model frequency&lt;&#x2F;code&gt;. When training completes, I bisect the completed checkpoints and check for overtraining.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, if I generate 12 checkpoints, I&#x27;ll open up checkpoint 12 and run a few images that include my trained subject in a new context. If the images are incapable of including the new context, e.g. the image above showed Gillian Anderson&#x27;s face but didn&#x27;t respond to the &amp;quot;starfleet officer&amp;quot; prompt, that means the model has been overtrained.&lt;&#x2F;p&gt;
+&lt;p&gt;So I would open checkpoint 6, and if that worked, I would try checkpoint 9, and so on.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;encountered-issues&quot;&gt;Encountered Issues&lt;&#x2F;h2&gt;
+&lt;p&gt;Below are a hodgepodge of problems I ran into along the way, along with how I overcame them.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;exception-training-model-could-not-run-xformers-efficient-attention-forward-cutlass-with-arguments-from-the-cuda-backend&quot;&gt;Exception training model: &#x27;Could not run &#x27;xformers::efficient_attention_forward_cutlass&#x27; with arguments from the &#x27;CUDA&#x27; backend.&lt;&#x2F;h3&gt;
+&lt;p&gt;I got this when I did not properly follow &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;AUTOMATIC1111&#x2F;stable-diffusion-webui&#x2F;wiki&#x2F;Xformers&quot;&gt;xformers installation steps&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;name-str2optimizer8bit-blockwise-is-not-defined&quot;&gt;Name &#x27;str2optimizer8bit_blockwise&#x27; is not defined&lt;&#x2F;h3&gt;
+&lt;p&gt;This was caused by python being unable to find a CUDA shared library on my system. To fix it, you&#x27;ll need to make sure the folders where CUDA&#x27;s libraries are located are set on your system&#x27;s path.&lt;&#x2F;p&gt;
+&lt;p&gt;On arch linux, I did that by setting environment variable &lt;code&gt;LD_LIBRARY_PATH=&amp;quot;&#x2F;opt&#x2F;cuda&#x2F;targets&#x2F;x86_64-linux&#x2F;lib:$LD_LIBRARY_PATH&amp;quot;&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;img-should-be-pil-image&quot;&gt;Img should be PIL image&lt;&#x2F;h3&gt;
+&lt;p&gt;A number of posts online were saying to check &amp;quot;Apply Horizontal Flip&amp;quot; in the dreambooth settings, but doing so was giving me this error.&lt;&#x2F;p&gt;
+&lt;p&gt;I didn&#x27;t really look much into it, I just unchecked it and the error no longer occurred.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;zipfile-badzipfile-file-is-not-a-zip-file&quot;&gt;zipfile.BadZipFile: File is not a zip file&lt;&#x2F;h3&gt;
+&lt;p&gt;After I initially got dreambooth to train successfully, I exported the result as a .ckpt file. When I tried to load the checkpoint to produce the image, the model wouldn&#x27;t load, and I could see&lt;code&gt;zipfile.BadZipFile: File is not a zip file&lt;&#x2F;code&gt; in the server&#x27;s output.&lt;&#x2F;p&gt;
+&lt;p&gt;I looked at the .ckpt file that was being created and compared it to a valid one from a different model. The valid one looked like a zip archive, but the erronous one I was generating was just a yaml file with a .ckpt filename.&lt;&#x2F;p&gt;
+&lt;p&gt;I discovered that setting a custom model name in the &amp;quot;Saving&amp;quot; tab in dreambooth settings caused both a yaml and ckpt to be correctly created, and I could load and use the ckpt file.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>FIFO based IRC with ii and lchat</title>
         <published>2023-01-03T00:00:00+00:00</published>
         <updated>2023-01-03T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/irc-ii-lchat/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/irc-ii-lchat/"/>
         <id>https://jeskin.net/blog/irc-ii-lchat/</id>
-        <summary type="html">A short writeup on how to use lchat, a terminal based IRC client.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/irc-ii-lchat/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;lchat_preview.png&quot; width=&quot;50%&quot;&gt;
+&lt;h1 id=&quot;ii&quot;&gt;ii&lt;&#x2F;h1&gt;
+&lt;p&gt;A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, the popular client &lt;a href=&quot;https:&#x2F;&#x2F;weechat.org&#x2F;&quot;&gt;weechat&lt;&#x2F;a&gt; draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on.&lt;&#x2F;p&gt;
+&lt;p&gt;Similar to many other interactive programs, it continually listens for the user’s keyboard input. When the user enters messages or commands, weechat marshals information back and forth between the IRC server, updates its internal state, and redraws its interface.&lt;&#x2F;p&gt;
+&lt;p&gt;ii (short for “irc it”) is an IRC client which works at a much lower level. It doesn’t draw anything or listen for keyboard or mouse input at all.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead, represents your connection to an IRC server as a hierarchy of files.&lt;&#x2F;p&gt;
+&lt;p&gt;Each entity that you interact with in IRC, be it the server (to issue commands), or a channel, or a user, gets its own directory and its own pair of files.&lt;&#x2F;p&gt;
+&lt;p&gt;One file is named &lt;code&gt;in&lt;&#x2F;code&gt;, and anything written to that file is sent to the process. Another file is named &lt;code&gt;out&lt;&#x2F;code&gt;, and anything received from the process is written to it.&lt;&#x2F;p&gt;
+&lt;p&gt;Reading and writing to these files is not done by &lt;code&gt;ii&lt;&#x2F;code&gt; itself, but by some other existing part of the system, such as &lt;code&gt;echo&lt;&#x2F;code&gt; for writing and &lt;code&gt;cat&lt;&#x2F;code&gt; for reading.&lt;&#x2F;p&gt;
+&lt;p&gt;Representing processes by files in this manner is known as using a “Named Pipe” or a “FIFO” in Unix systems.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;using-ii&quot;&gt;using ii&lt;&#x2F;h1&gt;
+&lt;p&gt;If you run &lt;code&gt;ii&lt;&#x2F;code&gt; on its own, you’ll see a concise summary of its usage:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;usage: ii -s host [-p port | -u sockname] [-i ircdir]
+[-n nickname] [-f fullname] [-k env_pass]
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;When I run &lt;code&gt;ii -s irc.libera.chat -n eskin&lt;&#x2F;code&gt;, ii connects me to libera.chat. By default this creates a few folders in “~&#x2F;irc”:&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;ii1.png&quot; width=&quot;50%&quot;&gt;
+&lt;p&gt;The tty that I ran &lt;code&gt;ii&lt;&#x2F;code&gt; from is now taken over by a process that maintains a connection to the server and displays all messages from the server. To interact with ii, I switch to another terminal and interact with the &lt;code&gt;in&lt;&#x2F;code&gt; and &lt;code&gt;out&lt;&#x2F;code&gt; files created for the server I joined.&lt;&#x2F;p&gt;
+&lt;p&gt;Here’s me failing to login:&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;ii2.png&quot; width=&quot;50%&quot;&gt;
+&lt;p&gt;And here’s me joining a room:&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;ii3.png&quot; width=&quot;50%&quot;&gt;
+&lt;p&gt;Writing to &lt;code&gt;in&lt;&#x2F;code&gt; files and reading from &lt;code&gt;out&lt;&#x2F;code&gt; files with &lt;code&gt;echo&lt;&#x2F;code&gt; and &lt;code&gt;cat&lt;&#x2F;code&gt; are a little unwieldly, which is where &lt;code&gt;lchat&lt;&#x2F;code&gt; comes in.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;lchat&quot;&gt;lchat&lt;&#x2F;h1&gt;
+&lt;p&gt;lchat expects a command line argument containing the location of a directory containing &lt;code&gt;in&lt;&#x2F;code&gt; and &lt;code&gt;out&lt;&#x2F;code&gt; files.&lt;&#x2F;p&gt;
+&lt;p&gt;The command starts a process that continually reads from the &lt;code&gt;out&lt;&#x2F;code&gt; file and displaying its content in the terminal. At the same time, it continually provides a message area for you to type messages and submit them by pressing ‘Enter’. When you do, the contents of the message area are sent to the &lt;code&gt;in&lt;&#x2F;code&gt; file.&lt;&#x2F;p&gt;
+&lt;p&gt;In the image below, I navigate to the #linux subdirectory which is where the &lt;code&gt;in&lt;&#x2F;code&gt; and &lt;code&gt;out&lt;&#x2F;code&gt; files for the linux channel exist on my filesystem and the enter &lt;code&gt;lchat .&lt;&#x2F;code&gt; to start lchat in that location.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;lc.png&quot; width=&quot;50%&quot;&gt;
+&lt;p&gt;lchat will work with any program that uses FIFO this way, including a few programs listed on the &lt;a href=&quot;https:&#x2F;&#x2F;tools.suckless.org&#x2F;lchat&#x2F;&quot;&gt;lchat homepage&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;installation&quot;&gt;Installation&lt;&#x2F;h1&gt;
+&lt;p&gt;If you&#x27;d like to try out lchat, you&#x27;ll first need to grab ii:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Bash&quot; class=&quot;language-Bash &quot;&gt;&lt;code class=&quot;language-Bash&quot; data-lang=&quot;Bash&quot;&gt;git clone https:&amp;#x2F;&amp;#x2F;git.suckless.org&amp;#x2F;ii
+cd ii
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If you want to use SSL, you&#x27;ll want to apply a patch to the repository:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Bash&quot; class=&quot;language-Bash &quot;&gt;&lt;code class=&quot;language-Bash&quot; data-lang=&quot;Bash&quot;&gt;wget https:&amp;#x2F;&amp;#x2F;tools.suckless.org&amp;#x2F;ii&amp;#x2F;patches&amp;#x2F;ssl&amp;#x2F;ii-2.0-ssl.diff
+git apply ii-2.0-ssl.diff
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then build and install ii:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Bash&quot; class=&quot;language-Bash &quot;&gt;&lt;code class=&quot;language-Bash&quot; data-lang=&quot;Bash&quot;&gt;make
+sudo make install
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Finally, you&#x27;ll want to clone, build, make, and install lchat:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Bash&quot; class=&quot;language-Bash &quot;&gt;&lt;code class=&quot;language-Bash&quot; data-lang=&quot;Bash&quot;&gt;git clone https:&amp;#x2F;&amp;#x2F;git.suckless.org&amp;#x2F;lchat
+cd lchat
+make
+sudo make install
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;&#x2F;h1&gt;
+&lt;p&gt;I&#x27;m a fan of the filebased approach to irc, so that I can keep it passively running without keeping track of an active window.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;ii&lt;&#x2F;code&gt; and &lt;code&gt;lchat&lt;&#x2F;code&gt; are fun, hackable projects that are fun to play around with. &lt;code&gt;lchat&lt;&#x2F;code&gt; was the first use I saw of &lt;a href=&quot;https:&#x2F;&#x2F;libs.suckless.org&#x2F;libgrapheme&#x2F;&quot;&gt;libgrapheme&lt;&#x2F;a&gt; in the wild, so that was cool to see. Check it out if you&#x27;re in to that sort of stuff!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Home Monitoring with Raspberry Pis and USB Webcams</title>
         <published>2022-12-28T00:00:00+00:00</published>
         <updated>2022-12-28T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/raspberry-cam-home-monitoring/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/raspberry-cam-home-monitoring/"/>
         <id>https://jeskin.net/blog/raspberry-cam-home-monitoring/</id>
-        <summary type="html">Setting up a motion-based alarm system and live-streaming camera system with Raspberry Pis, cheap webcams, and free software.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/raspberry-cam-home-monitoring/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;This year I took a couple Raspberry Pis and usb webcams I had laying around and set up a DIY home security system using &lt;a href=&quot;https:&#x2F;&#x2F;motion-project.github.io&quot;&gt;motion&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;In this blog post, I&#x27;ll show how my setup lets me check a livestream of the cameras, save pictures when the camera detects movement, and creates off-site backups when new pictures are saved.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ll start by giving some background on the software I used, followed by a walkthrough of the steps I took to get it all running.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;vnc.png&quot; alt=&quot;vnc&quot; width=&quot;50%&quot;&#x2F;&gt;
+&lt;h1 id=&quot;motion&quot;&gt;Motion&lt;&#x2F;h1&gt;
+&lt;p&gt;Motion is a program written in C that monitors the video signal from a connected camera device. When it detects motion, it records pictures and&#x2F;or video and writes them to disk.&lt;&#x2F;p&gt;
+&lt;p&gt;Motion detection works by comparing subsequent images from the camera device. It performs noise filtering, masking, despeckling, and labelling on images before counting the number of pixels which differ. When the count passes a threshold, the camera has detected motion and the program takes additional actions.&lt;&#x2F;p&gt;
+&lt;p&gt;By default, it will start writing images to &lt;code&gt;&#x2F;var&#x2F;lib&#x2F;motion&lt;&#x2F;code&gt;, and uses a configuration file in &lt;code&gt;&#x2F;etc&#x2F;motion&#x2F;motion.conf&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Motion has a number of shell hooks such as &lt;a href=&quot;https:&#x2F;&#x2F;motion-project.github.io&#x2F;motion_config.html#on_picture_save&quot;&gt;on_picture_save&lt;&#x2F;a&gt; that let you add in additional functionality.&lt;&#x2F;p&gt;
+&lt;p&gt;It also provides a streaming option which lets you view the live camera feed over the web, which I&#x27;ll cover below.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;live-streaming-camera-feed&quot;&gt;Live-Streaming Camera Feed&lt;&#x2F;h1&gt;
+&lt;p&gt;By default, the stream is only viewable on your local network. If you want to view it from the outside world, there&#x27;s a few ways to do so.&lt;&#x2F;p&gt;
+&lt;p&gt;One option is to disable the default restriction stream only on localhost and configure your router to route external connections to the stream port. I was able to get this working, but I&#x27;m not confident enough in my security precautions to write about it. Luckily there&#x27;s a safer option that&#x27;s easier to set up. I&#x27;ll cover it in the next section.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;vnc&quot;&gt;VNC&lt;&#x2F;h2&gt;
+&lt;p&gt;Raspberry Pis have support for &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Virtual_Network_Computing&quot;&gt;Virtual Network Computing (VNC)&lt;&#x2F;a&gt;, which allow remote GUI access to the device.&lt;&#x2F;p&gt;
+&lt;p&gt;You can use VNC from outside your local network with a program named &lt;a href=&quot;https:&#x2F;&#x2F;www.realvnc.com&#x2F;en&#x2F;&quot;&gt;RealVNC&lt;&#x2F;a&gt;. RealVNC is proprietary, but it&#x27;s free for non-commercial use, is easy to setup and use, and is recommended in Raspberry Pi&#x27;s &lt;a href=&quot;https:&#x2F;&#x2F;www.raspberrypi.com&#x2F;documentation&#x2F;computers&#x2F;remote-access.html#vnc&quot;&gt;official documentation&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It involves installing a server program on your Raspberry Pi and a client program on an external device. RealVNC manages an end-to-end encrypted cloud connection between the devices which takes care of a number of network security concerns for you.&lt;&#x2F;p&gt;
+&lt;p&gt;To do this, I open realvnc-viewer on my travel computer, which presents a nice little web interface that I use to tunnel in to the GUI of one of my Raspberry Pis. From there I just open a web browser and navigate to the local IP address or hostname (determined from my router) and port of the motion web server (determined from the Motion configuration file).&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;vnc1.png&quot; alt=&quot;vnc&quot; width=&quot;50%&quot;&#x2F;&gt;
+&lt;p&gt;&lt;em&gt;Side Note: I haven&#x27;t explored free software alternatives to could be substituted for RealVNC, but if you know of any &lt;a href=&quot;mailto:~eskin&#x2F;public-inbox@lists.sr.ht&quot;&gt;please let me know&lt;&#x2F;a&gt;!&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;installation&quot;&gt;Installation&lt;&#x2F;h1&gt;
+&lt;p&gt;Here&#x27;s what I did on both my Raspberry Pis to get up and running. The following pertains to an installation and motion 4.3.2 on the &lt;code&gt;bullseye&lt;&#x2F;code&gt; release of Raspberry Pi OS.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;motion-1&quot;&gt;Motion&lt;&#x2F;h2&gt;
+&lt;p&gt;First, I installed &lt;code&gt;motion&lt;&#x2F;code&gt; on my Pis with &lt;code&gt;sudo apt install motion&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This is all that was needed to run &lt;code&gt;motion&lt;&#x2F;code&gt; from the command line. The default behavior is to record videos when motion is detected, but I wanted to save pictures instead, so I made a couple changes in &lt;code&gt;&#x2F;etc&#x2F;motion&#x2F;motion.conf&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;@@ -110,7 +110,7 @@ post_capture 0
+ ############################################################
+
+ # Output pictures when motion is detected
+-picture_output off
++picture_output on
+
+ # File name(without extension) for pictures relative to target directory
+ picture_filename %Y%m%d%H%M%S-%q
+@@ -120,7 +120,7 @@ picture_filename %Y%m%d%H%M%S-%q
+ ############################################################
+
+ # Create movies of motion events.
+-movie_output on
++movie_output off
+
+ # Maximum length of movie in seconds.
+ movie_max_time 60
+@@ -155,7 +155,7 @@ webcontrol_parms 0
+ stream_port 8081
+
+ # Restrict stream connections to the localhost.
+-stream_localhost on
++stream_localhost off
+
+ ##############################################################
+ # Camera config files - One for each camera.
+@@ -169,3 +169,4 @@ stream_localhost on
+ # Directory to read &amp;#x27;.conf&amp;#x27; files for cameras.
+ ##############################################################
+ ; camera_dir &amp;#x2F;usr&amp;#x2F;etc&amp;#x2F;motion&amp;#x2F;conf.d
++
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;tweaking-motion-sensitivity&quot;&gt;Tweaking Motion Sensitivity&lt;&#x2F;h3&gt;
+&lt;p&gt;The default settings are extremely sensitive to motion, so I dialed them back a bit.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;@@ -72,7 +72,7 @@ text_right %Y-%m-%d\n%T-%q
+ emulate_motion off
+
+ # Threshold for number of changed pixels that triggers motion.
+-threshold 1500
++threshold 3000
+
+ # Noise threshold for the motion detection.
+ ; noise_level 32
+@@ -81,7 +81,7 @@ threshold 1500
+ despeckle_filter EedDl
+
+ # Number of images that must contain motion to trigger an event.
+-minimum_motion_frames 1
++minimum_motion_frames 5
+
+ # Gap in seconds of no motion detected that triggers the end of an event.
+ event_gap 60
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;running-motion-as-a-systemd-service&quot;&gt;Running Motion as a Systemd Service&lt;&#x2F;h3&gt;
+&lt;p&gt;Distribution packages of motion for Raspberry OS, Debian, and Ubuntu include systemd services for running motion. However, the permissions for this won&#x27;t work out of the box.&lt;&#x2F;p&gt;
+&lt;p&gt;As of writing, if you try to run &lt;code&gt;systemctl start motion&lt;&#x2F;code&gt;, you&#x27;ll get an error:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;motion[3326]: [0:motion] [EMG] [ALL] motion_startup: Exit motion, cannot create log file &amp;#x2F;var&amp;#x2F;log&amp;#x2F;motion&amp;#x2F;motion.log: Permission denied
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To address this, I decided to have motion write logs and images to &lt;code&gt;&#x2F;home&#x2F;pi&#x2F;motion&lt;&#x2F;code&gt; with permissions set to the &lt;code&gt;motion&lt;&#x2F;code&gt; user.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;mkdir -p &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;motion&amp;#x2F;pictures
+sudo chown -R motion:motion &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;motion
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then I changed the config file to point to these locations.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;@@ -22,13 +22,13 @@ setup_mode off
+ ; pid_file value
+
+ # File to write logs messages into.  If not defined stderr and syslog is used.
+-log_file &amp;#x2F;var&amp;#x2F;log&amp;#x2F;motion&amp;#x2F;motion.log
++log_file &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;motion&amp;#x2F;motion.log
+
+ # Level of log messages [1..9] (EMG, ALR, CRT, ERR, WRN, NTC, INF, DBG, ALL).
+ log_level 6
+
+ # Target directory for pictures, snapshots and movies
+-target_dir &amp;#x2F;var&amp;#x2F;lib&amp;#x2F;motion
++target_dir &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;motion&amp;#x2F;pictures
+
+ # Video device (e.g. &amp;#x2F;dev&amp;#x2F;video0) to be used for capturing.
+ videodevice &amp;#x2F;dev&amp;#x2F;video0
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;copying-images-offsite&quot;&gt;Copying Images Offsite&lt;&#x2F;h3&gt;
+&lt;p&gt;To copy pictures off-site as they were written, I invoked shell hook &lt;code&gt;on-picture-save&lt;&#x2F;code&gt; to scp them to my VPS.&lt;&#x2F;p&gt;
+&lt;p&gt;To demonstrate how this is done, here&#x27;s a script I saved to &lt;code&gt;&#x2F;home&#x2F;pi&#x2F;test.sh&lt;&#x2F;code&gt; that copies every created image to &lt;code&gt;&#x2F;home&#x2F;pi&#x2F;test&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;#!&amp;#x2F;bin&amp;#x2F;bash
+
+# Get the filename of the saved picture from the first argument
+filename=$1
+
+# Copy the file to the specified directory
+cp &amp;quot;$filename&amp;quot; &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;test
+# Alternatively you could scp to another device on your network, or to a VPS, or
+# email the images to yourself, etc
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You need to make these scripts executable, and if you want to use systemd, they need the right permissions:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;sudo chmod u+x &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;test.sh
+sudo chown motion:motion &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;test.sh
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And here&#x27;s how you wire it up in the config file:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;@@ -101,6 +101,7 @@ post_capture 0
+
+ # Command to be executed when an event ends.
+ ; on_event_end value
++on_picture_save &amp;#x2F;home&amp;#x2F;pi&amp;#x2F;test.sh %f
+
+ # Command to be executed when a movie file is closed.
+ ; on_movie_end value
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;realvnc&quot;&gt;RealVNC&lt;&#x2F;h2&gt;
+&lt;p&gt;To set up RealVNC server on my Raspberry Pis and the client on my external devices, I followed the following guide:&lt;&#x2F;p&gt;
+&lt;p&gt;https:&#x2F;&#x2F;help.realvnc.com&#x2F;hc&#x2F;en-us&#x2F;articles&#x2F;360002249917-VNC-Connect-and-Raspberry-Pi#establishing-a-cloud-connection-0-3&lt;&#x2F;p&gt;
+&lt;p&gt;It&#x27;s very thorough and I had no issues, so I won&#x27;t re-hash what they wrote here.&lt;&#x2F;p&gt;
+&lt;p&gt;When I needed to troubleshoot motion on the go, or if I wanted to glance at the camera livestream, I ran VNC viewer on a laptop and used a terminal and a web browser remotely from the GUI.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;&#x2F;h2&gt;
+&lt;p&gt;This isn&#x27;t an indulstrial grade home monitoring solution, but raspberry pis are handy in a pinch, and can serve nicely to let you know that your house has not flooded or been trashed while you&#x27;re away.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Debugging Emacs Lisp</title>
         <published>2022-12-06T00:00:00+00:00</published>
         <updated>2022-12-06T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/debugging-emacs/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/debugging-emacs/"/>
         <id>https://jeskin.net/blog/debugging-emacs/</id>
-        <summary type="html">An example of using Emacs&#x27;s built in debugging features such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/debugging-emacs/">&lt;p&gt;In this post, I&#x27;ll show how I used basic capabilities of the built-in &lt;a href=&quot;https:&#x2F;&#x2F;www.gnu.org&#x2F;software&#x2F;emacs&#x2F;manual&#x2F;html_node&#x2F;elisp&#x2F;Edebug.html&quot;&gt;Emacs Lisp debugger&lt;&#x2F;a&gt; such as suspending execution, stepping through code, and adding watchpoints to solve a day-to-day issue.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;downloading-problems&quot;&gt;Downloading Problems&lt;&#x2F;h2&gt;
+&lt;p&gt;I recently stumbled upon an &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;keegancsmith&#x2F;advent&#x2F;blob&#x2F;master&#x2F;advent.el&quot;&gt;Advent of Code utility&lt;&#x2F;a&gt; which lets you authenticate with the advent of code server via &lt;code&gt;M-x advent-login&lt;&#x2F;code&gt; and download your daily input file with &lt;code&gt;M-x advent-input&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;When I ran &lt;code&gt;advent-login&lt;&#x2F;code&gt; followed by &lt;code&gt;advent-input&lt;&#x2F;code&gt;, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area.&lt;&#x2F;p&gt;
+&lt;p&gt;To find out why, I opened up &lt;code&gt;advent.el&lt;&#x2F;code&gt; and started with the function definition of &lt;code&gt;advent-login&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Lisp&quot; class=&quot;language-Lisp &quot;&gt;&lt;code class=&quot;language-Lisp&quot; data-lang=&quot;Lisp&quot;&gt;(defun advent-login (session)
+  &amp;quot;Login to adventofcode.com.
+Argument SESSION session cookie value.&amp;quot;
+  (interactive &amp;quot;sValue of session cookie from logged in browser: &amp;quot;)
+  (url-cookie-store &amp;quot;session&amp;quot; session &amp;quot;Thu, 25 Dec 2027 20:17:36 -0000&amp;quot; &amp;quot;.adventofcode.com&amp;quot; &amp;quot;&amp;#x2F;&amp;quot; t))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I wasn&#x27;t familiar with the &lt;code&gt;url-cookie-store&lt;&#x2F;code&gt;, or Emacs&#x27;s URL capabilities in general, so I placed my cursor on &lt;code&gt;url-cookie-store&lt;&#x2F;code&gt; and hit &lt;code&gt;M-.&lt;&#x2F;code&gt; to hop to its definition. I skimmed the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;emacs-mirror&#x2F;emacs&#x2F;blob&#x2F;master&#x2F;lisp&#x2F;url&#x2F;url-cookie.el&quot;&gt;source file&lt;&#x2F;a&gt; it&#x27;s found in, noting the top-level functions and variables and reading their docstrings.&lt;&#x2F;p&gt;
+&lt;p&gt;From the source code, I noted that cookies stored in variables &lt;code&gt;url-cookie-storage&lt;&#x2F;code&gt; and &lt;code&gt;url-secure-cookie-storage&lt;&#x2F;code&gt;, and that you can list currently stored cookies with &lt;code&gt;M-x url-cookie-list&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;step-debugging-a-function&quot;&gt;Step Debugging a Function&lt;&#x2F;h2&gt;
+&lt;p&gt;Next I decided to step through the execution of the function &lt;code&gt;url-cookie-store&lt;&#x2F;code&gt;. To debug a Lisp function in Emacs, you can move your cursor inside the function and enter &lt;code&gt;C-u C-M-x&lt;&#x2F;code&gt;, which executes &lt;code&gt;eval-defun&lt;&#x2F;code&gt; with a prefix argument.&lt;&#x2F;p&gt;
+&lt;p&gt;The next time the function is called, Emacs will switch to a source buffer showing the code you are debugging. Execution is stopped, and the editor is awaiting a &lt;a href=&quot;https:&#x2F;&#x2F;www.gnu.org&#x2F;software&#x2F;emacs&#x2F;manual&#x2F;html_node&#x2F;elisp&#x2F;Debugger-Commands.html&quot;&gt;debugger command&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The function will continue to trigger debugging each time it&#x27;s run until you re-evaluate it without a prefix argument by placing your cursor inside the function and entering just &lt;code&gt;C-M-x&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;After instrumenting &lt;code&gt;url-cookie-store&lt;&#x2F;code&gt; for debugging, I triggered it by invoking &lt;code&gt;advent-input&lt;&#x2F;code&gt;. Here&#x27;s how that looks in practice:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;edebug_intro.gif&quot; alt=&quot;edebug-intro&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Stepping through Lisp code follows the rules of &lt;a href=&quot;https:&#x2F;&#x2F;mitp-content-server.mit.edu&#x2F;books&#x2F;content&#x2F;sectbyfn&#x2F;books_pres_0&#x2F;6515&#x2F;sicp.zip&#x2F;full-text&#x2F;book&#x2F;book-Z-H-10.html#%_sec_1.1.5&quot;&gt;applicative order evaluation&lt;&#x2F;a&gt;, meaning form arguments are evaluated first, followed by the form itself.&lt;&#x2F;p&gt;
+&lt;p&gt;(There are a few exceptions to the evaluation order, such as the special form &lt;code&gt;if&lt;&#x2F;code&gt; or the macro &lt;code&gt;when&lt;&#x2F;code&gt;, which modify the flow of control, as you can see above.)&lt;&#x2F;p&gt;
+&lt;p&gt;Each time an argument or form is evaluated, the result is displayed in the bottom message area.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;edebug2.gif&quot; alt=&quot;edebug2&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;By repeatedly pressing &lt;code&gt;n&lt;&#x2F;code&gt;, I was able to step through and see that &lt;code&gt;url-cookie-create&lt;&#x2F;code&gt; called, and its return value (stored in the variable &lt;code&gt;tmp&lt;&#x2F;code&gt;) is bound to &lt;code&gt;url-cookie-secure-storage&lt;&#x2F;code&gt; in a &lt;code&gt;setq&lt;&#x2F;code&gt; expression.&lt;&#x2F;p&gt;
+&lt;p&gt;After the function finished, I ran &lt;code&gt;url-cookie-list&lt;&#x2F;code&gt; and saw that a cookie for domain &lt;code&gt;.adventofcode.com&lt;&#x2F;code&gt; was indeed created.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cookies.gif&quot; alt=&quot;cookies&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;With the cookie visible, &lt;code&gt;advent-input&lt;&#x2F;code&gt; still failed with a 400 error.&lt;&#x2F;p&gt;
+&lt;p&gt;At this point, I re-ran &lt;code&gt;url-cookie-list&lt;&#x2F;code&gt; and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie even though I hadn&#x27;t visited the site between the two commands.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;stackoverflow.png&quot; alt=&quot;stackoverflow&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Note: session token modified to protect the innocent&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;At some point during the execution of &lt;code&gt;advent-input&lt;&#x2F;code&gt;, my session cookie was inputting was being replaced.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Lisp&quot; class=&quot;language-Lisp &quot;&gt;&lt;code class=&quot;language-Lisp&quot; data-lang=&quot;Lisp&quot;&gt;(defun advent-input (&amp;amp;optional day)
+  &amp;quot;Load todays adventofcode.com input in other window.
+Optional argument DAY Load this day instead.  Defaults to today.&amp;quot;
+  (interactive &amp;quot;P&amp;quot;)
+  (let* ((year (format-time-string &amp;quot;%Y&amp;quot;))
+         (day (or day (advent--day)))
+         (url (format &amp;quot;https:&amp;#x2F;&amp;#x2F;adventofcode.com&amp;#x2F;%s&amp;#x2F;day&amp;#x2F;%d&amp;#x2F;input&amp;quot; year day))
+         (dir (format &amp;quot;%s&amp;#x2F;%s&amp;#x2F;%d&amp;quot; (expand-file-name advent-dir) year day))
+         (file (format &amp;quot;%s&amp;#x2F;input&amp;quot; dir)))
+    (if (not (file-exists-p file))
+        (url-retrieve url &amp;#x27;advent--download-callback (list file))
+      (find-file-other-window file))))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The problem was almost certainly going to be found somewhere in &lt;code&gt;url-retrieve&lt;&#x2F;code&gt;. But rather than hunt through the source, I decided to use a watchpoint to more easily track down what was changing &lt;code&gt;url-cookie-secure-storage&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;adding-a-watchpoint&quot;&gt;Adding a Watchpoint&lt;&#x2F;h2&gt;
+&lt;p&gt;In debuggers, a &amp;quot;watch&amp;quot; refers to a mechanism that helps you observe when a variable changes.&lt;&#x2F;p&gt;
+&lt;p&gt;In Emacs, adding a watch to a variable is done with &lt;code&gt;M-x debug-watch&lt;&#x2F;code&gt;, and it will cause the editor to enter the debugger when the target variable changes. You&#x27;re provided with a stack trace that you can use to explore the problem.&lt;&#x2F;p&gt;
+&lt;p&gt;I set a watch on the variable &lt;code&gt;url-cookie-secure-storage&lt;&#x2F;code&gt;, where I knew my advent cookie was stored, and then called &lt;code&gt;advent-input&lt;&#x2F;code&gt; to trigger it:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;debugwatch.gif&quot; alt=&quot;debugwatch&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;From the stack trace, I could see that a file &lt;code&gt;~&#x2F;.emacs.d&#x2F;url&#x2F;cookies&lt;&#x2F;code&gt; was being parsed and loaded, and as a result  expression &lt;code&gt;(setq url-cookie-secure-storage &#x27;nil)&lt;&#x2F;code&gt; was being evaluated, which was blowing away the session token I had previously entered.&lt;&#x2F;p&gt;
+&lt;p&gt;I opened up &lt;code&gt;~&#x2F;.emacs.d&#x2F;url&#x2F;cookies&lt;&#x2F;code&gt; and saw what was being loaded and executed:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Lisp&quot; class=&quot;language-Lisp &quot;&gt;&lt;code class=&quot;language-Lisp&quot; data-lang=&quot;Lisp&quot;&gt;;; Emacs-W3 HTTP cookies file
+;; Automatically generated file!!! DO NOT EDIT!!!
+
+(setq url-cookie-storage
+ &amp;#x27;((&amp;quot;.stackoverflow.com&amp;quot;
+  [url-cookie &amp;quot;prov&amp;quot; &amp;quot;dramatic-reenactment&amp;quot; &amp;quot;Fri, 01-Jan-2055 00:00:00 GMT&amp;quot; &amp;quot;&amp;#x2F;&amp;quot; &amp;quot;.stackoverflow.com&amp;quot; nil]))
+)
+(setq url-cookie-secure-storage
+ &amp;#x27;nil)
+
+;; Local Variables:
+;; version-control: never
+;; no-byte-compile: t
+;; End:
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I&#x27;m not sure how the file was created, but I suspected that removing it would resolve my issue. Once I did, I was able to successfully download my input.&lt;&#x2F;p&gt;
+&lt;p&gt;As a bonus, I created a new cookies file that contained my advent of code session cookie to save myself the trouble of logging in.&lt;&#x2F;p&gt;
+&lt;p&gt;Thanks for reading!&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Model View Projection Matrices</title>
         <published>2022-11-23T00:00:00+00:00</published>
         <updated>2022-11-23T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/model-view-projection/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/model-view-projection/"/>
         <id>https://jeskin.net/blog/model-view-projection/</id>
-        <summary type="html">An introduction to some of the fundamental matrix transformations used in graphics programming.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/model-view-projection/">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h2&gt;
+&lt;p&gt;When a 3D model is rendered using a modern graphics API, three things typically occur:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;the programmer defines the vertices that define the model and passes them to the graphics API&lt;&#x2F;li&gt;
+&lt;li&gt;a transform matrix is created in the application and sent to the GPU&lt;&#x2F;li&gt;
+&lt;li&gt;the GPU calculates the screen position and color of each visible point on the object&#x27;s surface using the vertices and transform matrix&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering. It may be useful if you&#x27;re interested in getting started with low-level graphics programming or hand-rolling a 3D game engine.&lt;&#x2F;p&gt;
+&lt;p&gt;Some familiarity with graphics APIs such as OpenGL and knowledge of linear algebra is helpful but not required to follow along.&lt;&#x2F;p&gt;
+&lt;p&gt;The images in this post were produced by &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;model-view-projection&quot;&gt;model-view-projection&lt;&#x2F;a&gt;, an OpenGL ES application written in C99. It lets you fly a free roam camera around or tug on some on-screen controls, and you can see how they affect the values of the model, view, and projection matrices in real-time.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;mvp_ss.png&quot; alt=&quot;preview&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;h2 id=&quot;defining-vertices&quot;&gt;Defining Vertices&lt;&#x2F;h2&gt;
+&lt;p&gt;Before you can draw an object, you must tell the graphics API the locations of its vertices. Vertices are normalized floating point values between -1.0f and 1.0f that define points on a surface.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, the following define the position of a cube in 3D space:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;static GLfloat cube_verts[] =
+{
+    -0.5f,  0.5f,  0.5f,  &amp;#x2F;&amp;#x2F; 0 -- front
+    -0.5f, -0.5f,  0.5f,  &amp;#x2F;&amp;#x2F; 1
+     0.5f,  0.5f,  0.5f,  &amp;#x2F;&amp;#x2F; 2
+     0.5f, -0.5f,  0.5f,  &amp;#x2F;&amp;#x2F; 3
+     0.5f,  0.5f, -0.5f,  &amp;#x2F;&amp;#x2F; 4 -- back
+     0.5f, -0.5f, -0.5f,  &amp;#x2F;&amp;#x2F; 5
+    -0.5f,  0.5f, -0.5f,  &amp;#x2F;&amp;#x2F; 6
+    -0.5f, -0.5f, -0.5f,  &amp;#x2F;&amp;#x2F; 7
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;rectpts.png&quot; alt=&quot;verts&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;p&gt;Any values outside -1.0f and 1.0f are discarded because these points are supposed to be normalized. They serve to describe the location of each vertex relative to other vertices on the model, but give no context about their location in the world.&lt;&#x2F;p&gt;
+&lt;p&gt;These floating points are bound to objects in the graphics API and are stored in GPU memory. After the models are defined in terms of vertices, the graphics API maps the object to screen space through a series of matrix transforms. &lt;&#x2F;p&gt;
+&lt;h2 id=&quot;transform-matrices-act-like-functions&quot;&gt;Transform Matrices Act Like Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;A transform matrix is a mathematical construct that is used to describe how a point or a vector in one coordinate system is mapped to another coordinate system. Graphics APIs use these in order to map points on the surfaces of models in order to the 2D screen coordinates you see on your monitor. We can build a conceptual understanding of what they are by comparing them to polynomial functions.&lt;&#x2F;p&gt;
+&lt;p&gt;Consider the functions $f(x) = x^2$ and $g(x) = x + 2$. If we apply these in sequence, we obtain a composite function that maps each member of the set of real numbers to a single point on a line.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;fgx.png&quot; alt=&quot;fgx&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;p&gt;Matrix transformations represent functions that map one point in space to another point in space. (The mechanics of the operation are nicely summarized by &lt;a href=&quot;https:&#x2F;&#x2F;www.khanacademy.org&#x2F;math&#x2F;precalculus&#x2F;x9e81a4f98389efdf:matrices&#x2F;x9e81a4f98389efdf:multiplying-matrices-by-matrices&#x2F;a&#x2F;multiplying-matrices&quot;&gt;Khan Academy&lt;&#x2F;a&gt;.)&lt;&#x2F;p&gt;
+&lt;p&gt;As such, when you see a matrix transformation like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;⎡2 0 0 0⎤
+⎢0 2 0 0⎥
+⎢0 0 2 0⎥
+⎣0 0 0 1⎦
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You should be thinking of it as serving the same purpose of a polynomial function f(x). This particular matrix scales up any vector in 3D space to make it twice as large and is analogous to f(x) = 2x.&lt;&#x2F;p&gt;
+&lt;p&gt;And when you see matrix multiplication like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;⎡1 0 0 0⎤   ⎡2 0 0 0⎤
+⎢0 1 0 0⎥ * ⎢0 2 0 0⎥
+⎢0 0 1 0⎥   ⎢0 0 2 0⎥
+⎣0 0 0 1⎦   ⎣0 0 0 1⎦
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You should think of it as the composition f(g(x)). The first function in this sequence is the identity matrix, which leaves any input unchanged and is analogous to f(x) = x.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;model-matrix&quot;&gt;Model Matrix&lt;&#x2F;h2&gt;
+&lt;p&gt;Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix&#x27;s values to change.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;model.gif&quot; alt=&quot;model&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;In the demo application, values for translation, scaling, and rotation in the x, y, and z directions are stored in a global variable.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;struct orientation
+{
+    &amp;#x2F;&amp;#x2F; translation
+    float tx; float ty; float tz;
+    &amp;#x2F;&amp;#x2F; scaling
+    float sx; float sy; float sz;
+    &amp;#x2F;&amp;#x2F; rotation
+    float rx; float ry; float rz;
+};
+...
+static struct orientation cube_transform;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Eventually, these get wired up to the UI with a slider.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;nk_layout_row_dynamic(ctx, 32, 2);
+nk_label(ctx, &amp;quot;Scale x&amp;quot;, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+nk_slider_float(ctx, 0, &amp;amp;cube_transform.sx, 5.0f, 0.01f);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The vector and matrix math used in the application uses &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;HandmadeMath&#x2F;HandmadeMath&quot;&gt;Handmade Math&lt;&#x2F;a&gt;, which supports matrix and vector multiplication.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;view-matrix&quot;&gt;View Matrix&lt;&#x2F;h2&gt;
+&lt;p&gt;A view matrix in 3D rendering is a mathematical representation of the position and orientation of the virtual camera in the 3D scene. It defines the position and orientation of the camera in relation to the 3D world, and is used in conjunction with the model and projection matrices to transform the vertices of an object into the 2D screen space of the rendering engine. This allows the object to be accurately rendered on the screen from the perspective of the virtual camera.&lt;&#x2F;p&gt;
+&lt;p&gt;Changing the 3D position of the camera (sometimes referred to as the &amp;quot;eye&amp;quot;), or changing the direction the camera is looking (sometimes referred to as the &amp;quot;center&amp;quot;) is done by modifying 3D vectors which are parameters to the function that build the view matrix. In &lt;code&gt;HandmadeMath&lt;&#x2F;code&gt;, this is &lt;code&gt;HMM_LookAt&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;COVERAGE(HMM_LookAt, 1)
+HMM_INLINE hmm_mat4 HMM_PREFIX(LookAt)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up)
+{
+    ASSERT_COVERED(HMM_LookAt);
+
+    hmm_mat4 Result;
+
+    hmm_vec3 F = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(SubtractVec3)(Center, Eye));
+    hmm_vec3 S = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(Cross)(F, Up));
+    hmm_vec3 U = HMM_PREFIX(Cross)(S, F);
+
+    Result.Elements[0][0] = S.X;
+    Result.Elements[0][1] = U.X;
+    Result.Elements[0][2] = -F.X;
+    Result.Elements[0][3] = 0.0f;
+
+    Result.Elements[1][0] = S.Y;
+    Result.Elements[1][1] = U.Y;
+    Result.Elements[1][2] = -F.Y;
+    Result.Elements[1][3] = 0.0f;
+
+    Result.Elements[2][0] = S.Z;
+    Result.Elements[2][1] = U.Z;
+    Result.Elements[2][2] = -F.Z;
+    Result.Elements[2][3] = 0.0f;
+
+    Result.Elements[3][0] = -HMM_PREFIX(DotVec3)(S, Eye);
+    Result.Elements[3][1] = -HMM_PREFIX(DotVec3)(U, Eye);
+    Result.Elements[3][2] = HMM_PREFIX(DotVec3)(F, Eye);
+    Result.Elements[3][3] = 1.0f;
+
+    return (Result);
+}
+
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In the gif below, the free roam camera is implemented by changing the camera&#x27;s position in response to keyboard and mouse input. You can observe that when the camera pans around the cube, only the view transform is changing.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;view.png&quot; alt=&quot;view&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;h2 id=&quot;projection-matrix&quot;&gt;Projection Matrix&lt;&#x2F;h2&gt;
+&lt;p&gt;The view matrix defines the location of the observer and where they are looking, but that&#x27;s not enough to convert their line of sight to a 2D image. You also need to know the angle of how far they can see into their periphery, how close an object can come to their nose before it drops out of sight, and how far into the horizon they can see.&lt;&#x2F;p&gt;
+&lt;p&gt;These are all described by the projection matrix. In many graphics libraries you specify a field of view, distance to a near plane, and distance to a far plane, and the graphics library will use these to draw a frustum pointing from the camera&#x27;s eye to the location that it&#x27;s looking.&lt;&#x2F;p&gt;
+&lt;p&gt;The word &amp;quot;frustum&amp;quot; comes from the same Latin word meaning a removed slice. It is a 3D shape that is aligned with the oberserver&#x27;s eye and serves to capture a portion of 3D world space which will be rendered to the screen. That is, anything that is inside the current frustum may be drawn, but anything outside of it will not.&lt;&#x2F;p&gt;
+&lt;p&gt;You&#x27;ll often see them shown as a square shape, such as the yellow frustum in the image below, but they can have different shapes as well.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;frustum.gif&quot; alt=&quot;frustum&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;h1 id=&quot;drawing-the-scene&quot;&gt;Drawing the scene&lt;&#x2F;h1&gt;
+&lt;p&gt;To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you&#x27;ll see they often conditionally use &lt;a href=&quot;https:&#x2F;&#x2F;www.intel.com&#x2F;content&#x2F;www&#x2F;us&#x2F;en&#x2F;support&#x2F;articles&#x2F;000005779&#x2F;processors.html&quot;&gt;instruction set extensions&lt;&#x2F;a&gt; when the user&#x27;s hardware supports them to calculate the transformation more quickly and efficiently.&lt;&#x2F;p&gt;
+&lt;p&gt;The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.&lt;&#x2F;p&gt;
+&lt;p&gt;The programmer utilizes it by creating a shader program, such as the one below, that sits in GPU memory and is executed on the GPU every frame.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;static const char
+frustum_vert_shader[] =
+    &amp;quot;precision mediump float;&amp;quot;
+    &amp;quot;uniform mat4 mvp;&amp;quot;
+    &amp;quot;attribute vec4 a_position;&amp;quot;
+    &amp;quot;attribute vec4 a_color;&amp;quot;
+    &amp;quot;varying vec4 v_color;&amp;quot;
+    &amp;quot;void main()&amp;quot;
+    &amp;quot;{&amp;quot;
+    &amp;quot;gl_Position = mvp * a_position;&amp;quot;
+    &amp;quot;v_color = a_color;&amp;quot;
+    &amp;quot;}&amp;quot;;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Notice that the way we&#x27;re doing this, we multiply model * view * projection in our C code, and then pass the result to the GPU inside the shader program.&lt;&#x2F;p&gt;
+&lt;p&gt;What this means is that our CPU is making that calculation. Since we want to offload work to the GPU, wouldn&#x27;t it make sense to instead just pass the model, view, and projection matrices directly to the shader and offload that computation to the GPU?&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;static const char
+frustum_vert_shader[] =
+    &amp;quot;precision mediump float;&amp;quot;
+    &amp;quot;uniform mat4 model;&amp;quot;
+    &amp;quot;uniform mat4 view;&amp;quot;
+    &amp;quot;uniform mat4 projection;&amp;quot;
+    &amp;quot;attribute vec4 a_position;&amp;quot;
+    &amp;quot;attribute vec4 a_color;&amp;quot;
+    &amp;quot;varying vec4 v_color;&amp;quot;
+    &amp;quot;void main()&amp;quot;
+    &amp;quot;{&amp;quot;
+    &amp;quot;gl_Position = model * view * projection * a_position;&amp;quot;
+    &amp;quot;v_color = a_color;&amp;quot;
+    &amp;quot;}&amp;quot;;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The answer is no. Although the GPU has specialized hardware that&#x27;s extremely effecient at matrix operations, this change would be re-calculated at every vertex, which would wipe out any potential benefit.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;&#x2F;h2&gt;
+&lt;p&gt;If you&#x27;re trying to get started with graphics rendering, I hope this was helpful in solidifying your understanding. If there are any other topics in this area you have trouble with, feel free to &lt;a href=&quot;mailto:~eskin&#x2F;public-inbox@lists.sr.ht&quot;&gt;reach out&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;additional-resources&quot;&gt;Additional Resources&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;learnopengl.com&#x2F;Getting-started&#x2F;OpenGL&quot;&gt;OpenGL tutorials&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.youtube.com&#x2F;playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&quot;&gt;Video series on linear algebra&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;developer.tizen.org&#x2F;dev-guide&#x2F;2.4.0&#x2F;org.tizen.tutorials&#x2F;html&#x2F;native&#x2F;graphics&#x2F;opengl_tutorial_n.htm#cube&quot;&gt;OpenGL ES example application&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;em&gt;Thanks to Sam Cho and Stephen Eskin for helping with editing&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Self Hosting Git Repositories with Stagit</title>
         <published>2022-10-06T00:00:00+00:00</published>
         <updated>2022-10-06T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/self-hosting-git-with-stagit/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/self-hosting-git-with-stagit/"/>
         <id>https://jeskin.net/blog/self-hosting-git-with-stagit/</id>
-        <summary type="html">An overview of self hosting git and using stagit, a static site generator for git repositories, to build a web interface.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/self-hosting-git-with-stagit/">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h2&gt;
+&lt;p&gt;An alternative to hosting your source code on forges like &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;&quot;&gt;Github&lt;&#x2F;a&gt; is use your own server. This commonly involves running &lt;a href=&quot;https:&#x2F;&#x2F;git-scm.com&#x2F;book&#x2F;en&#x2F;v2&#x2F;Git-on-the-Server-Git-Daemon&quot;&gt;git as a daemon&lt;&#x2F;a&gt; and deploying a web interface such as &lt;a href=&quot;https:&#x2F;&#x2F;gitea.io&#x2F;en-us&#x2F;&quot;&gt;gitea&lt;&#x2F;a&gt;, &lt;a href=&quot;https:&#x2F;&#x2F;about.gitlab.com&#x2F;install&#x2F;&quot;&gt;gitlab&lt;&#x2F;a&gt;, &lt;a href=&quot;https:&#x2F;&#x2F;git.zx2c4.com&#x2F;cgit&#x2F;about&#x2F;&quot;&gt;cgit&lt;&#x2F;a&gt;, or &lt;a href=&quot;https:&#x2F;&#x2F;sourcehut.org&quot;&gt;sourcehut&lt;&#x2F;a&gt;. These projects essentially serve web applications that interface with the git server.&lt;&#x2F;p&gt;
+&lt;p&gt;However, if you&#x27;re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is &lt;a href=&quot;https:&#x2F;&#x2F;codemadness.org&#x2F;stagit.html&quot;&gt;stagit&lt;&#x2F;a&gt;. Unlike the aforementioned projects, stagit does not serve dynamic web content; it&#x27;s a C program that traverses git repositories using &lt;a href=&quot;https:&#x2F;&#x2F;libgit2.org&quot;&gt;libgit2&lt;&#x2F;a&gt; and writes data to HTML files as it reads it. It doesn&#x27;t run constantly and listen for filesystem changes, but is instead invoked manually or as a &lt;a href=&quot;https:&#x2F;&#x2F;git-scm.com&#x2F;book&#x2F;en&#x2F;v2&#x2F;Customizing-Git-Git-Hooks#_post_receive&quot;&gt;git hook&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;a-quick-tour-of-stagit&quot;&gt;A quick tour of Stagit&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;index-page&quot;&gt;Index Page&lt;&#x2F;h3&gt;
+&lt;p&gt;The index page sits atop a collection of repositories. It displays the name, description, owner, and last commit date of each repository with a link to each.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;index.png&quot; alt=&quot;index&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;log-page&quot;&gt;Log Page&lt;&#x2F;h3&gt;
+&lt;p&gt;The log page is the default page that you arrive at when you visit a repository from the index page. It shows the same information you would see running &lt;code&gt;git log&lt;&#x2F;code&gt; in a repository on the master branch.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;log.png&quot; alt=&quot;log&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;files-page&quot;&gt;Files Page&lt;&#x2F;h3&gt;
+&lt;p&gt;A listing of all files on the latest commit of the master branch, alongside filesizes and file modes. It didn&#x27;t occur to me before seeing this that git has account for file permissions.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;files.png&quot; alt=&quot;files&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;refs-page&quot;&gt;Refs Page&lt;&#x2F;h3&gt;
+&lt;p&gt;A list of all branches and tags pushed to the server. You can see them listed out here, but you can&#x27;t actually browse anything other than master.&lt;&#x2F;p&gt;
+&lt;p&gt;In order to display other branches, Stagit would need to write a ton of additional pages, and it&#x27;s very likely that other branches would very rarely be used.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead, if you want to view repository history related to other refs, you&#x27;re expected to just clone it and look locally.&lt;&#x2F;p&gt;
+&lt;p&gt;I think it&#x27;s an excellent tradeoff.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;refs.png&quot; alt=&quot;refs&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;readme-page&quot;&gt;Readme Page&lt;&#x2F;h3&gt;
+&lt;p&gt;The README file, if present, is readable in text form on a dedicated page. It&#x27;s probably the first thing you want to read, so it definitely deserves the real estate.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;readme.png&quot; alt=&quot;readme&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;license-page&quot;&gt;License Page&lt;&#x2F;h3&gt;
+&lt;p&gt;The license, if present, is important enough to get its own dedicated page. It&#x27;s crucial to highlight this information so that visitors intending to leverage code from the repository know the terms.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;license.png&quot; alt=&quot;license&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;running-the-program&quot;&gt;Running the Program&lt;&#x2F;h2&gt;
+&lt;p&gt;Stagit consists of two commands: &lt;code&gt;stagit-index&lt;&#x2F;code&gt;,which produces an index page that points to all your repositories, and &lt;code&gt;stagit&lt;&#x2F;code&gt;, which builds HTML pages for a single repository.&lt;&#x2F;p&gt;
+&lt;p&gt;Using them works as follows: you first run &lt;code&gt;stagit-index&lt;&#x2F;code&gt; passing in all of your git repositories as command line arguments, and then run &lt;code&gt;stagit&lt;&#x2F;code&gt; separately for each individual repository. There&#x27;s a &lt;a href=&quot;https:&#x2F;&#x2F;codemadness.org&#x2F;git&#x2F;stagit&#x2F;file&#x2F;example_create.sh.html&quot;&gt;shell script&lt;&#x2F;a&gt; in the stagit repo that will do both of these for you.&lt;&#x2F;p&gt;
+&lt;p&gt;This will create the HTML pages that describe the current state of all repositories, but it won&#x27;t update them for you when the repositories change. For this, you use git&#x27;s server-side &lt;a href=&quot;https:&#x2F;&#x2F;git-scm.com&#x2F;book&#x2F;en&#x2F;v2&#x2F;Customizing-Git-Git-Hooks#_post_receive&quot;&gt;post-receive hook&lt;&#x2F;a&gt; to update HTML pages for the index and the repository receiving the commit. Stagit provides another &lt;a href=&quot;https:&#x2F;&#x2F;codemadness.org&#x2F;git&#x2F;stagit&#x2F;file&#x2F;example_post-receive.sh.html&quot;&gt;sample script&lt;&#x2F;a&gt; that you can tweak and use for this as well.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;modest-modifications&quot;&gt;Modest Modifications&lt;&#x2F;h2&gt;
+&lt;p&gt;I&#x27;m maintaining &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;stagit&quot;&gt;a fork&lt;&#x2F;a&gt; of stagit that I use for my personal git server.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Update: I&#x27;ve since moved off my VPS and no longer run the git server.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Below is an overview of the features I added in.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;changes-to-readmes&quot;&gt;Changes to READMEs&lt;&#x2F;h3&gt;
+&lt;p&gt;The first thing I customized was to have repositories open straight to the README from the index page. If there is no README, it opens the log page just like upstream.&lt;&#x2F;p&gt;
+&lt;p&gt;I also leaned on &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;mity&#x2F;md4c&quot;&gt;md4c&lt;&#x2F;a&gt; to parse markdown into HTML instead of plaintext because I think it&#x27;s useful to be able to display screenshots and links.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;mdrender.png&quot; alt=&quot;mdrender&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;syntax-highlighting-on-files-with-customized-colors&quot;&gt;Syntax Highlighting on Files with Customized Colors&lt;&#x2F;h3&gt;
+&lt;p&gt;Instead of just writing out plaintext file contents, I changed stagit to use chroma to output HTML with syntax highlighting. To support this use, I upstreamed a &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alecthomas&#x2F;chroma&#x2F;commit&#x2F;d38b87110b078027006bc34aa27a065fa22295a1&quot;&gt;small enhancement&lt;&#x2F;a&gt; to the chroma repository that allows you to use linkable lines in HTML output.&lt;&#x2F;p&gt;
+&lt;p&gt;Finally, I changed Stagit&#x27;s light and dark themes to match the themes I use on my blog.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;themes.gif&quot; alt=&quot;themes&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;closing-thoughts&quot;&gt;Closing Thoughts&lt;&#x2F;h2&gt;
+&lt;p&gt;Stagit&#x27;s HTML pages appear to be designed with careful thought as to what someone viewing a repository would be interested in quickly learning. The commit log, README, files, license, and repository URL are never more than a click away, and the interface is free from clutter.&lt;&#x2F;p&gt;
+&lt;p&gt;The source code is very clear and readable. I was able to understand and modify it without significant C experience and the codebase was a pleasure to work with.&lt;&#x2F;p&gt;
+&lt;p&gt;Definitely give Stagit a try if you&#x27;re interested. You may want to read through the documentation&#x27;s &lt;a href=&quot;https:&#x2F;&#x2F;codemadness.org&#x2F;stagit.html&quot;&gt;list of pros and cons&lt;&#x2F;a&gt; to make sure it fits your needs.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Getting Started with Cosmopolitan Libc</title>
         <published>2022-09-04T00:00:00+00:00</published>
         <updated>2022-09-04T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/"/>
         <id>https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/</id>
-        <summary type="html">A practical guide to understanding Cosmopolitan Libc and using it to build single-file static executables that can run on a wide variety of operating systems.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/">&lt;p&gt;I recently learned a little bit about &lt;a href=&quot;https:&#x2F;&#x2F;justine.lol&#x2F;cosmopolitan&#x2F;index.html&quot;&gt;Cosmopolitan Libc&lt;&#x2F;a&gt; in order to make a portable executable of &lt;a href=&quot;https:&#x2F;&#x2F;jeskin.net&#x2F;blog&#x2F;clp&#x2F;&quot;&gt;clp&lt;&#x2F;a&gt;, a small program written for POSIX systems.&lt;&#x2F;p&gt;
+&lt;p&gt;I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.&lt;&#x2F;p&gt;
+&lt;p&gt;In this blog post I&#x27;ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;introduction-to-cosmopolitan-libc&quot;&gt;Introduction to Cosmopolitan Libc&lt;&#x2F;h3&gt;
+&lt;p&gt;Cosmopolitan is a C library. When you compile your C program and link it, your executable will be:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Runnable anywhere&lt;&#x2F;strong&gt;: it can be moved to a Linux, Mac OS X, Windows NT, FreeBSD, OpenBSD, and NetBSD and it will run.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Single-file&lt;&#x2F;strong&gt;: Cosmo can package up everything your program needs to run inside a single executable zip file. You won&#x27;t need to script installers to move files to platform-specific locations.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Statically linked&lt;&#x2F;strong&gt;: all dependencies including libc are self contained in each executable.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Cosmo&#x27;s &lt;strong&gt;executables are tiny&lt;&#x2F;strong&gt;- far smaller than you&#x27;d see for comparable from Rust or Go.&lt;&#x2F;p&gt;
+&lt;p&gt;Binaries currently &lt;strong&gt;only target x86&lt;&#x2F;strong&gt;. They also run out of the box on Apple Silicon and Windows ARM thanks to their built in x86_64 emulation, and you can use explicit x86_64 emulation elsewhere.&lt;&#x2F;p&gt;
+&lt;p&gt;GUI programs are not in a workable state or even an officially stated goal, although they are &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jart&#x2F;cosmopolitan&#x2F;issues&#x2F;35&quot;&gt;being explored&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Build-once run-anywhere is achieved by the &lt;strong&gt;Actually Portable Executable (APE)&lt;&#x2F;strong&gt; format. Executables built by Cosmopolitan are interpreted by Windows as &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Portable_Executable&quot;&gt;Portable Executables&lt;&#x2F;a&gt;, and on Unix they are interpreted as a shell script without a shebang line.&lt;&#x2F;p&gt;
+&lt;p&gt;Now let&#x27;s take a look at how we can use Cosmopolitan to build programs.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;building-programs-with-the-prebuilt-amalgamation&quot;&gt;Building Programs with the Prebuilt Amalgamation&lt;&#x2F;h3&gt;
+&lt;p&gt;The simplest way to build APE programs is to use GCC and link the &lt;a href=&quot;https:&#x2F;&#x2F;justine.lol&#x2F;cosmopolitan&#x2F;cosmopolitan.zip&quot;&gt;prebuilt library&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;An example of this approach can be seen in &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;hello-cosmo&quot;&gt;this makefile project&lt;&#x2F;a&gt; consisting of a &amp;quot;hello world source file&amp;quot;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;c&quot; class=&quot;language-c &quot;&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;int main() {
+    printf(&amp;quot;hello world\n&amp;quot;);
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And a Makefile, which, which grabs Cosmopolitan libs and compiles the program with it:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Makefile&quot; class=&quot;language-Makefile &quot;&gt;&lt;code class=&quot;language-Makefile&quot; data-lang=&quot;Makefile&quot;&gt;CC=gcc
+OBJCOPY=objcopy
+BASEURL=https:&amp;#x2F;&amp;#x2F;worker.jart.workers.dev
+AMALGAMATION=cosmopolitan-amalgamation-2.0.zip
+LIBCOSMO_SHA256_EXPECTED=\
+2228cd5924c001b2d8c8efcc9ddacaab354ba4c99a3e0c8858098e2c3f2e3fdb
+
+hello.com: libcosmo hello.c
+	$(CC) -g -Os -static -fno-pie -no-pie -nostdlib -nostdinc                  \
+		-fno-omit-frame-pointer -pg -mnop-mcount -mno-tls-direct-seg-refs -o   \
+		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld=bfd -Wl,--gc-sections \
+		-Wl,-T,libcosmo&amp;#x2F;ape.lds -include libcosmo&amp;#x2F;cosmopolitan.h         \
+		libcosmo&amp;#x2F;crt.o libcosmo&amp;#x2F;ape-no-modify-self.o                     \
+		libcosmo&amp;#x2F;cosmopolitan.a
+	$(OBJCOPY) -S -O binary hello.com.dbg hello.com
+
+libcosmo: $(AMALGAMATION)
+	@libcosmo_sha256_actual=`sha256sum $(AMALGAMATION) | cut -d &amp;#x27; &amp;#x27; -f 1`; \
+echo &amp;quot;expected sha256sum: $(LIBCOSMO_SHA256_EXPECTED)&amp;quot; &amp;amp;&amp;amp; echo \
+&amp;quot;actual   sha256sum: $$libcosmo_sha256_actual&amp;quot;; if	 \
+[ &amp;quot;$$libcosmo_sha256_actual&amp;quot; = &amp;quot;$(LIBCOSMO_SHA256_EXPECTED)&amp;quot; ]; then echo \
+&amp;quot;checksums match&amp;quot;; else echo &amp;quot;checksums don&amp;#x27;t match, aborting&amp;quot; &amp;amp;&amp;amp; exit 1; fi;
+	unzip -d libcosmo $(AMALGAMATION)
+
+$(AMALGAMATION):
+	wget &amp;quot;$(BASEURL)&amp;#x2F;$(AMALGAMATION)&amp;quot;
+
+clean:
+	rm -f hello.com.dbg hello.com
+
+distclean: clean
+	rm -rf cosmopolitan* libcosmo
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You might notice that hello.c does not contain a &lt;code&gt;#include &amp;lt;stdio.h&amp;gt;&lt;&#x2F;code&gt; line to provide the header for printf. Ordinarily, the c compiler would search the system headers for this file, which would provide the function declaration for &lt;code&gt;printf&lt;&#x2F;code&gt;, and then the linker would find the definition in the system standard library.&lt;&#x2F;p&gt;
+&lt;p&gt;In this case, the Makefile does not search the system headers because of the &lt;code&gt;-nostdinc&lt;&#x2F;code&gt; flag,  and it doesn&#x27;t link the system standard library because of the &lt;code&gt;-nostdlib&lt;&#x2F;code&gt; flag.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead, the makefile specifies an include for &lt;code&gt;cosmopolitan.h&lt;&#x2F;code&gt;, which provides declarations for all libc functions including &lt;code&gt;printf&lt;&#x2F;code&gt;, while the function definitions are provided by &lt;code&gt;cosmopolitan.a&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Because of the &lt;code&gt;-nostdinc&lt;&#x2F;code&gt; flag, if we added the include line to &lt;code&gt;hello.c&lt;&#x2F;code&gt;, we would get an error:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;hello.c:1:19: error: no include path in which to search for stdio.h
+    1 | #include &amp;lt;stdio.h&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As you might imagine, this will cause issues when you&#x27;re trying to port existing code written against the standard library. In some cases, there&#x27;s quite a few of them- too many to remove by hand. And we can&#x27;t just remove the &lt;code&gt;-nostdinc&lt;&#x2F;code&gt; flag, otherwise the compiler would find conflicting function declarations.&lt;&#x2F;p&gt;
+&lt;p&gt;A workaround is to create a folder in your project, fill it empty files that have names of all the system headers your code is looking for, and include that folder in the build path.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;---
+ Makefile             | 2 +-
+ header_stubs&amp;#x2F;stdio.h | 0
+ hello.c              | 2 ++
+ 3 files changed, 3 insertions(+), 1 deletion(-)
+ create mode 100644 header_stubs&amp;#x2F;stdio.h
+
+diff --git a&amp;#x2F;Makefile b&amp;#x2F;Makefile
+index 4bd867d..f7d3623 100644
+--- a&amp;#x2F;Makefile
++++ b&amp;#x2F;Makefile
+@@ -10,7 +10,7 @@ hello.com: libcosmo hello.c
+ 		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld=bfd -Wl,--gc-sections \
+ 		-Wl,-T,libcosmo&amp;#x2F;ape.lds -include libcosmo&amp;#x2F;cosmopolitan.h         \
+ 		libcosmo&amp;#x2F;crt.o libcosmo&amp;#x2F;ape-no-modify-self.o                     \
+-		libcosmo&amp;#x2F;cosmopolitan.a
++		libcosmo&amp;#x2F;cosmopolitan.a -Iheader_stubs&amp;#x2F;
+ 	$(OBJCOPY) -S -O binary hello.com.dbg hello.com
+ 
+ libcosmo: $(AMALGAMATION)
+diff --git a&amp;#x2F;header_stubs&amp;#x2F;stdio.h b&amp;#x2F;header_stubs&amp;#x2F;stdio.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a&amp;#x2F;hello.c b&amp;#x2F;hello.c
+index d07c467..11f7c99 100644
+--- a&amp;#x2F;hello.c
++++ b&amp;#x2F;hello.c
+@@ -1,3 +1,5 @@
++#include &amp;lt;stdio.h&amp;gt;
++
+ int main() {
+     printf(&amp;quot;hello world\n&amp;quot;);
+ }
+--
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This way the includes specified by the source code are found, but they&#x27;re replaced with empty content during preprocessing. This is what you want, since the declarations that the includes usually contain are already provided by &lt;code&gt;cosmopolitan.h&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I think building with the prebuilt amalgamation makes sense for small projects with few dependencies. It keeps the size of the source repository small and builds quickly.&lt;&#x2F;p&gt;
+&lt;p&gt;I was able to build &lt;code&gt;clp&lt;&#x2F;code&gt; with this approach by forking &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ahgamut&#x2F;lua&#x2F;tree&#x2F;cosmopolitan&quot;&gt;another project&lt;&#x2F;a&gt; which built Lua using the amalgamation prior to its inclusion in the hermetic monorepo. You can see the result &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;clp-prebuilt-cosmo&#x2F;tree&#x2F;clp&quot;&gt;here&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Without that fork existing, I wouldn&#x27;t have been able to compile clp this way. If your projects require non-trivial external dependencies, you&#x27;ll really need to know what you&#x27;re doing to get it to build.&lt;&#x2F;p&gt;
+&lt;p&gt;Luckily for me, there&#x27;s a different option that provides additional batteries.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;building-programs-inside-the-hermetic-monorepo&quot;&gt;Building Programs Inside the Hermetic Monorepo&lt;&#x2F;h3&gt;
+&lt;p&gt;Another way to build APE programs is to use the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jart&#x2F;cosmopolitan&quot;&gt;hermetic monorepo&lt;&#x2F;a&gt;. You&#x27;ll only need make installed on your system to build it; it uses a vendored GCC to bootstrap itself.&lt;&#x2F;p&gt;
+&lt;p&gt;The repository is managed with an interconnected system of makefiles which is documented &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jart&#x2F;cosmopolitan&#x2F;blob&#x2F;master&#x2F;Makefile#L99-L230&quot;&gt;within the main Makefile&lt;&#x2F;a&gt; that you use for building.&lt;&#x2F;p&gt;
+&lt;p&gt;In addition to providing core system functionality, the repository contains many programs, utilities, libraries, including the &lt;a href=&quot;https:&#x2F;&#x2F;redbean.dev&quot;&gt;redbean single file web server&lt;&#x2F;a&gt;, a &lt;a href=&quot;https:&#x2F;&#x2F;justine.lol&#x2F;blinkenlights&#x2F;&quot;&gt;command line debugger&lt;&#x2F;a&gt;, an &lt;a href=&quot;https:&#x2F;&#x2F;justine.lol&#x2F;nesemu1.html&quot;&gt;nes emulator that runs in a terminal&lt;&#x2F;a&gt;, implementations of sed, awk, and make, and much more. The code in all these projects is tailored to Cosmopolitan, which is nice because it makes it easier to yoink from them compared to external code that might need some finangling.&lt;&#x2F;p&gt;
+&lt;p&gt;For quick and dirty programs, you can drop a C file inside &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jart&#x2F;cosmopolitan&#x2F;tree&#x2F;master&#x2F;examples&quot;&gt;the examples folder&lt;&#x2F;a&gt; and it&#x27;ll get picked up and built inside &lt;code&gt;o&#x2F;examples&lt;&#x2F;code&gt;. That can be nice for trying out ideas or getting up and running quickly.&lt;&#x2F;p&gt;
+&lt;p&gt;For more involved projects, or for adding re-usable libraries, you will probably want to add a third_party module.&lt;&#x2F;p&gt;
+&lt;p&gt;Third_party modules follow repository-wide conventions where they include Makefiles that declare their source files, header files, dependencies on other packages, and more.&lt;&#x2F;p&gt;
+&lt;p&gt;To add a third_party module, you&#x27;ll want to study the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jart&#x2F;cosmopolitan&#x2F;tree&#x2F;master&#x2F;examples&#x2F;package&quot;&gt;example library package&lt;&#x2F;a&gt; and some of the programs packaged in the repository. You can also check out &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;cosmopolitan&#x2F;tree&#x2F;clp&quot;&gt;my fork&lt;&#x2F;a&gt;, where I added a clp third_party.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;d love to give a detailed breakdown of how to properly write a makefile for a third party, but I pretty much just copied sed&#x27;s, changed stuff, and hacked in some extras.&lt;&#x2F;p&gt;
+&lt;p&gt;Maintaining a personal fork of the monorepo and adding your own packages to it looks like a good way to manage projects. The repository appears designed to be modular and extensible, so upstream changes seem unlikely to break your code. If you want to core parts of the monorepo for a single package, you could always do so on another branch.&lt;&#x2F;p&gt;
+&lt;p&gt;Using the hermetic monorepo might seem like overkill for a tiny program. It&#x27;s pretty big repository, and the initial build can be kind of long. On the other hand, the executables it produces are tiny, iterative builds are quick, it gives nice options for tuning build output, and in general it makes maintainence easier.&lt;&#x2F;p&gt;
+&lt;p&gt;There&#x27;s another option for building software that I think is worth mentioning.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shortcut-for-portable-lua-programs&quot;&gt;Shortcut for Portable Lua Programs&lt;&#x2F;h3&gt;
+&lt;p&gt;Here&#x27;s a quick demonstration of how to package portable Lua programs. In this section we&#x27;ll build the Lua interpreter, copy it to the base of the repository, zip up a lua file into the executable, and configure it to run the lua file when the file is run.&lt;&#x2F;p&gt;
+&lt;p&gt;First, grab the monorepo if you haven&#x27;t already.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;git clone https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;jart&amp;#x2F;cosmopolitan.git
+cd cosmopolitan
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;From this point on, all commands should be run from the base of the repository.&lt;&#x2F;p&gt;
+&lt;p&gt;Build the Lua interpreter, and copy it to the base of the repo.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;build&amp;#x2F;bootstrap&amp;#x2F;make.com -j$(nproc) o&amp;#x2F;&amp;#x2F;third_party&amp;#x2F;lua
+cp o&amp;#x2F;&amp;#x2F;third_party&amp;#x2F;lua&amp;#x2F;lua.com .
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next, make a &lt;code&gt;.lua&lt;&#x2F;code&gt; folder and build the &lt;code&gt;zip.com&lt;&#x2F;code&gt; program.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;mkdir -p .lua
+build&amp;#x2F;bootstrap&amp;#x2F;make.com -j$(nproc) o&amp;#x2F;&amp;#x2F;third_party&amp;#x2F;zip
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now create a file &lt;code&gt;mymodule.lua&lt;&#x2F;code&gt; inside &lt;code&gt;.lua&lt;&#x2F;code&gt; by pasting the following text into your shell.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;printf %s &amp;#x27;local mymodule = {}
+
+function mymodule.hello()
+   print(&amp;quot;Hello World!&amp;quot;)
+end
+
+return mymodule&amp;#x27; &amp;gt; .lua&amp;#x2F;mymodule.lua
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next create a file &lt;code&gt;.args&lt;&#x2F;code&gt; in the base of the repository by again pasting the following text into your shell.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;printf %s &amp;#x27;-l
+mymodule
+-e
+require&amp;quot;mymodule&amp;quot;.hello()&amp;#x27; &amp;gt; .args
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This file will tell be loaded by the modified interpreter and the arguments will be presented to the interpreter as if they came from the command line.&lt;&#x2F;p&gt;
+&lt;p&gt;Finally, we&#x27;ll  use the &lt;code&gt;zip.com&lt;&#x2F;code&gt; program to load a &lt;code&gt;.lua&lt;&#x2F;code&gt; directory containing your lua files and the &lt;code&gt;.args&lt;&#x2F;code&gt; file which launches your program into the Lua interpreter binary.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;.&amp;#x2F;o&amp;#x2F;third_party&amp;#x2F;zip&amp;#x2F;zip.com -r lua.com .lua&amp;#x2F;
+.&amp;#x2F;o&amp;#x2F;third_party&amp;#x2F;zip&amp;#x2F;zip.com -r lua.com .args
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now if you run &lt;code&gt;lua.com&lt;&#x2F;code&gt;, the program will run the lua file and print &amp;quot;Hello World!&amp;quot; as if you had run it with &lt;code&gt;lua.com -l mymodule -e &#x27;require&amp;quot;mymodule&amp;quot;.hello()&#x27;&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;You can read more about these in the &lt;code&gt;&#x2F;.args&lt;&#x2F;code&gt; and the &lt;code&gt;&#x2F;.lua&#x2F;...&lt;&#x2F;code&gt; sections of &lt;a href=&quot;https:&#x2F;&#x2F;redbean.dev&#x2F;#specials&quot;&gt;redbean&#x27;s documenation&lt;&#x2F;a&gt;; just be aware that not all of redbean&#x27;s functionality is available to the Lua interpreter out of the box.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;wrap-up&quot;&gt;Wrap Up&lt;&#x2F;h3&gt;
+&lt;p&gt;That covers most of what I figured out on my own while playing around with Cosmopolitan.&lt;&#x2F;p&gt;
+&lt;p&gt;If you want to see what other people have done, check out some of the projects here: https:&#x2F;&#x2F;github.com&#x2F;shmup&#x2F;awesome-cosmopolitan&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;acknowledgements&quot;&gt;Acknowledgements&lt;&#x2F;h3&gt;
+&lt;p&gt;Thanks to &lt;a href=&quot;https:&#x2F;&#x2F;justine.lol&quot;&gt;Justine Tunney&lt;&#x2F;a&gt; for guidance on porting clp.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>CLI Workflow with Grep, Fzf, and Clp</title>
         <published>2022-08-02T00:00:00+00:00</published>
         <updated>2022-08-02T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/grep-fzf-clp/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/grep-fzf-clp/"/>
         <id>https://jeskin.net/blog/grep-fzf-clp/</id>
-        <summary type="html">Demonstrating chaining modern command line tools for a comfy terminal-based workflow.</summary>
-        </entry><entry xml:lang="en">
+        
+        <content type="html" xml:base="https://jeskin.net/blog/grep-fzf-clp/">&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;tldr.ostera.io&#x2F;grep&quot;&gt;grep&lt;&#x2F;a&gt;, &lt;a href=&quot;https:&#x2F;&#x2F;tldr.ostera.io&#x2F;ag&quot;&gt;ag&lt;&#x2F;a&gt;, and &lt;a href=&quot;https:&#x2F;&#x2F;www.mankier.com&#x2F;1&#x2F;rg&quot;&gt;ripgrep&lt;&#x2F;a&gt; search file contents for text that matches regular expressions. The previous links show some of their more advanced options.&lt;&#x2F;p&gt;
+&lt;p&gt;fzf is an interactive Unix filter. You can feed it anything from stdin (files, previously entered commands, etc) and it displays the results on the screen along with a prompt. When you type into the prompt, fzf filters the list.&lt;&#x2F;p&gt;
+&lt;p&gt;When combined, they can substantially speed up a CLI workflow.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;fzf-overview&quot;&gt;fzf overview&lt;&#x2F;h3&gt;
+&lt;p&gt;The command &amp;quot;fzf&amp;quot; on its own populates the list with all files in the current directory and its subfolders.&lt;&#x2F;p&gt;
+&lt;p&gt;If you&#x27;ve installed fzf from a distribution package manager, pressing &lt;a href=&quot;https:&#x2F;&#x2F;wiki.archlinux.org&#x2F;title&#x2F;fzf#Shells&quot;&gt;Ctrl+r&lt;&#x2F;a&gt; at a shell prompt populates the list with show your command history.&lt;&#x2F;p&gt;
+&lt;p&gt;As you type into the prompt, fzf narrows the results by fuzzy matching (e.g. typing &amp;quot;vcaa&amp;quot; matches &lt;code&gt;{{&amp;lt;red&amp;gt;}}v{{&amp;lt;&#x2F;red&amp;gt;}}im ~&#x2F;.{{&amp;lt;red&amp;gt;}}c{{&amp;lt;&#x2F;red&amp;gt;}}onfig&#x2F;{{&amp;lt;red&amp;gt;}}a{{&amp;lt;&#x2F;red&amp;gt;}}erc&#x2F;{{&amp;lt;red&amp;gt;}}a{{&amp;lt;&#x2F;red&amp;gt;}}erc.conf&lt;&#x2F;code&gt;). I find this very useful for digging up infrequently used commands involving git, ssh, or the system clipboard.&lt;&#x2F;p&gt;
+&lt;p&gt;The --preview option will kick off a program in a subprocess and display its output &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;junegunn&#x2F;fzf#preview-window&quot;&gt;in a tiled window&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The following command uses &lt;a href=&quot;https:&#x2F;&#x2F;jeskin.net&#x2F;blog&#x2F;clp&#x2F;&quot;&gt;clp&lt;&#x2F;a&gt; to fill the preview window. clp takes a file and writes it to stdout with syntax highlighting. fzf will provide the filename for each result, feed it to clp, and display the output in the righthand pane.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;fzf --preview &amp;#x27;clp {}&amp;#x27;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;fzf_clp.png&quot; alt=&quot;fzf_clp&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;You can scroll the preview window by holding shift pressing up&#x2F;down, or by using your mouse wheel.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;combination&quot;&gt;Combination&lt;&#x2F;h3&gt;
+&lt;p&gt;You can combine fzf and grep tool such as grep with fzf with a Unix pipe. Let&#x27;s see how that works.&lt;&#x2F;p&gt;
+&lt;p&gt;We&#x27;ll start by grepping for the the word &amp;quot;time&amp;quot;, chosen for just for demonstrative purposes:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;grep --recursive --line-number --binary-files=without-match &amp;quot;time&amp;quot; .
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here&#x27;s grep&#x27;s output, run in the &lt;a href=&quot;https:&#x2F;&#x2F;harelang.org&quot;&gt;Hare programming language&#x27;s&lt;&#x2F;a&gt; source directory:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;grep.png&quot; alt=&quot;grep&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;We can tell fzf to pick apart the output; we state that it&#x27;s colon delimited and that we want to pass the first column (the filename) to clp:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;grep --recursive --line-number --binary-files=without-match &amp;quot;time&amp;quot; . | fzf --delimiter=&amp;#x27;:&amp;#x27; --preview &amp;#x27;clp {1}&amp;#x27;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;fzf_grep.png&quot; alt=&quot;fzf_grep&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Observe that the second column of grep&#x27;s output contains the line number of the match.&lt;&#x2F;p&gt;
+&lt;p&gt;We can tell fzf to center the output of the preview window on the matched line and tell clp to highlight the line with the -h flag.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;grep --recursive --line-number --binary-files=without-match &amp;quot;time&amp;quot; . | fzf --delimiter=&amp;#x27;:&amp;#x27; -n 2.. --preview-window &amp;#x27;+{2}-&amp;#x2F;2&amp;#x27; --preview &amp;#x27;clp -h {2} {1}&amp;#x27;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;fzf_clp_line2.png&quot; alt=&quot;fzf_clp_line&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Finally, we can bind a key to open the file in a text editor and jump to the location of the matched line. When we quit the editor, we&#x27;ll be right back where we were in fzf.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;grep --recursive --line-number --binary-files=without-match &amp;quot;time&amp;quot; . | fzf --delimiter=&amp;#x27;:&amp;#x27; -n 2.. --preview-window &amp;#x27;+{2}-&amp;#x2F;2&amp;#x27; --preview &amp;#x27;clp -h {2} {1}&amp;#x27; --bind &amp;#x27;ctrl-o:execute(vim +{2} {1} &amp;lt; &amp;#x2F;dev&amp;#x2F;tty)&amp;#x27;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Note that you can trivially swap out grep for ag or ripgrep and it&#x27;ll work just fine.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;ag --color --line-number &amp;quot;time&amp;quot; | fzf --delimiter=&amp;#x27;:&amp;#x27; -n 2.. --preview-window &amp;#x27;+{2}-&amp;#x2F;2&amp;#x27; --preview &amp;#x27;clp -h {2} {1}&amp;#x27; --bind &amp;#x27;ctrl-o:execute(vim +{2} {1} &amp;lt; &amp;#x2F;dev&amp;#x2F;tty)&amp;#x27;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The command has grown pretty long. I tend to throw everything after the first pipe in a script on my path and pipe grep commands to that instead.&lt;&#x2F;p&gt;
+&lt;p&gt;In conclusion, we&#x27;ve seen that this approach provides editor agnostic searching and file previewing. Having grep at your fingertips allows you to effortlessly make elaborate searches without the constraints of editor plugins.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Fast Command Line Syntax Highlighting with Clp</title>
         <published>2022-07-28T00:00:00+00:00</published>
         <updated>2022-07-28T00:00:00+00:00</updated>
+        
         <author>
-            <name>Jon Eskin</name>
+          <name>
+            
+              Unknown
+            
+          </name>
         </author>
-        <link rel="alternate" href="https://jeskin.net/blog/clp/" type="text/html"/>
+        
+        <link rel="alternate" type="text/html" href="https://jeskin.net/blog/clp/"/>
         <id>https://jeskin.net/blog/clp/</id>
-        <summary type="html">Introduction to a fast command line syntax highlighting tool that supports over 150 languages.</summary>
-        </entry>
+        
+        <content type="html" xml:base="https://jeskin.net/blog/clp/">&lt;p&gt;&lt;em&gt;clp&#x27;s source code and installation instructions are available on &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;clp&quot;&gt;Github&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;sr.ht&#x2F;~eskin&#x2F;clp&#x2F;&quot;&gt;Sourcehut&lt;&#x2F;a&gt;. It’s a work in progress hobby project, so expect bugs and quirks.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;clp is a program that writes files to stdout with syntax highlighting. I built it to quickly fill fzf&#x27;s preview window.&lt;&#x2F;p&gt;
+&lt;p&gt;It&#x27;s similar to &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;sharkdp&#x2F;bat&quot;&gt;bat&lt;&#x2F;a&gt; but is simpler, faster, and easier to add languages that don&#x27;t have existing Sublime syntax definitions.&lt;&#x2F;p&gt;
+&lt;p&gt;When the --preview option is set in fzf, the preview command is kicked off in an external process and the results are displayed in the preview window, which in this case is clp.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;
+fzf --preview &amp;#x27;clp {}&amp;#x27;
+
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here&#x27;s what we see when we execute the command:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;fzf_clp.png&quot; alt=&quot;fzf_clp&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;clp obtains syntax highlighting information from &lt;a href=&quot;http:&#x2F;&#x2F;www.inf.puc-rio.br&#x2F;~roberto&#x2F;docs&#x2F;peg.pdf&quot;&gt;Parsing Expressing Grammar (PEG)&lt;&#x2F;a&gt; lexers provided by &lt;a href=&quot;https:&#x2F;&#x2F;orbitalquark.github.io&#x2F;scintillua&#x2F;&quot;&gt;Scintillua&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The implementation is very simple; here&#x27;s how clp works:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;shepherd input files to their respective lexer based on checks for filetype extension, MIME type, and more (thanks to Vis contributor Ian Nomar, who was hugely helpful in ironing out kinks in this project)&lt;&#x2F;li&gt;
+&lt;li&gt;lex the input file and produce a list of tokens&lt;&#x2F;li&gt;
+&lt;li&gt;iterate over the list of tokens:
+&lt;ul&gt;
+&lt;li&gt;for each token, it look up an ANSI color escape sequence corresponding to each token type, write it to stdout, and then write out the text that yielded the token to stdout&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;I hacked in an option to highlight line a line as well, since that&#x27;s nice for file previewing.&lt;&#x2F;p&gt;
+&lt;p&gt;Here&#x27;s a performance comparison to similar programs taken from my machine, measuring the time it takes to highlight the &lt;a href=&quot;https:&#x2F;&#x2F;sqlite.org&#x2F;amalgamation.html&quot;&gt;sqlite3 amalgamation&lt;&#x2F;a&gt; using &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;sharkdp&#x2F;hyperfine&quot;&gt;hyperfine&lt;&#x2F;a&gt;:&lt;&#x2F;p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;Command&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Mean [ms]&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Min [ms]&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Max [ms]&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Relative&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;clp sqlite3.c&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;212.7 ± 0.9&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;211.5&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;214.7&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;1.00&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;bat --color=always sqlite3.c&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;3178.0 ± 109.6&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;3128.6&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;3488.7&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;14.94 ± 0.52&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;code&gt;source-highlight sqlite3.c&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;4276.2 ± 12.6&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;4259.6&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;4297.7&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;20.10 ± 0.11&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;median.png&quot; alt=&quot;median&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;It&#x27;s a pretty nice performance increase. It can also highlight around 150 programming languages, markup languages, input files, configuration files, and types of program output.&lt;&#x2F;p&gt;
+&lt;p&gt;clp is currently limited to 16 colors; since the program itself can run on any system with a C99 compiler, I figured I&#x27;d keep its default configuration very basic so it can run in any 16 color terminal emulator out of the box.&lt;&#x2F;p&gt;
+&lt;p&gt;Down the line I would like to make clp more easily theme-able and add some built-in themes. I&#x27;d also like to improve the aesthetics of line highlighting.&lt;&#x2F;p&gt;
+&lt;p&gt;When I started the project, I had very little knowledge of Lua, Autotools, and C. Working on it was a very fun and satisfying way to get more familiar with all of them.&lt;&#x2F;p&gt;
+&lt;p&gt;Overall, I&#x27;m happy with how clp is coming along and am excited to add more. It&#x27;s fast, supports a ton of languages, is easily extendable, and very portable to boot.&lt;&#x2F;p&gt;
+&lt;p&gt;Contributions are welcome, and if you&#x27;d like to add a lexer, you should submit it upstream to Scintillua. If it isn&#x27;t accepted there, I will merge pretty much any lexer that does not try to mine for Bitcoin.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;clp&#x27;s source code and installation instructions are available on &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;clp&quot;&gt;Github&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;sr.ht&#x2F;~eskin&#x2F;clp&#x2F;&quot;&gt;Sourcehut&lt;&#x2F;a&gt;&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Update 8&#x2F;20&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;adding-color-themes&quot;&gt;Adding color themes&lt;&#x2F;h3&gt;
+&lt;p&gt;I&#x27;ve added the ability to change clp&#x27;s colors by selecting different built-in color themes or creating your own.&lt;&#x2F;p&gt;
+&lt;p&gt;To change your theme, create a configuration file in &lt;code&gt;~&#x2F;.config&#x2F;clp&#x2F;clprc.lua&lt;&#x2F;code&gt; to override the system default. It should look like this:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;lua&quot; class=&quot;language-lua &quot;&gt;&lt;code class=&quot;language-lua&quot; data-lang=&quot;lua&quot;&gt;clprc = {}
+clprc.theme = &amp;quot;ansi-16&amp;quot;
+return clprc
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The value of &lt;code&gt;clprc.theme&lt;&#x2F;code&gt; is the name of a colorscheme that &lt;code&gt;clp&lt;&#x2F;code&gt; will later &lt;code&gt;require&lt;&#x2F;code&gt;. The following themes are available out of the box:&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;3-bit-ansi-theme&quot;&gt;3-bit ANSI theme&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ansi-16&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;truecolor-themes&quot;&gt;Truecolor themes&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;material&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;codedark&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;github_dark&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;github_light&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;gruvbox&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;tokyonight&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;sonokai&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;everforest&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;The ANSI theme is enabled by default; it uses 16 color ANSI codes and should work on both light or dark terminals. The truecolors themes were exported from vim using &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jpe90&#x2F;export-colorscheme.nvim&quot;&gt;export-colorscheme.nvim&lt;&#x2F;a&gt;, which is a little neovim plugin I wrote recently.&lt;&#x2F;p&gt;
+&lt;p&gt;You can create your own themes in &lt;code&gt;~&#x2F;.config&#x2F;clp&#x2F;themes&#x2F;&lt;&#x2F;code&gt;. Like with &lt;code&gt;clprc.lua&lt;&#x2F;code&gt;, these should be Lua modules. Here&#x27;s the definition of &lt;code&gt;ansi-16&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;lua&quot; class=&quot;language-lua &quot;&gt;&lt;code class=&quot;language-lua&quot; data-lang=&quot;lua&quot;&gt;local M = {}
+M.theme = {
+	[&amp;#x27;comment&amp;#x27;] = {color=&amp;quot;cyan&amp;quot;},
+	[&amp;#x27;keyword&amp;#x27;] = {color=&amp;quot;blue&amp;quot;},
+	[&amp;#x27;number&amp;#x27;] = {color=&amp;quot;red&amp;quot;},
+	[&amp;#x27;string&amp;#x27;] = {color=&amp;quot;green&amp;quot;},
+	[&amp;#x27;preprocessor&amp;#x27;] = {color=&amp;quot;magenta&amp;quot;},
+	[&amp;#x27;type&amp;#x27;] = {color=&amp;quot;yellow&amp;quot;},
+}
+return M
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The table keys on the left correspond to lexical tokens picked up by the lexer, and the right specifies the color assigned to that token when the text is written to stdout.&lt;&#x2F;p&gt;
+&lt;p&gt;When the right hand value is a Lua object like above, &lt;code&gt;clp&lt;&#x2F;code&gt; will use 16 color ANSI codes to highlight the token.&lt;&#x2F;p&gt;
+&lt;p&gt;To use truecolor, the right hand value should be a string in the form &lt;code&gt;&amp;quot;#RRGGBB&amp;quot;&lt;&#x2F;code&gt; using hex values, like here:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;lua&quot; class=&quot;language-lua &quot;&gt;&lt;code class=&quot;language-lua&quot; data-lang=&quot;lua&quot;&gt;[&amp;#x27;comment&amp;#x27;] = &amp;quot;#6a9955&amp;quot;,
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This will cause &lt;code&gt;clp&lt;&#x2F;code&gt; to emit 24 bit color codes upon encountering the token. This means it will only render if the terminal being used &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;termstandard&#x2F;colors#fully-supporting&quot;&gt;supports truecolor.&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Throw a bunch of these definitions in a lua file in &lt;code&gt;~&#x2F;.config&#x2F;clp&#x2F;themes&#x2F;&lt;&#x2F;code&gt;, then set &lt;code&gt;clprc.theme&lt;&#x2F;code&gt; to the name of the file (not including the file extension), and you should be good to go!&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;acknowledgements&quot;&gt;Acknowledgements&lt;&#x2F;h3&gt;
+&lt;p&gt;Many thanks to:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Marc André Tanner &amp;amp; contributors for Vis&lt;&#x2F;li&gt;
+&lt;li&gt;Rich Felker for musl libc&#x27;s awesome configure script and makefile&lt;&#x2F;li&gt;
+&lt;li&gt;orbitalquark for Scintillua&lt;&#x2F;li&gt;
+&lt;li&gt;Ian Nomar and Christopher Wellons for contributions &amp;amp; suggestions&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
 </feed>

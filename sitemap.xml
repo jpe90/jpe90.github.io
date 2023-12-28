@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="https://jeskin.net/sitemap_style.xsl" type="text/xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://jeskin.net/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/about/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/archive/</loc>
     </url>
     <url>
         <loc>https://jeskin.net/blog/</loc>
@@ -46,88 +39,11 @@
         <lastmod>2022-11-23</lastmod>
     </url>
     <url>
-        <loc>https://jeskin.net/blog/page/1/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/blog/page/2/</loc>
-    </url>
-    <url>
         <loc>https://jeskin.net/blog/raspberry-cam-home-monitoring/</loc>
         <lastmod>2022-12-28</lastmod>
     </url>
     <url>
         <loc>https://jeskin.net/blog/self-hosting-git-with-stagit/</loc>
         <lastmod>2022-10-06</lastmod>
-    </url>
-    <url>
-        <loc>https://jeskin.net/es/about/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/es/privacy/</loc>
-        <lastmod>2023-11-07</lastmod>
-    </url>
-    <url>
-        <loc>https://jeskin.net/privacy/</loc>
-        <lastmod>2023-11-07</lastmod>
-    </url>
-    <url>
-        <loc>https://jeskin.net/projects/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/projects/chu/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/projects/nani/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/projects/spectro/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/projects/tabi/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/ai/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/c/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/clp/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/emacs/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/fzf/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/git/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/graphics-programming/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/home-security/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/irc/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/lisp/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/lua/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/raspberry-pi/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/stable-diffusion/</loc>
-    </url>
-    <url>
-        <loc>https://jeskin.net/tags/vr/</loc>
     </url>
 </urlset>
