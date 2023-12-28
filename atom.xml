@@ -865,10 +865,8 @@ Argument SESSION session cookie value.&amp;quot;
 &lt;p&gt;After the function finished, I ran &lt;code&gt;url-cookie-list&lt;&#x2F;code&gt; and saw that a cookie for domain &lt;code&gt;.adventofcode.com&lt;&#x2F;code&gt; was indeed created.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cookies.gif&quot; alt=&quot;cookies&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;With the cookie visible, &lt;code&gt;advent-input&lt;&#x2F;code&gt; still failed with a 400 error.&lt;&#x2F;p&gt;
-&lt;p&gt;At this point, I re-ran &lt;code&gt;url-cookie-list&lt;&#x2F;code&gt; and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie even though I hadn&#x27;t visited the site between the two commands.&lt;&#x2F;p&gt;
+&lt;p&gt;At this point, I re-ran &lt;code&gt;url-cookie-list&lt;&#x2F;code&gt; and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie at some point during the execution of &lt;code&gt;advent-input&lt;&#x2F;code&gt; even though I hadn&#x27;t visited the site between the two commands.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;stackoverflow.png&quot; alt=&quot;stackoverflow&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;em&gt;Note: session token modified to protect the innocent&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
-&lt;p&gt;At some point during the execution of &lt;code&gt;advent-input&lt;&#x2F;code&gt;, my session cookie was inputting was being replaced.&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;Lisp&quot; class=&quot;language-Lisp &quot;&gt;&lt;code class=&quot;language-Lisp&quot; data-lang=&quot;Lisp&quot;&gt;(defun advent-input (&amp;amp;optional day)
   &amp;quot;Load todays adventofcode.com input in other window.
 Optional argument DAY Load this day instead.  Defaults to today.&amp;quot;
@@ -958,8 +956,8 @@ Optional argument DAY Load this day instead.  Defaults to today.&amp;quot;
 &lt;p&gt;These floating points are bound to objects in the graphics API and are stored in GPU memory. After the models are defined in terms of vertices, the graphics API maps the object to screen space through a series of matrix transforms. &lt;&#x2F;p&gt;
 &lt;h2 id=&quot;transform-matrices-act-like-functions&quot;&gt;Transform Matrices Act Like Functions&lt;&#x2F;h2&gt;
 &lt;p&gt;A transform matrix is a mathematical construct that is used to describe how a point or a vector in one coordinate system is mapped to another coordinate system. Graphics APIs use these in order to map points on the surfaces of models in order to the 2D screen coordinates you see on your monitor. We can build a conceptual understanding of what they are by comparing them to polynomial functions.&lt;&#x2F;p&gt;
-&lt;p&gt;Consider the functions $f(x) = x^2$ and $g(x) = x + 2$. If we apply these in sequence, we obtain a composite function that maps each member of the set of real numbers to a single point on a line.&lt;&#x2F;p&gt;
-&lt;img src=&quot;&#x2F;images&#x2F;fgx.png&quot; alt=&quot;fgx&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;p&gt;Consider the functions f(x) = x^2 and g(x) = x + 2. If we apply these in sequence, we obtain a composite function that maps each member of the set of real numbers to a single point on a line.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;fgx2.png&quot; alt=&quot;fgx&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
 &lt;p&gt;Matrix transformations represent functions that map one point in space to another point in space. (The mechanics of the operation are nicely summarized by &lt;a href=&quot;https:&#x2F;&#x2F;www.khanacademy.org&#x2F;math&#x2F;precalculus&#x2F;x9e81a4f98389efdf:matrices&#x2F;x9e81a4f98389efdf:multiplying-matrices-by-matrices&#x2F;a&#x2F;multiplying-matrices&quot;&gt;Khan Academy&lt;&#x2F;a&gt;.)&lt;&#x2F;p&gt;
 &lt;p&gt;As such, when you see a matrix transformation like this:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;⎡2 0 0 0⎤
@@ -977,7 +975,7 @@ Optional argument DAY Load this day instead.  Defaults to today.&amp;quot;
 &lt;p&gt;You should think of it as the composition f(g(x)). The first function in this sequence is the identity matrix, which leaves any input unchanged and is analogous to f(x) = x.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;model-matrix&quot;&gt;Model Matrix&lt;&#x2F;h2&gt;
 &lt;p&gt;Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix&#x27;s values to change.&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;model.gif&quot; alt=&quot;model&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;model.gif&quot; alt=&quot;model&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
 &lt;p&gt;In the demo application, values for translation, scaling, and rotation in the x, y, and z directions are stored in a global variable.&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;struct orientation
 {
@@ -1036,13 +1034,13 @@ HMM_INLINE hmm_mat4 HMM_PREFIX(LookAt)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 U
 
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;In the gif below, the free roam camera is implemented by changing the camera&#x27;s position in response to keyboard and mouse input. You can observe that when the camera pans around the cube, only the view transform is changing.&lt;&#x2F;p&gt;
-&lt;img src=&quot;&#x2F;images&#x2F;view.png&quot; alt=&quot;view&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;view.gif&quot; alt=&quot;view&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
 &lt;h2 id=&quot;projection-matrix&quot;&gt;Projection Matrix&lt;&#x2F;h2&gt;
 &lt;p&gt;The view matrix defines the location of the observer and where they are looking, but that&#x27;s not enough to convert their line of sight to a 2D image. You also need to know the angle of how far they can see into their periphery, how close an object can come to their nose before it drops out of sight, and how far into the horizon they can see.&lt;&#x2F;p&gt;
 &lt;p&gt;These are all described by the projection matrix. In many graphics libraries you specify a field of view, distance to a near plane, and distance to a far plane, and the graphics library will use these to draw a frustum pointing from the camera&#x27;s eye to the location that it&#x27;s looking.&lt;&#x2F;p&gt;
 &lt;p&gt;The word &amp;quot;frustum&amp;quot; comes from the same Latin word meaning a removed slice. It is a 3D shape that is aligned with the oberserver&#x27;s eye and serves to capture a portion of 3D world space which will be rendered to the screen. That is, anything that is inside the current frustum may be drawn, but anything outside of it will not.&lt;&#x2F;p&gt;
 &lt;p&gt;You&#x27;ll often see them shown as a square shape, such as the yellow frustum in the image below, but they can have different shapes as well.&lt;&#x2F;p&gt;
-&lt;img src=&quot;&#x2F;images&#x2F;frustum.gif&quot; alt=&quot;frustum&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;frustum.png&quot; alt=&quot;frustum&quot; style=&quot;width: 50%;&quot; &#x2F;&gt;
 &lt;h1 id=&quot;drawing-the-scene&quot;&gt;Drawing the scene&lt;&#x2F;h1&gt;
 &lt;p&gt;To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you&#x27;ll see they often conditionally use &lt;a href=&quot;https:&#x2F;&#x2F;www.intel.com&#x2F;content&#x2F;www&#x2F;us&#x2F;en&#x2F;support&#x2F;articles&#x2F;000005779&#x2F;processors.html&quot;&gt;instruction set extensions&lt;&#x2F;a&gt; when the user&#x27;s hardware supports them to calculate the transformation more quickly and efficiently.&lt;&#x2F;p&gt;
 &lt;p&gt;The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.&lt;&#x2F;p&gt;

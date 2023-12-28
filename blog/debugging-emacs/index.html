@@ -61,10 +61,8 @@ Argument SESSION session cookie value.&quot;
 <p>After the function finished, I ran <code>url-cookie-list</code> and saw that a cookie for domain <code>.adventofcode.com</code> was indeed created.</p>
 <p><img src="/images/cookies.gif" alt="cookies" /></p>
 <p>With the cookie visible, <code>advent-input</code> still failed with a 400 error.</p>
-<p>At this point, I re-ran <code>url-cookie-list</code> and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie even though I hadn't visited the site between the two commands.</p>
+<p>At this point, I re-ran <code>url-cookie-list</code> and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie at some point during the execution of <code>advent-input</code> even though I hadn't visited the site between the two commands.</p>
 <p><img src="/images/stackoverflow.png" alt="stackoverflow" /></p>
-<p><em>Note: session token modified to protect the innocent</em></p>
-<p>At some point during the execution of <code>advent-input</code>, my session cookie was inputting was being replaced.</p>
 <pre data-lang="Lisp" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp">(defun advent-input (&amp;optional day)
   &quot;Load todays adventofcode.com input in other window.
 Optional argument DAY Load this day instead.  Defaults to today.&quot;
