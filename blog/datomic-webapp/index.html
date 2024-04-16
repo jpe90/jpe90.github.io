@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jon Eskin's Blog</title>
+  
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      
+<header>
+  <a href="https:&#x2F;&#x2F;jeskin.net" class="title">
+    <h2></h2>
+  </a>
+</header>
+<style>
+img { max-width: 100%; height: auto; }
+pre { max-width: 100%; height: auto; white-space: pre-wrap; }
+.np {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-bottom: .5em;
+  font-style: italic;
+  max-width: 50%; /* Set maximum width to 50% */
+  margin: auto; /* Center the element horizontally */
+}
+</style>
+
+<h1 class="title">
+  Clojure and Datomic for Web Applications
+</h1>
+<p><em>Note: I've been sitting on this for a while, I didn't get all my thoughts out so I'll probably be updating it over time.</em></p>
+<h1 id="introduction">Introduction</h1>
+<p>A couple of years ago, I was a stay-at-home-dad during the day and freelancing at night when I got an opportunity to pitch a CRUD system to a potential client. Over the course of my career I've worked on a number of Java, C#, and Python webapps backed by SQL databases, but I had been learning about Clojure/Datomic for a while. My intuition was that these were a great fit for the mid-sized system I was proposing and I decided to explore this theory by build out a fully functional prototype. </p>
+<p>From the outside, it looks more or less like any other web application you can expect.</p>
+<video width=75% controls autoplay>
+    <source src="/videos/tutoring.mp4" type="video/mp4">
+    Your browser does not support the video tag.  
+</video>
+<p>The insides were much more interesting, however. The project didn't pan out, but the experience stuck with me and I wanted to do a post-mortem writeup to discuss my thoughts on using Clojure/Datomic for web applications.</p>
+<h1 id="clojure-very-briefly-for-the-uninitiated">Clojure, very briefly, for the uninitiated</h1>
+<p>Clojure is a JVM programming language with some distinguishing features:</p>
+<ul>
+<li>dynamic scripting language designed to keep a running process that can be manipulated (similar to Python, but with more interaction)</li>
+<li>emphasizes functional programming, but allows for mutation where needed</li>
+<li>uses Lisp syntax, i.e. <code>(println &quot;hello&quot;)</code> instead of <code>System.out.println(&quot;hello&quot;)</code></li>
+</ul>
+<p>One of Clojure's strongest use cases is for web programming. Deployment works pretty much the same as it does for Java; you can package up Clojure applications into an archive that include all dependencies, drop it into a server, and run it. I used a $5/mo VPS, installed the JDK and Clojure, set up the Datomic peer library backed by Postgres, and it was off to the races.</p>
+<p>Once deployed, Clojure applications can listen on a socket for connections. Developers can connect to the program from their editor and run commands to inspect or manipulate the program. In fact, it is common to develop applications while they are running, without the need for recompilation. For medium to large sized projects, this is significant. Java projects I worked on in the past could take fifteen minutes to compile, and larger projects took longer.</p>
+<h2 id="templating">Templating</h2>
+<p>In languages like Java, you tend to use HTML templating languages like Thymeleaf or JSPs to embed dynamic data from the server into pages. It generally looks something like this:</p>
+<pre data-lang="HTML" class="language-HTML "><code class="language-HTML" data-lang="HTML">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Sample Page&lt;&#x2F;title&gt;
+&lt;&#x2F;head&gt;
+&lt;body&gt;
+    &lt;div th:text=&quot;&#x27;Hello, &#x27; + ${user}&quot;&gt;Hello, World!&lt;&#x2F;div&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;
+</code></pre>
+<p>These work well and are instantly familiar to all web developers, but it's easy to wind up with either heavy amounts of duplication or a rat's nest of nested page includes that are difficult to work with.</p>
+<p>Clojure, by contrast, has a popular library named Hiccup to render with Clojure data structures directly. So instead of a template to define a page like above, Clojure </p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:html
+ [:head
+  [:title &quot;Sample Page&quot;]]
+ [:body
+  [:div &quot;Hello, &quot; user]]]
+</code></pre>
+<p>The Java template above is stored in a file, parsed, and processed by Java code. </p>
+<p>The Clojure definition is just a literal hash table - a plain data structure in the language. It doesn't need special treatment or processing, and it can be passed around or programatically manipulated at will. Here is a chunk of code from my application that builds some of my HTML. It's a little noisy because I'm using Tailwind CSS, which needs lots of classes and markup.</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:div.mx-auto.max-w-7xl.px-4.sm:px-6.lg:px-8.py-4
+  (if (empty? courses)
+    [:p &quot;Staff is not assigned to any courses&quot;]
+    (map (tailwind-table-registrations staff-id) courses))
+  [:div.py-4
+    [:a.mt-3.rounded-md.bg-indigo-600.px-3.py-2.text-sm.font-semibold.text-white.shadow-sm.hover:bg-blue-500.focus:outline 
+      {:href (str &quot;&#x2F;admin&#x2F;assign&#x2F;&quot; staff-id)} (str &quot;Assign &quot; staff-name &quot; to Courses&quot;)]]
+  [:div
+    [:a.mt-3.rounded-md.bg-indigo-600.px-3.py-2.text-sm.font-semibold.text-white.shadow-sm.hover:bg-blue-500.focus:outline 
+      {:href &quot;&#x2F;admin&quot;} &quot;Back to Portal&quot;]]]
+</code></pre>
+<p>Even after working with HTML templates for years, I found Hiccup to be much immediately easier to use. My frontend code is separated into Hiccup-generating functions, and when I want to tweak anything, I only needed to change a particular function and re-evaluate it in my editor. Testing these functions as you write them also feels much easier with this setup, because you can just write your tests and run them on the spot without dealing with extra machinery.</p>
+<h2 id="datomic">Datomic</h2>
+<p>Cognitect, the stewards of Clojure, created a database called Datomic that serves as an alternative to SQL. Datomic is built on the principles of immutability and stores data as a series of immutable events. More importantly, it provides a lot of extremely useful functionality out of the box that you don't get in SQL.</p>
+<p>As the database schema changes, and when data is added or removed, Datomic keeps a complete accounting of events. This approach contrasts with traditional SQL databases where updates or deletions overwrite the original data. In practice, between careful database migrations and database or server logs, you can sometimes stitch together a true historical record of what happened in a database. But as anyone who has worked as an application developer will know - it is far from easy.</p>
+<p>You can query the database for its transaction history, and you'll get back a traversable Clojure sequence of results the same way you get back any other database result. Here's one way you can do it:</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn collect-transactions [conn]
+  (let [tx-log (d&#x2F;log conn)]
+    (map (fn [tx]
+           {:transaction-id (:t tx)
+            :timestamp (get-tx-timestamp (d&#x2F;db conn) (:t tx))
+            :data tx})
+         (d&#x2F;tx-range tx-log nil nil))))
+</code></pre>
+<p>And this is what results look like through the eyes of the <a href="https://clojure.org/news/2023/04/28/introducing-morse">Morse</a> tool:</p>
+<video width=75% controls autoplay>
+    <source src="/videos/morse.mp4" type="video/mp4">
+    Your browser does not support the video tag.  
+</video>
+<p>Another key feature of Datomic is its use of a declarative query language similar to Clojure's syntax, which can simplify the learning curve for those already familiar with Clojure.</p>
+<h3 id="database-as-a-value">Database as a Value</h3>
+<p>In Datomic, the database is treated as a &quot;value.&quot; This implies that the database, at any point in time, represents a specific state that does not change. When you query the database, you are essentially looking at a snapshot of the data as it existed at a particular moment.</p>
+<p>There are a lot of cool consequences to this. One of my favorite is the ability to do speculative translations. What this means is that you can develop experimental features to your application, pass your production database to it, and iterate on your concept with no extra work required.</p>
+<p>Another benefit is that it is easy to write tests on the fly using live data. It is easy to explore and manipulate your database without worrying about persisting unwanted data - you can simply create and discard branches from any point of your database as desired.</p>
+<h3 id="modifying-schema">Modifying Schema</h3>
+<p>Datomic allows you to change your schema as needed over time. This means you can add new attributes, change the types of existing attributes, or remove attributes that are no longer necessary without disrupting the existing data. These modifications can be done while the database is live and in use, enabling ongoing development and adjustment to evolving data requirements. This flexibility in schema management helps accommodate changes in application design or business needs without the need for extensive downtime or complex migration procedures.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>Datomic is a bold departure from SQL, and I have a lot of respect for its choices. While reading some of the benefits I laid out, you may have noticed a lot of them are still somewhat doable in a traditional database. This is true, but it often requires quite a lot of extra work, or extra dependencies that bring additional points of failure to applications. Overall, I think Datomic aligns better to real-world usage than SQL.</p>
+<p>It comes at a cost, of course. I've read that performance on Datomic Cloud can be quite bad. I personally used the on-prem &quot;peer&quot; library instead, which worked great for me, even when I threw a few stress tests at it.</p>
+<p>Datomic also requires extra work if you reach a <a href="https://www.youtube.com/watch?v=bvEsnJiCs7E">certain scale</a>. However, for a vast majority of applications, this will not be an issue. In fact, if you are so lucky to have this problem, you probably won't have a shortage of money to throw at the problem.</p>
+
+<nav>
+  <div class="np">
+    <a href="https://jeskin.net" title="Home">Home</a>
+    <a href="https://github.com/jpe90" title="Github">Github</a>
+    <a href="mailto:eskinjp@gmail.com">Contact</a>
+  </div>
+</nav>
+
+    </div>
+  </section>
+</body>
+
+</html>
