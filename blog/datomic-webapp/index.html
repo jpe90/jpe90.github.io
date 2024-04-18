@@ -62,15 +62,14 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 &lt;&#x2F;body&gt;
 &lt;&#x2F;html&gt;
 </code></pre>
-<p>These work well and are instantly familiar to all web developers, but it's easy to wind up with either heavy amounts of duplication or a rat's nest of nested page includes that are difficult to work with.</p>
-<p>Clojure, by contrast, has a popular library named Hiccup to render with Clojure data structures directly. So instead of a template to define a page like above, Clojure</p>
+<p>The Java template above is stored in a file, parsed, and processed by Java code. These work well and are instantly familiar to all web developers, but it's easy to wind up with either heavy amounts of duplication or a rat's nest of nested page includes that are difficult to work with.</p>
+<p>Clojure, by contrast, has a popular library named Hiccup to render with Clojure data structures directly. Using Hiccup looks like the following:</p>
 <pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:html
  [:head
   [:title &quot;Sample Page&quot;]]
  [:body
   [:div &quot;Hello, &quot; user]]]
 </code></pre>
-<p>The Java template above is stored in a file, parsed, and processed by Java code.</p>
 <p>The Clojure definition is just a literal hash table - a plain data structure in the language. It doesn't need special treatment or processing, and it can be passed around or programmatically manipulated at will. Here is a chunk of code from my application that builds some of my HTML. It's a little noisy because I'm using Tailwind CSS, which needs lots of classes and markup.</p>
 <pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:div.mx-auto.max-w-7xl.px-4.sm:px-6.lg:px-8.py-4
   (if (empty? courses)
@@ -111,7 +110,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <p>Datomic allows you to change your schema as needed over time. This means you can add new attributes, change the types of existing attributes, or remove attributes that are no longer necessary without disrupting the existing data. These modifications can be done while the database is live and in use, enabling ongoing development and adjustment to evolving data requirements.</p>
 <p>I think this is a big deal, because there are definitely projects where you know ahead of time that you'll be changing direction quite a lot. In a traditional database, this can result in tech debt piling up fairly quickly, or painting yourself into a corner.</p>
 <p>As you might expect, there are <a href="https://docs.datomic.com/pro/schema/schema-change.html">constraints</a> on this. For example, if your modified schema invalidates existing data, you will need to retract that data first. But overall, evolving your database is far less terrifying than it is in a SQL backed project.</p>
-<h3 id="the-feel-of-working-with-datomic">The Feel of Working with Datomic</h3>
+<h3 id="thoughts-on-datomic">Thoughts on Datomic</h3>
 <p>In a traditional web app + database deployment, the webapp and the database are two separate behemoths, and each requires a lot of work to spin up and maintain. In enterprise environments, this involves commonly is spread across multiple people, often on different teams.</p>
 <p>Another issue with this setup is that SQL has quite a lot of arcane knowledge you have to lug around in order to execute even relatively simple projects. You need to be able to create tables, understand queries, joins, indexing, migration, and best practices associated with all of them. And when you work with your database, it's generally separate from the application, either from the command line or with some kind of GUI tool.</p>
 <p>Datomic has a bit of an initial learning curve because of its use of Datalog syntax and the fact that it operates quite differently from SQL, but I found it to be much simpler to use than SQL after that. You write your schema by passing in maps that lay out your data, update the schema by passing in new maps, seed the database by passing in maps that conform to the schema, and query the database by passing in Clojure vectors that describe what you're looking for. You don't need additional dependencies or ORMs, you just interface with the API directly from within your source code. If you've ever had to spend time bug fixing decades old ORMs, or migrating off database dependencies because they're abandoned and are lighting up security scanners, you'll understand this is a hugely welcome change.</p>
