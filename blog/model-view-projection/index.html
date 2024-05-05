@@ -167,24 +167,6 @@ frustum_vert_shader[] =
     &quot;v_color = a_color;&quot;
     &quot;}&quot;;
 </code></pre>
-<p>Notice that the way we're doing this, we multiply model * view * projection in our C code, and then pass the result to the GPU inside the shader program.</p>
-<p>What this means is that our CPU is making that calculation. Since we want to offload work to the GPU, wouldn't it make sense to instead just pass the model, view, and projection matrices directly to the shader and offload that computation to the GPU?</p>
-<pre data-lang="C" class="language-C "><code class="language-C" data-lang="C">static const char
-frustum_vert_shader[] =
-    &quot;precision mediump float;&quot;
-    &quot;uniform mat4 model;&quot;
-    &quot;uniform mat4 view;&quot;
-    &quot;uniform mat4 projection;&quot;
-    &quot;attribute vec4 a_position;&quot;
-    &quot;attribute vec4 a_color;&quot;
-    &quot;varying vec4 v_color;&quot;
-    &quot;void main()&quot;
-    &quot;{&quot;
-    &quot;gl_Position = model * view * projection * a_position;&quot;
-    &quot;v_color = a_color;&quot;
-    &quot;}&quot;;
-</code></pre>
-<p>The answer is no. Although the GPU has specialized hardware that's extremely effecient at matrix operations, this change would be re-calculated at every vertex, which would wipe out any potential benefit.</p>
 <p>Hope this helps somebody!</p>
 <h2 id="additional-resources">Additional Resources</h2>
 <ul>
