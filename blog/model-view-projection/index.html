@@ -67,7 +67,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <p>A transform matrix is a mathematical construct that is used to describe how a point or a vector in one coordinate system is mapped to another coordinate system. Graphics APIs use these in order to map points on the surfaces of models in order to the 2D screen coordinates you see on your monitor. We can build a conceptual understanding of what they are by comparing them to polynomial functions.</p>
 <p>Consider the functions f(x) = x^2 and g(x) = x + 2. If we apply these in sequence, we obtain a composite function that maps each member of the set of real numbers to a single point on a line.</p>
 <img src="/images/fgx2.png" alt="fgx" style="width: 50%;" />
-<p>Matrix transformations represent functions that map one point in space to another point in space. (The mechanics of the operation are nicely summarized by <a href="https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/a/multiplying-matrices">Khan Academy</a>.)</p>
+<p>Matrix transformations represent functions that map one point in space to another point in space.</p>
 <p>As such, when you see a matrix transformation like this:</p>
 <pre><code>⎡2 0 0 0⎤
 ⎢0 2 0 0⎥
@@ -82,6 +82,8 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 ⎣0 0 0 1⎦   ⎣0 0 0 1⎦
 </code></pre>
 <p>You should think of it as the composition f(g(x)). The first function in this sequence is the identity matrix, which leaves any input unchanged and is analogous to f(x) = x.</p>
+<p>If linear algebra is new to you, you might want to check out <a href="https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/a/multiplying-matrices">Khan Academy</a> to get a feel for the basics. If you're not put off by dense reading material, I think <a href="https://linear.axler.net">Linear Algebra Done Right</a> gives very clear and thorough explanations of the material in a more logical order than the subject is usually tought.</p>
+<p>mechanics of the operation are nicely summarized by </p>
 <h2 id="model-matrix">Model Matrix</h2>
 <p>Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix's values to change.</p>
 <img src="/images/model.gif" alt="model" style="width: 50%;" />
@@ -147,7 +149,7 @@ HMM_INLINE hmm_mat4 HMM_PREFIX(LookAt)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 U
 <h2 id="projection-matrix">Projection Matrix</h2>
 <p>The view matrix defines the location of the observer and where they are looking, but that's not enough to convert their line of sight to a 2D image. You also need to know the angle of how far they can see into their periphery, how close an object can come to their nose before it drops out of sight, and how far into the horizon they can see.</p>
 <p>These are all described by the projection matrix. In many graphics libraries you specify a field of view, distance to a near plane, and distance to a far plane, and the graphics library will use these to draw a frustum pointing from the camera's eye to the location that it's looking.</p>
-<p>The word &quot;frustum&quot; comes from the same Latin word meaning a removed slice. It is a 3D shape that is aligned with the oberserver's eye and serves to capture a portion of 3D world space which will be rendered to the screen. That is, anything that is inside the current frustum may be drawn, but anything outside of it will not.</p>
+<p>&quot;Frustum&quot; is a Latin word meaning &quot;a removed slice&quot;. In graphics parlance, it is a 3D shape that is aligned with the oberserver's eye and serves to capture a portion of 3D world space which will be rendered to the screen. That is, anything that is inside the current frustum may be drawn, but anything outside of it will not.</p>
 <p>You'll often see them shown as a square shape, such as the yellow frustum in the image below, but they can have different shapes as well.</p>
 <img src="/images/frustum.png" alt="frustum" style="width: 50%;" />
 <h1 id="drawing-the-scene">Drawing the scene</h1>
