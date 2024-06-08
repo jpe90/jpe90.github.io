@@ -35,13 +35,13 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <h1 class="title">
   Clojure and Datomic for Web Applications
 </h1>
-<p>A couple of years ago, I got an opportunity to pitch a mid-sized project web application. I built out a prototype, including the front and back end, with authentication and role based access control for various user groups. I opted to write it from scratch using Clojure and Datomic, without using web frameworks, as is commonly done with Clojure web apps.</p>
+<p>A couple of years ago, I worked on an exploratory protoype of web application to get my hands dirty with Clojure and Datomic. I put together a fully functional app with a frontend written in Tailwind + Alpine JS and Pedestal for the backend, and added authentication and role based access control for various user groups.</p>
 <p>From the outside, it looks more or less like any other web application you can expect.</p>
 <video width=75% controls autoplay>
     <source src="/videos/tutoring.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
-<p>The insides were much more interesting, however. The project didn't pan out, but the experience stuck with me and I wanted to do a post-mortem writeup to discuss my thoughts on using Clojure/Datomic for web applications.</p>
+<p>The insides were much more interesting, however. After finishing up, I wanted to do a post-mortem writeup to discuss my thoughts on using Clojure/Datomic for web applications.</p>
 <h1 id="clojure-very-briefly-for-the-uninitiated">Clojure, very briefly, for the uninitiated</h1>
 <p>Clojure is a JVM programming language with some distinguishing features:</p>
 <ul>
@@ -86,7 +86,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 </code></pre>
 <p>Even after working with HTML templates for years, I found Hiccup to be much immediately easier to use. My front-end code is separated into Hiccup-generating functions, and when I want to tweak anything, I only needed to change a particular function and re-evaluate it in my editor. Testing these functions as you write them also feels much easier with this setup, because you can just write your tests and run them on the spot without dealing with extra machinery.</p>
 <h2 id="datomic">Datomic</h2>
-<p>Cognitect, the stewards of Clojure, created a database called Datomic that serves as an alternative to SQL. Datomic is built on the principles of immutability and stores data as a series of immutable events. More importantly, it provides a lot of extremely useful functionality out of the box that you don't get in SQL.</p>
+<p>Cognitect, the stewards of Clojure, created a database called Datomic that serves as an alternative to SQL. Datomic is built on the principles of immutability and stores data as a series of immutable events. More importantly (for me personally, at least) it provides a lot of extremely useful functionality out of the box that you don't get in SQL.</p>
 <p>As the database schema changes, and when data is added or removed, Datomic keeps a complete accounting of events. This approach contrasts with traditional SQL databases where updates or deletions overwrite the original data. In practice, between careful database migrations and database or server logs, you can sometimes stitch together a true historical record of what happened in a database. But as anyone who has worked as an application developer will know - it is far from easy.</p>
 <p>If you've maintained a traditional database for an extended period of time, you know that it sees incremental changes over time as enhancements are added. So even if you're able to look at past query results, it can be very difficult to keep track of the entire state of the database at a previous point of time- what the schema was at that time, what data was in there, and so on. In Datomic, all of this information is forever at your fingertips.</p>
 <p>You can query the database for its transaction history, and you'll get back a traversable Clojure sequence of results the same way you get back any other database result. Here's one way you can do it:</p>
