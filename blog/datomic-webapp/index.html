@@ -35,14 +35,13 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <h1 class="title">
   Clojure and Datomic for Web Applications
 </h1>
-<p>A couple of years ago, I worked on an exploratory protoype of web application to get my hands dirty with Clojure and Datomic. I put together a fully functional app with a frontend written in Tailwind + Alpine JS and Pedestal for the backend, and added authentication and role based access control for various user groups.</p>
-<p>From the outside, it looks more or less like any other web application you can expect.</p>
+<p>A couple of years ago, I worked on an exploratory protoype of web application to get my hands dirty with Clojure and Datomic. I put together a prototype web application with a frontend written using Tailwind CSS and Alpine JS and a backend written using Pedestal and Datomic. I chose to hand-roll everything including authentication and role based access control for various user groups.</p>
+<p>From the outside it looks like a typical webapp, but the application internals are unusual and worth discussing.</p>
 <video width=75% controls autoplay>
     <source src="/videos/tutoring.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
-<p>The insides were much more interesting, however. After finishing up, I wanted to do a post-mortem writeup to discuss my thoughts on using Clojure/Datomic for web applications.</p>
-<h1 id="clojure-very-briefly-for-the-uninitiated">Clojure, very briefly, for the uninitiated</h1>
+<h1 id="brief-overview-of-clojure">Brief Overview of Clojure</h1>
 <p>Clojure is a JVM programming language with some distinguishing features:</p>
 <ul>
 <li>dynamic scripting language designed to keep a running process that can be manipulated (similar to Python, but with more interaction)</li>
@@ -72,19 +71,8 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
  [:body
   [:div &quot;Hello, &quot; user]]]
 </code></pre>
-<p>The Clojure definition is just a literal hash table - a plain data structure in the language. It doesn't need special treatment or processing, and it can be passed around or programmatically manipulated at will. Here is a chunk of code from my application that builds some of my HTML. It's a little noisy because I'm using Tailwind CSS, which needs lots of classes and markup.</p>
-<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:div.mx-auto.max-w-7xl.px-4.sm:px-6.lg:px-8.py-4
-  (if (empty? courses)
-    [:p &quot;Staff is not assigned to any courses&quot;]
-    (map (tailwind-table-registrations staff-id) courses))
-  [:div.py-4
-    [:a.mt-3.rounded-md.bg-indigo-600.px-3.py-2.text-sm.font-semibold.text-white.shadow-sm.hover:bg-blue-500.focus:outline
-      {:href (str &quot;&#x2F;admin&#x2F;assign&#x2F;&quot; staff-id)} (str &quot;Assign &quot; staff-name &quot; to Courses&quot;)]]
-  [:div
-    [:a.mt-3.rounded-md.bg-indigo-600.px-3.py-2.text-sm.font-semibold.text-white.shadow-sm.hover:bg-blue-500.focus:outline
-      {:href &quot;&#x2F;admin&quot;} &quot;Back to Portal&quot;]]]
-</code></pre>
-<p>Even after working with HTML templates for years, I found Hiccup to be much immediately easier to use. My front-end code is separated into Hiccup-generating functions, and when I want to tweak anything, I only needed to change a particular function and re-evaluate it in my editor. Testing these functions as you write them also feels much easier with this setup, because you can just write your tests and run them on the spot without dealing with extra machinery.</p>
+<p>The Clojure definition is source code in the syntax of the language. You can access and manipulate it by directly operating on the underlying data structure - a <a href="https://clojuredocs.org/clojure.core/vector">vector</a>. In templating languages, you have to usually have to use a combination of A) splitting templates into many pages and B) using a weird templating language that is different from the main programming language. In practice, that can get very hairy. </p>
+<p>Using hiccup makes it easy to maintain page logic as it gets increasingly complex. A lot of the noise gets boiled out and you can operate on HTML output as data, rather than relying on template mechanisms and String processing. The value proposition mirrors that of Clojure vs traditional imperative languages.</p>
 <h2 id="datomic">Datomic</h2>
 <p>Cognitect, the stewards of Clojure, created a database called Datomic that serves as an alternative to SQL. Datomic is built on the principles of immutability and stores data as a series of immutable events. More importantly (for me personally, at least) it provides a lot of extremely useful functionality out of the box that you don't get in SQL.</p>
 <p>As the database schema changes, and when data is added or removed, Datomic keeps a complete accounting of events. This approach contrasts with traditional SQL databases where updates or deletions overwrite the original data. In practice, between careful database migrations and database or server logs, you can sometimes stitch together a true historical record of what happened in a database. But as anyone who has worked as an application developer will know - it is far from easy.</p>
@@ -121,7 +109,9 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <p>Datomic is a bold departure from SQL, and I have a lot of respect for its choices. You may have noticed a lot of its benefits are still somewhat doable in a traditional database, but it often requires quite a lot of extra work, or extra dependencies that bring additional points of failure. Overall, I think Datomic aligns better to real-world persistance requirements of applications than SQL.</p>
 <p>It comes at a cost, of course. I've read that performance on Datomic Cloud can be quite bad. I personally used the on-prem &quot;peer&quot; library instead, which worked great for me, even when I threw a few stress tests at it.</p>
 <p>Some other significant constraints are that Datomic uses a single process to write, and after 10 billion transactions it apparently becomes unweildly. My intuition is that a large number of small to mid sized applications would stay well within its performance budget. The auditing you get for free would already have been such a life saver for a number of projects I've worked on in the past.</p>
-<p>I ran into a handful of quirks and frustrating moments while building my prototype, mainly stemming from Clojure's stack traces and error messages from Datomic that were challenging to unpack, but nothing I couldn't work through. I really hope I get a chance to work more with it in the future.</p>
+<p>I ran into a handful of quirks and frustrating moments while building my prototype, mainly stemming from Clojure's stack traces and error messages from Datomic that were hard to read. Since the language is not very widely used, it can also be much more difficult to get help with specific issues, because you're less likely to find online posts from other people who ran into them.</p>
+<p>Another big drawback is that while the database tracks its &quot;value&quot; over time, you cannot go back and add previous historical data. It only records data as of the moment it passes through the transactor. This presents challenges for situations that will occur often enough in the real world that it bears mentioning. This is called &quot;bi-temporal history&quot;, which is a feature of other similar database systems, but is not a feature of Datomic.</p>
+<p>Overall, I really loved working with Datomic. If it fits your problem, it removes so many issues that arise with SQL. I'll be keeping an eye on the library and looking for opportunities to use it in the future.</p>
 
 <nav>
   <div class="np">
