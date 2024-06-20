@@ -40,6 +40,12 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
     <source src="/videos/LlamaTerminal.m4v" type="video/mp4">
     Your browser does not support the video tag.
 </video>
+<p>In the above clip, I'm running Meta's latest open source model <a href="https://ai.meta.com/blog/meta-llama-3/">llama3</a>. These models are less powerful than OpenAI's models - which are mainly GPT-4o, GPT-4, and GPT-3.5 Turbo as of writing, but they pack a serious punch. The fact that a model that can run on a laptop can get within throwing distance of GPT-3.5, which powered all of ChatGPT not long ago is pretty insane.</p>
+<p>There's a number of reasons you would want to run your own local AI instead of something like ChatGPT:</p>
+<ol>
+<li>Privacy. With ChatGPT, OpenAI has access to every query and response you send. When someone else controls your data, despite their best intentions, sometimes it will leak. In OpenAI's case, <a href="https://www.pluralsight.com/blog/security-professional/chatgpt-data-breach">it already has already happened</a> at least once. Depending on the sensitivity of your prompts, this may be more or less of a concern.</li>
+<li>Flexibility. Using your own models give you flexibility to swap them in and out for different tasks. There are some indications that performance of LLMs are reaching a plataeu, and it may make sense to build more focused models for specific tasks in the future. You can also fine-tune open source models on your own hardware, which might be incredibly useful if you have a lot of organizational data you would like the model to recognize.</li>
+</ol>
 <p>After running it, I skimmed over the project's README and found something that piqued my interest:</p>
 <hr />
 <h2 id="rest-api">REST API</h2>
@@ -96,7 +102,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 </code></pre>
 <p><code>application/x-ndjson</code> means &quot;Newline delimited JSON&quot;. This detail makes it easier to delineate between messages. Since you know they are broken on newlines, you know you can use line-reading functionality that's present in many languages to process them.</p>
 <h1 id="a-simple-chatgpt-clone">A Simple ChatGPT Clone</h1>
-<p>We can build a simple ChatGPT-style on top of this API with a few components:</p>
+<p>We can build a simple ChatGPT-style web application on top of this API with a few components:</p>
 <ul>
 <li>an HTML page that presents a form to collect a prompt with a button for submission, and javascript to send the prompt, listen for a response, and write the responses to the page as they stream in</li>
 <li>a server with two endpoints: 
