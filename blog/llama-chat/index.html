@@ -33,7 +33,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 </style>
 
 <h1 class="title">
-  Llama Chat in Golang and Clojure
+  Building Llama Chat in Go and Clojure
 </h1>
 <p><code>ollama</code> is a software project which makes it easy to run LLMs on your local machine. Running <code>ollama run llama3</code> downloaded a 4-bit quantized model that could run on my Macbook M2, and then dropped me into a CLI where I could enter prompts and responses stream into my terminal.</p>
 <video width=50% controls autoplay>
@@ -95,7 +95,8 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 }
 </code></pre>
 <p><code>application/x-ndjson</code> means &quot;Newline delimited JSON&quot;. This detail makes it easier to delineate between messages. Since you know they are broken on newlines, you know you can use line-reading functionality that's present in many languages to process them.</p>
-<p>A simple ChatGPT-style frontend could consist of a few components:</p>
+<h1 id="a-simple-chatgpt-clone">A Simple ChatGPT Clone</h1>
+<p>We can build a simple ChatGPT-style on top of this API with a few components:</p>
 <ul>
 <li>an HTML page that presents a form to collect a prompt with a button for submission, and javascript to send the prompt, listen for a response, and write the responses to the page as they stream in</li>
 <li>a server with two endpoints: 
@@ -105,7 +106,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 </ul>
 </li>
 </ul>
-<p>With that in mind, let's start building!</p>
+<p>With that in mind, let's get to work!</p>
 <h1 id="go-implementation">Go Implementation</h1>
 <p>We can do everything in Go using just the standard library:</p>
 <pre><code>package main
@@ -189,12 +190,12 @@ func main() {
     Your browser does not support the video tag.
 </video>
 <p>So... project complete!</p>
-<p>I really like how even though I'm not very experienced with Go, I can usually just skim the docs for the standard library, guess what I should be using, and the result will work. I was able to finish this more quickly than I expected.</p>
+<p>The Go implementation was very straightforward to build: I was able just skim the docs for standard library modules that sounded like what I was looking for, and everything worked as expected. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of the language designers.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
 <h1 id="clojure-implementation">Clojure Implementation</h1>
 <p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library. </p>
-<p>I used HTTP-kit for this task because it was the smallest library I knew of which could single handedly meet my requirements. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
-<p>In Clojure, Ring-compliant HTTP server's use handlers that are maps with :status, :headers, and :body. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
+<p>I used http-kit for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
+<p>In Clojure, Ring-compliant HTTP server's use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
 <pre><code>(defn read-html-template []
   (println &quot;fetching html template&quot;)
   (slurp (io&#x2F;resource &quot;index.html&quot;)))
@@ -218,8 +219,7 @@ func main() {
       :else (not-found-handler req)))) 
 </code></pre>
 <p>That all works because you can pass any arbitrary string as your response body and set its content type to text/html, it will render correctly.</p>
-<p>At this point, the client has a javascript programming that wants to pass a prompt and listen for the streaming response. We will want an asynchronous handler to do this, so we'll use HTTP-kit's <code>as-channel</code> function. </p>
-<p>The documentation does not appear to have caught up with the source regarding the existence of this function - the docs point to a <code>with-channel</code> function that has been marked as deprecated. This is where it pays in spades to have a chosen a library that aims to be focused and readable - the docstring has an example usage we can start with. Let's use it and wire it up.</p>
+<p>At this point, the client has a javascript programming that wants to pass a prompt and listen for the streaming response. We will want an asynchronous handler to do this, so we'll use http-kit's <code>as-channel</code> function. It's not covered in the project's main documentation, but the docstring in the source itself has enough to get started with. Let's use it and wire it up.</p>
 <pre><code>(def clients_ (atom #{}))
 (defn my-async-handler [ring-req]
   (http&#x2F;as-channel ring-req
@@ -229,8 +229,7 @@ func main() {
                           (swap! clients_ conj ch))
                :on-close (fn [ch]
                            (println &quot;conn close!&quot;)
-                           (swap! clients_ disj ch))
-               }))
+                           (swap! clients_ disj ch))}))
 
 (defn app [req]
   (let [uri (:uri req)
@@ -242,14 +241,13 @@ func main() {
 </code></pre>
 <p>When I evaluate these forms, switch back to my browser, and hit the &quot;Submit&quot; buttton, I see the print statements fire. When I evaliate <code>clients_</code>, I see it now has a new client.</p>
 <p>To get the actual messages, we can start writing a function to send a POST request to the ollama server. After that, we want to find a way to access messages as they stream in and send them to the client.</p>
-<p>In typical asynchronous programming, this kind of message passage is done with callbacks. This is also the problem domain of core.async - a potential solution could involve putting the messages on a core.async channel and reading them off the other end.</p>
-<p>It turns out HTTP-kit has its own version of channels with their own semantics, different from core.async. When we get a message, we will want to send it to the client like this:</p>
+<p>In typical asynchronous programming, this kind of message passage is done with callbacks. http-kit has its own concept of channels that is separate from core.async with its own semantics. When we get a message, we will want to send it to the client like this:</p>
 <pre><code>(http&#x2F;send! ch {:status 200
                 :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
                 :body json-encoded}
             false)
 </code></pre>
-<p>To kick off the HTTP request to ollama with the prompt, we want to use HTTP-kit's client functionality. There is documentation on making asynchronous requests with callbacks:</p>
+<p>To kick off the HTTP request to ollama with the prompt, we want to use http-kit's client functionality. There is documentation on making asynchronous requests with callbacks:</p>
 <pre><code>;fire and forget, returns immediately[1], returned promise is ignored
 (http&#x2F;get &quot;http:&#x2F;&#x2F;host.com&#x2F;path&quot;)
 
@@ -347,7 +345,7 @@ public class BytesInputStream extends InputStream {
                                (recur)))))))))))
 </code></pre>
 <p>Unfortunately, after writing this up, I observed the same behavior as earlier: responses were not streamed in, but rather returned all at once.</p>
-<p>I turns out this appears to be a <a href="https://github.com/http-kit/http-kit/issues/90">known limitation</a> of HTTP-kit's client functionality. The comment thread mentioned that clj-http works for this use case, but part of the reason I went with http-kit in the first place was to minimize dependencies.</p>
+<p>It turns out this appears to be a <a href="https://github.com/http-kit/http-kit/issues/90">known limitation</a> of http-kit's client functionality. The comment thread mentioned that clj-http works for this use case, but part of the reason I went with http-kit in the first place was to minimize dependencies.</p>
 <p>Another option to try without introducing a new dependency is the HTTP client included with the JDK from Java 11.</p>
 <p>I took a stab at poking at the Java client with interop.</p>
 <pre><code>(import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
@@ -525,7 +523,7 @@ See: CLJ-2799
   (http&#x2F;run-server app {:port 8080})
   (println &quot;Server is running on http:&#x2F;&#x2F;localhost:8080&quot;))
 </code></pre>
-<p>I was hoping this project would be a good place to use core.async, which I just started recently using, but since HTTP-kit has its own semantics for channels it didn't really make sense to use here. In hindsight, since I didn't end up using HTTP-kit's client anyways, I probably would have preferred to try using Pedestal instead of HTTP-kit, Pedestal was built around core.async and the library seems deeply integrated into Pedestal's internals.</p>
+<p>I was hoping this project would be a good place to use core.async, which I just started recently using, but since http-kit has its own semantics for channels it didn't really make sense to use here. In hindsight, since I didn't end up using http-kit's client anyways, I probably would have preferred to try using Pedestal instead of http-kit, Pedestal was built around core.async and the library seems deeply integrated into Pedestal's internals.</p>
 
 <nav>
   <div class="np">
