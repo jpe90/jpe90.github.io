@@ -44,7 +44,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <p>There's a number of reasons you would want to run your own local AI instead of something like ChatGPT:</p>
 <ol>
 <li>Privacy. With ChatGPT, OpenAI has access to every query and response you send. When someone else controls your data, despite their best intentions, sometimes it will leak. In OpenAI's case, <a href="https://www.pluralsight.com/blog/security-professional/chatgpt-data-breach">it already has already happened</a> at least once. Depending on the sensitivity of your prompts, this may be more or less of a concern.</li>
-<li>Flexibility. Using your own models give you flexibility to swap them in and out for different tasks. There are some indications that performance of LLMs are reaching a plataeu, and it may make sense to build more focused models for specific tasks in the future. You can also fine-tune open source models on your own hardware, which might be incredibly useful if you have a lot of organizational data you would like the model to recognize.</li>
+<li>Flexibility. Using your own models allows you to use special purpose models better suited for individual tasks. You can also fine-tune open source models on your own hardware, which might be incredibly useful if you have a lot of organizational data you would like the model to recognize.</li>
 </ol>
 <p>After running it, I skimmed over the project's README and found something that piqued my interest:</p>
 <hr />
@@ -104,7 +104,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 <h1 id="a-simple-chatgpt-clone">A Simple ChatGPT Clone</h1>
 <p>We can build a simple ChatGPT-style web application on top of this API with a few components:</p>
 <ul>
-<li>an HTML page that presents a form to collect a prompt with a button for submission, and javascript to send the prompt, listen for a response, and write the responses to the page as they stream in</li>
+<li>an HTML page that presents a form to collect a prompt with a button for submission, and javascript to send the prompt, listens for a response, and writes the responses to the page as they stream in</li>
 <li>a server with two endpoints: 
 <ul>
 <li>one rendering the page above, </li>
@@ -114,7 +114,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 </ul>
 <p>With that in mind, let's get to work!</p>
 <h1 id="go-implementation">Go Implementation</h1>
-<p>We can do everything in Go using just the standard library:</p>
+<p>We can do everything in Go using just the standard library.</p>
 <pre><code>package main
 
 import (
@@ -195,8 +195,7 @@ func main() {
     <source src="/videos/LlamaWebapp.m4v" type="video/mp4">
     Your browser does not support the video tag.
 </video>
-<p>So... project complete!</p>
-<p>The Go implementation was very straightforward to build: I was able just skim the docs for standard library modules that sounded like what I was looking for, and everything worked as expected. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of the language designers.</p>
+<p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you're looking for is all it really takes to get up and running in the language. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of its design.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
 <h1 id="clojure-implementation">Clojure Implementation</h1>
 <p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library. </p>
@@ -352,8 +351,8 @@ public class BytesInputStream extends InputStream {
 </code></pre>
 <p>Unfortunately, after writing this up, I observed the same behavior as earlier: responses were not streamed in, but rather returned all at once.</p>
 <p>It turns out this appears to be a <a href="https://github.com/http-kit/http-kit/issues/90">known limitation</a> of http-kit's client functionality. The comment thread mentioned that clj-http works for this use case, but part of the reason I went with http-kit in the first place was to minimize dependencies.</p>
-<p>Another option to try without introducing a new dependency is the HTTP client included with the JDK from Java 11.</p>
-<p>I took a stab at poking at the Java client with interop.</p>
+<p>Another option to try without introducing a new dependency is to interop with <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html">java.net.http.HttpClient</a>, which has been included with the JDK since Java 11.</p>
+<p>Here's how I initially got that working:</p>
 <pre><code>(import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
         (java.net URI)
         (java.nio.charset StandardCharsets)
@@ -386,7 +385,7 @@ public class BytesInputStream extends InputStream {
                     (.uri (URI&#x2F;create &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;))
                     (.header &quot;Content-Type&quot; &quot;application&#x2F;json&quot;)
                     (.POST (HttpRequest$BodyPublishers&#x2F;ofString body))
-                    (.build))]
+                     (.build))]
     (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers&#x2F;ofInputStream))
         (.thenAccept (reify java.util.function.Consumer
                        (accept [_ response]
@@ -396,8 +395,9 @@ public class BytesInputStream extends InputStream {
                             (println (str &quot;Request failed: &quot; error))
                             nil))))))
 </code></pre>
-<p>This works! Responses are sent to the client as soon as they come in.</p>
-<p>This can be cleaned up a little bit by using the changes introduced to Clojure from 1.12.0-alpha12:</p>
+<p>This gave me the behavior I was looking for: responses were sent to the client as soon as they come in.</p>
+<p>The code is a little noisy because the library uses Java idioms that were introduced after Clojure was created.</p>
+<p>Luckily, Clojure's maintainers recently introduced language changes that make using these features less painful. From the release notes of Clojure 1.12.0-alpha12:</p>
 <pre><code>Functional interfaces
 
 Java programs define &quot;functions&quot; with Java functional interfaces (marked with the @FunctionalInterface annotation), which have a single method.
@@ -407,10 +407,10 @@ Clojure developers can now invoke Java methods taking functional interfaces by p
 See: CLJ-2799
 
 </code></pre>
-<p>We can do that by first switching to a newer version of Clojure in <code>deps.edn</code>:</p>
+<p>To take advantage of these changes, we can use a preview build of the language by updating the language version in <code>deps.edn</code>:</p>
 <pre><code>org.clojure&#x2F;clojure       {:mvn&#x2F;version &quot;1.12.0-beta1&quot;}
 </code></pre>
-<p>Now the code is much more cleaned up:</p>
+<p>After doing so, we can change the above functions to this:</p>
 <pre><code>(defn handle-response [ch response]
   (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets&#x2F;UTF_8))]
     (loop []
