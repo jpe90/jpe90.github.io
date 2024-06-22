@@ -471,7 +471,34 @@ See: CLJ-2799
 </code></pre>
 <h1 id="clojure-pedestal-implementation">Clojure - Pedestal Implementation</h1>
 <p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
-<p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it. I used Pedestal's <a href="http://pedestal.io/pedestal/0.6/reference/server-sent-events.html">Server Sent Events</a> functionality to make it work.</p>
+<p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it. </p>
+<p>In this version, my request function sends a request with the user's prompt and returns a channel that has the messages queued.</p>
+<pre><code>(defn handle-response [response-ch ^HttpResponse response]
+  (let [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets&#x2F;UTF_8))]
+    (go-loop []
+      (if-let [line (.readLine reader)]
+        (do
+          (println line)
+          (a&#x2F;&gt;! response-ch line)
+          (recur))
+        (a&#x2F;close! response-ch)))))
+
+(defn send-async-request [model prompt]
+  (let [client (HttpClient&#x2F;newHttpClient)
+        body (generate-string {:model model :prompt prompt})
+        request (-&gt; (HttpRequest&#x2F;newBuilder)
+                    (.uri (URI&#x2F;create &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;))
+                    (.header &quot;Content-Type&quot; &quot;application&#x2F;json&quot;)
+                    (.POST (HttpRequest$BodyPublishers&#x2F;ofString body))
+                    (.build))
+        response-ch (a&#x2F;chan)]
+    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers&#x2F;ofInputStream))
+        (.thenAccept (fn [response] (handle-response response-ch response)))
+        (.exceptionally (fn [error] (println (str &quot;Request failed: &quot; error)))))
+    response-ch))
+</code></pre>
+<p>I used Pedestal's <a href="http://pedestal.io/pedestal/0.6/reference/server-sent-events.html">Server Sent Events</a> functionality to make it work. The json interceptor is necessary to get access to the json params sent from the client to the asynchronous endpoint.</p>
+<p><code>start-event-stream</code> returns an interceptor and a function to call which takes a channel as an argument - you'll put messages on it to send them to the client. The channel's buffer is maintained by the library. In my callback function, I pop messages off the request channel and put them onto the request channel.</p>
 <pre><code>(defn stream-ready [event-ch ctx]
   (let [{:keys [model prompt] :as raw} (-&gt; ctx :request :json-params)
         response-chan (send-async-request model prompt)]
