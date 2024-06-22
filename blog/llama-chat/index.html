@@ -439,60 +439,8 @@ See: CLJ-2799
         (.thenAccept (fn [response] (handle-response ch response)))
         (.exceptionally (fn [error] (println (str &quot;Request failed: &quot; error)))))))
 </code></pre>
-<p>Here is what my project looked like when I got it running. It's not tidied up, but it does what I set out to do!</p>
-<pre><code>(ns chat-server.core
-  (:require [org.httpkit.server :as http]
-            [org.httpkit.client :as client]
-            [clojure.java.io :as io]
-            [clojure.data.json :as json])
-  (:import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
-           (java.net URI)
-           (java.nio.charset StandardCharsets)
-           (java.io InputStreamReader BufferedReader)
-           (java.util.concurrent CompletableFuture)))
-
-(defn read-html-template []
-  (println &quot;fetching html template&quot;)
-  (slurp (io&#x2F;resource &quot;index.html&quot;)))
-
-(defn index-handler [req]
-  (println &quot;in index handler&quot;)
-  (println req)
-  {:status  200
-   :headers {&quot;Content-Type&quot; &quot;text&#x2F;html&quot;}
-   :body    (read-html-template)})
-
-(def clients_ (atom #{}))
-
-(defn handle-response [ch response]
-  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets&#x2F;UTF_8))]
-    (loop []
-      (let [line (.readLine reader)]
-        (if (nil? line)
-          (do
-            (.close reader)
-            (http&#x2F;close ch))
-          (let [response (:response (json&#x2F;read-json line))
-                json-encoded (json&#x2F;write-str {:response response})]
-            (http&#x2F;send! ch {:status 200
-                            :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
-                            :body json-encoded}
-                        false))
-          (recur))))))
-
-(defn send-async-request [ch model prompt]
-  (let [client (HttpClient&#x2F;newHttpClient)
-        body (str &quot;{\&quot;model\&quot;:\&quot;&quot; model &quot;\&quot;, \&quot;prompt\&quot;:\&quot;&quot; prompt &quot;\&quot;}&quot;)
-        request (-&gt; (HttpRequest&#x2F;newBuilder)
-                    (.uri (URI&#x2F;create &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;))
-                    (.header &quot;Content-Type&quot; &quot;application&#x2F;json&quot;)
-                    (.POST (HttpRequest$BodyPublishers&#x2F;ofString body))
-                    (.build))]
-    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers&#x2F;ofInputStream))
-        (.thenAccept (fn [response] (handle-response ch response)))
-        (.exceptionally (fn [error] (println (str &quot;Request failed: &quot; error)))))))
-
-(defn my-async-handler [ring-req]
+<p>From here, I just needed to wire up the request logic to my async handler and then update my main handler to route to it.</p>
+<pre><code>(defn my-async-handler [ring-req]
   (let [body (slurp (:body ring-req))
         prompt (try
                  (:prompt (json&#x2F;read-json body))
@@ -512,11 +460,6 @@ See: CLJ-2799
        :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
        :body (json&#x2F;write-str {:error &quot;Invalid request&quot;})})))
 
-(defn not-found-handler [req]
-  {:status  404
-   :headers {&quot;Content-Type&quot; &quot;text&#x2F;plain&quot;}
-   :body    &quot;Page not found.&quot;})
-
 (defn app [req]
   (let [uri (:uri req)
         method (:request-method req)]
@@ -525,11 +468,39 @@ See: CLJ-2799
       (and (= uri &quot;&#x2F;api&#x2F;generate&quot;) (= method :post)) (#&#x27;my-async-handler req)
       :else (not-found-handler req))))
 
-(defn -main []
-  (http&#x2F;run-server app {:port 8080})
-  (println &quot;Server is running on http:&#x2F;&#x2F;localhost:8080&quot;))
 </code></pre>
-<p>I was hoping this project would be a good place to use core.async, which I just started recently using, but since http-kit has its own semantics for channels it didn't really make sense to use here. In hindsight, since I didn't end up using http-kit's client anyways, I probably would have preferred to try using Pedestal instead of http-kit, Pedestal was built around core.async and the library seems deeply integrated into Pedestal's internals.</p>
+<h2 id="pedestal-implementation">Pedestal Implementation</h2>
+<p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
+<p>I heard that Pedestal was built with core.async in mind, so I ended up throwing together another implementation with it. I used Pedestal's Server Sent Events functionality to make it work.</p>
+<pre><code>(defn stream-ready [event-ch ctx]
+  (let [{:keys [model prompt] :as raw} (-&gt; ctx :request :json-params)
+        response-chan (send-async-request model prompt)]
+    (go-loop []
+      (if-let [msg (&lt;! response-chan)]
+        (do
+          (a&#x2F;put! event-ch (generate-string {:response msg}))
+          (recur))
+        (a&#x2F;close! event-ch)))))
+
+(def my-json-interceptor
+  {:name  ::my-json-interceptor
+   :enter (fn [{:keys [request] :as ctx}]
+            (if (#{:post :put} (:request-method request))
+              (let [raw-body-str (slurp (:body request))
+                    json-params (parse-string raw-body-str true)]
+                (assoc-in (assoc-in ctx [:request :json-params] json-params)
+                          [:request :raw-body-str] raw-body-str))
+              ctx))})
+
+(def routes
+  #{[&quot;&#x2F;&quot; :get
+     [index-handler]
+     :route-name :index]
+    [&quot;&#x2F;api&#x2F;generate&quot; :post
+     [my-json-interceptor (sse&#x2F;start-event-stream stream-ready)]
+     :route-name :my-json-interceptor]})
+</code></pre>
+<p>I had a hell of a time figuring out how to get a hold of the json params passed in via post request, but I got there eventually. I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there's a lot of cool stuff you can do with core.async in general.</p>
 
 <nav>
   <div class="np">
