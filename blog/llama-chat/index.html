@@ -197,9 +197,9 @@ func main() {
 </video>
 <p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you're looking for is all it really takes to get up and running in the language. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of its design.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
-<h1 id="clojure-http-kit-implementation">Clojure - http-kit Implementation</h1>
+<h1 id="clojure-http-kit-implementation">Clojure - HTTP kit Implementation</h1>
 <p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library. </p>
-<p>I used http-kit for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
+<p>I used <a href="https://http-kit.github.io">http-kit</a> for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
 <p>In Clojure, Ring-compliant HTTP server's use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
 <pre><code>(defn read-html-template []
   (println &quot;fetching html template&quot;)
@@ -471,7 +471,7 @@ See: CLJ-2799
 </code></pre>
 <h1 id="clojure-pedestal-implementation">Clojure - Pedestal Implementation</h1>
 <p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
-<p>I heard that Pedestal was built with core.async in mind, so I ended up throwing together another implementation with it. I used Pedestal's Server Sent Events functionality to make it work.</p>
+<p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it. I used Pedestal's <a href="http://pedestal.io/pedestal/0.6/reference/server-sent-events.html">Server Sent Events</a> functionality to make it work.</p>
 <pre><code>(defn stream-ready [event-ch ctx]
   (let [{:keys [model prompt] :as raw} (-&gt; ctx :request :json-params)
         response-chan (send-async-request model prompt)]
@@ -498,7 +498,7 @@ See: CLJ-2799
      :route-name :index]
     [&quot;&#x2F;api&#x2F;generate&quot; :post
      [my-json-interceptor (sse&#x2F;start-event-stream stream-ready)]
-     :route-name :my-json-interceptor]})
+     :route-name :stream]})
 </code></pre>
 <p>I had a hell of a time figuring out how to get a hold of the json params passed in via post request, but I got there eventually. I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there's a lot of cool stuff you can do with core.async in general.</p>
 
