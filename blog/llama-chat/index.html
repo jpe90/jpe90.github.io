@@ -197,7 +197,7 @@ func main() {
 </video>
 <p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you're looking for is all it really takes to get up and running in the language. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of its design.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
-<h1 id="clojure-implementation">Clojure Implementation</h1>
+<h1 id="clojure-http-kit-implementation">Clojure - http-kit Implementation</h1>
 <p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library. </p>
 <p>I used http-kit for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
 <p>In Clojure, Ring-compliant HTTP server's use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
@@ -469,7 +469,7 @@ See: CLJ-2799
       :else (not-found-handler req))))
 
 </code></pre>
-<h2 id="pedestal-implementation">Pedestal Implementation</h2>
+<h1 id="clojure-pedestal-implementation">Clojure - Pedestal Implementation</h1>
 <p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
 <p>I heard that Pedestal was built with core.async in mind, so I ended up throwing together another implementation with it. I used Pedestal's Server Sent Events functionality to make it work.</p>
 <pre><code>(defn stream-ready [event-ch ctx]
