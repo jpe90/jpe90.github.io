@@ -7,10 +7,6 @@
         <loc>https://jeskin.net/blog/</loc>
     </url>
     <url>
-        <loc>https://jeskin.net/blog/ai-assisted-task-automation/</loc>
-        <lastmod>2024-06-20</lastmod>
-    </url>
-    <url>
         <loc>https://jeskin.net/blog/clp/</loc>
         <lastmod>2022-07-28</lastmod>
     </url>
@@ -57,9 +53,5 @@
     <url>
         <loc>https://jeskin.net/blog/self-hosting-git-with-stagit/</loc>
         <lastmod>2022-10-06</lastmod>
-    </url>
-    <url>
-        <loc>https://jeskin.net/blog/setting-up-local-llms/</loc>
-        <lastmod>2024-06-20</lastmod>
     </url>
 </urlset>
