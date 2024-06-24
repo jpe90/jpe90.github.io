@@ -75,7 +75,7 @@ pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 ...
 </code></pre>
 <p>These stream in over time instead of being dumped out when the message is complete. Here's the code from ollama that's generating the stream:</p>
-<pre><code>func streamResponse(c *gin.Context, ch chan any) {
+<pre data-lang="Go" class="language-Go "><code class="language-Go" data-lang="Go">func streamResponse(c *gin.Context, ch chan any) {
 	c.Header(&quot;Content-Type&quot;, &quot;application&#x2F;x-ndjson&quot;)
 	c.Stream(func(w io.Writer) bool {
 		val, ok := &lt;-ch
@@ -527,7 +527,9 @@ See: CLJ-2799
      [my-json-interceptor (sse&#x2F;start-event-stream stream-ready)]
      :route-name :stream]})
 </code></pre>
-<p>I had a hell of a time figuring out how to get a hold of the json params passed in via post request, but I got there eventually. I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there's a lot of cool stuff you can do with core.async in general.</p>
+<p>I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there's a lot of cool stuff you can do with core.async in general. It can be difficult to use, so you are pretty much required to be willing to read the source and ask for help on Clojurians slack when needed.</p>
+<p>For a project as small as this, Go was way easier to work with. I've written Clojure on and off over the last few years and I still spent 10-20x longer getting these implementations working than I did with Go. Go really makes it easy to just pick the first dumb implementation that pops into your head and it will work. And of course, trivial deployment is always a relief with Go.</p>
+<p>I do still reach for Clojure from time to time, both because I enjoy the development process of building projects in small pieces without ceremony - i.e., you don't have to create amini-projects or something similar to experiment with new ideas, you just immediately try them out from whatever file you're currently working in. I also find it much easier to maintain a bird's eye view of your codebase I'm working on. Clojure code tends to be much higher level and I find it easier to reason about when I'm focused, provided I've kept everything logically organized and somewhat tidy.</p>
 
 <nav>
   <div class="np">
