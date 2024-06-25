@@ -14,14 +14,14 @@
       
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre-wrap; }
+pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
 .np {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   padding-bottom: .5em;
   font-style: italic;
-  max-width: 50%; /* Set maximum width to 50% */
+  max-width: 100%; /* Set maximum width to 100% */
   margin: auto; /* Center the element horizontally */
 }
 body {
@@ -67,7 +67,7 @@ a:hover {
 <p>This year I took a couple Raspberry Pis and usb webcams I had laying around and set up a DIY home security system using <a href="https://motion-project.github.io">motion</a>.</p>
 <p>In this blog post, I'll show how my setup lets me check a livestream of the cameras, save pictures when the camera detects movement, and creates off-site backups when new pictures are saved.</p>
 <p>I'll start by giving some background on the software I used, followed by a walkthrough of the steps I took to get it all running.</p>
-<img src="/images/vnc.png" alt="vnc" width="50%"/>
+<img src="/images/vnc.png" alt="vnc" width="100%"/>
 <h1 id="motion">Motion</h1>
 <p>Motion is a program written in C that monitors the video signal from a connected camera device. When it detects motion, it records pictures and/or video and writes them to disk.</p>
 <p>Motion detection works by comparing subsequent images from the camera device. It performs noise filtering, masking, despeckling, and labelling on images before counting the number of pixels which differ. When the count passes a threshold, the camera has detected motion and the program takes additional actions.</p>
@@ -82,7 +82,7 @@ a:hover {
 <p>You can use VNC from outside your local network with a program named <a href="https://www.realvnc.com/en/">RealVNC</a>. RealVNC is proprietary, but it's free for non-commercial use, is easy to setup and use, and is recommended in Raspberry Pi's <a href="https://www.raspberrypi.com/documentation/computers/remote-access.html#vnc">official documentation</a>.</p>
 <p>It involves installing a server program on your Raspberry Pi and a client program on an external device. RealVNC manages an end-to-end encrypted cloud connection between the devices which takes care of a number of network security concerns for you.</p>
 <p>To do this, I open realvnc-viewer on my travel computer, which presents a nice little web interface that I use to tunnel in to the GUI of one of my Raspberry Pis. From there I just open a web browser and navigate to the local IP address or hostname (determined from my router) and port of the motion web server (determined from the Motion configuration file).</p>
-<img src="/images/vnc1.png" alt="vnc" width="50%"/>
+<img src="/images/vnc1.png" alt="vnc" width="100%"/>
 <p><em>Side Note: I haven't explored free software alternatives to could be substituted for RealVNC, but if you know of any <a href="mailto:~eskin/public-inbox@lists.sr.ht">please let me know</a>!</em></p>
 <h1 id="installation">Installation</h1>
 <p>Here's what I did on both my Raspberry Pis to get up and running. The following pertains to an installation and motion 4.3.2 on the <code>bullseye</code> release of Raspberry Pi OS.</p>

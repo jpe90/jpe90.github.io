@@ -14,14 +14,14 @@
       
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre-wrap; }
+pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
 .np {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   padding-bottom: .5em;
   font-style: italic;
-  max-width: 50%; /* Set maximum width to 50% */
+  max-width: 100%; /* Set maximum width to 100% */
   margin: auto; /* Center the element horizontally */
 }
 body {
@@ -65,7 +65,7 @@ a:hover {
 <div class="post-content">
   <h1 id="introduction">Introduction</h1>
 <p>lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.</p>
-<img src="/images/lchat_preview.png" width="50%">
+<img src="/images/lchat_preview.png" width="100%">
 <h1 id="ii">ii</h1>
 <p>A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.</p>
 <p>For example, the popular client <a href="https://weechat.org/">weechat</a> draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on.</p>
@@ -82,18 +82,18 @@ a:hover {
 </span><span>[-n nickname] [-f fullname] [-k env_pass]
 </span></code></pre>
 <p>When I run <code>ii -s irc.libera.chat -n eskin</code>, ii connects me to libera.chat. By default this creates a few folders in “~/irc”:</p>
-<img src="/images/ii1.png" width="50%">
+<img src="/images/ii1.png" width="100%">
 <p>The tty that I ran <code>ii</code> from is now taken over by a process that maintains a connection to the server and displays all messages from the server. To interact with ii, I switch to another terminal and interact with the <code>in</code> and <code>out</code> files created for the server I joined.</p>
 <p>Here’s me failing to login:</p>
-<img src="/images/ii2.png" width="50%">
+<img src="/images/ii2.png" width="100%">
 <p>And here’s me joining a room:</p>
-<img src="/images/ii3.png" width="50%">
+<img src="/images/ii3.png" width="100%">
 <p>Writing to <code>in</code> files and reading from <code>out</code> files with <code>echo</code> and <code>cat</code> are a little unwieldly, which is where <code>lchat</code> comes in.</p>
 <h1 id="lchat">lchat</h1>
 <p>lchat expects a command line argument containing the location of a directory containing <code>in</code> and <code>out</code> files.</p>
 <p>The command starts a process that continually reads from the <code>out</code> file and displaying its content in the terminal. At the same time, it continually provides a message area for you to type messages and submit them by pressing ‘Enter’. When you do, the contents of the message area are sent to the <code>in</code> file.</p>
 <p>In the image below, I navigate to the #linux subdirectory which is where the <code>in</code> and <code>out</code> files for the linux channel exist on my filesystem and the enter <code>lchat .</code> to start lchat in that location.</p>
-<img src="/images/lc.png" width="50%">
+<img src="/images/lc.png" width="100%">
 <p>lchat will work with any program that uses FIFO this way, including a few programs listed on the <a href="https://tools.suckless.org/lchat/">lchat homepage</a>.</p>
 <h1 id="installation">Installation</h1>
 <p>If you'd like to try out lchat, you'll first need to grab ii:</p>

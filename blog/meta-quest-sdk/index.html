@@ -14,14 +14,14 @@
       
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre-wrap; }
+pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
 .np {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   padding-bottom: .5em;
   font-style: italic;
-  max-width: 50%; /* Set maximum width to 50% */
+  max-width: 100%; /* Set maximum width to 100% */
   margin: auto; /* Center the element horizontally */
 }
 body {
@@ -76,17 +76,17 @@ a:hover {
 <h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
 <p>The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.</p>
 <p>For example, one project builds out a working virtual keyboard from scratch:</p>
-<video width=50% controls autoplay>
+<video width=100% controls autoplay>
     <source src="/videos/xrkeyboard.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 <p>Another demonstrates manipulating passthrough:</p>
-<video width=50% controls autoplay>
+<video width=100% controls autoplay>
     <source src="/videos/xrpassthrough.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 <p>And another demonstrates how to use spatial anchors:</p>
-<video width=50% controls autoplay>
+<video width=100% controls autoplay>
     <source src="/videos/spatial1.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
@@ -285,7 +285,7 @@ a:hover {
 <p>Some codebases can be very daunting, and it can take a long time before you feel comfortable making changes.</p>
 <p>In this case, after skimming the code for a few of the samples, I was able to dive in and start poking at stuff.</p>
 <p>One of the first things I did was to modify the spatial anchors project shown above to change the dimensions of the anchors and to draw a texture on one side of the cube.</p>
-<video width=50% controls autoplay>
+<video width=100% controls autoplay>
     <source src="/videos/spatial2.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
