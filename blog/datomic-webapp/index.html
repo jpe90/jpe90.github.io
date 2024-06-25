@@ -6,21 +6,15 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
 
 </head>
 <body>
   <section class="section">
     <div class="container">
       
-<header>
-  <a href="https:&#x2F;&#x2F;jeskin.net" class="title">
-    <h2></h2>
-  </a>
-</header>
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
+pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 .np {
   display: flex;
   flex-direction: row;
@@ -30,12 +24,46 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
   max-width: 50%; /* Set maximum width to 50% */
   margin: auto; /* Center the element horizontally */
 }
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.section {
+    padding: 20px 0;
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 </style>
-
 <h1 class="title">
   Clojure and Datomic for Web Applications
 </h1>
-<p>A couple of years ago, I worked on an exploratory protoype of web application to get my hands dirty with Clojure and Datomic. I put together a prototype web application with a frontend written using Tailwind CSS and Alpine JS and a backend written using Pedestal and Datomic. I chose to hand-roll everything including authentication and role based access control for various user groups.</p>
+<div class="post-content">
+  <p>A couple of years ago, I worked on an exploratory protoype of web application to get my hands dirty with Clojure and Datomic. I put together a prototype web application with a frontend written using Tailwind CSS and Alpine JS and a backend written using Pedestal and Datomic. I chose to hand-roll everything including authentication and role based access control for various user groups.</p>
 <p>From the outside it looks like a typical webapp, but the application internals are unusual and worth discussing.</p>
 <video width=75% controls autoplay>
     <source src="/videos/tutoring.mp4" type="video/mp4">
@@ -53,24 +81,24 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
 <p>Once deployed, Clojure applications can listen on a socket for connections. Developers can connect to the program from their editor and run commands to inspect or manipulate the program. In fact, it is common to develop applications while they are running, without the need for recompilation. For medium to large sized projects, this is significant. Java projects I worked on in the past could take fifteen minutes to compile, and larger projects took longer.</p>
 <h2 id="templating">Templating</h2>
 <p>In languages like Java, you tend to use HTML templating languages like Thymeleaf or JSPs to embed dynamic data from the server into pages. It generally looks something like this:</p>
-<pre data-lang="HTML" class="language-HTML "><code class="language-HTML" data-lang="HTML">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;Sample Page&lt;&#x2F;title&gt;
-&lt;&#x2F;head&gt;
-&lt;body&gt;
-    &lt;div th:text=&quot;&#x27;Hello, &#x27; + ${user}&quot;&gt;Hello, World!&lt;&#x2F;div&gt;
-&lt;&#x2F;body&gt;
-&lt;&#x2F;html&gt;
-</code></pre>
+<pre data-lang="HTML" style="background-color:#ffffff;color:#202020;" class="language-HTML "><code class="language-HTML" data-lang="HTML"><span>&lt;!DOCTYPE html&gt;
+</span><span>&lt;html&gt;
+</span><span>&lt;head&gt;
+</span><span>    &lt;title&gt;Sample Page&lt;/title&gt;
+</span><span>&lt;/head&gt;
+</span><span>&lt;body&gt;
+</span><span>    &lt;div th:text=</span><span style="color:#707070;">&quot;&#39;Hello, &#39; + ${user}&quot;</span><span>&gt;Hello, World!&lt;/div&gt;
+</span><span>&lt;/body&gt;
+</span><span>&lt;/html&gt;
+</span></code></pre>
 <p>The Java template above is stored in a file, parsed, and processed by Java code. These work well and are instantly familiar to all web developers, but it's easy to wind up with either heavy amounts of duplication or a rat's nest of nested page includes that are difficult to work with.</p>
 <p>Clojure, by contrast, has a popular library named Hiccup to render with Clojure data structures directly. Using Hiccup looks like the following:</p>
-<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:html
- [:head
-  [:title &quot;Sample Page&quot;]]
- [:body
-  [:div &quot;Hello, &quot; user]]]
-</code></pre>
+<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>[:html
+</span><span> [:head
+</span><span>  [:title </span><span style="color:#707070;">&quot;Sample Page&quot;</span><span>]]
+</span><span> [:body
+</span><span>  [:div </span><span style="color:#707070;">&quot;Hello, &quot;</span><span> user]]]
+</span></code></pre>
 <p>The Clojure definition is source code in the syntax of the language. You can access and manipulate it by directly operating on the underlying data structure - a <a href="https://clojuredocs.org/clojure.core/vector">vector</a>. In templating languages, you have to usually have to use a combination of A) splitting templates into many pages and B) using a weird templating language that is different from the main programming language. In practice, that can get very hairy. </p>
 <p>Using hiccup makes it easy to maintain page logic as it gets increasingly complex. A lot of the noise gets boiled out and you can operate on HTML output as data, rather than relying on template mechanisms and String processing. The value proposition mirrors that of Clojure vs traditional imperative languages.</p>
 <h2 id="datomic">Datomic</h2>
@@ -78,14 +106,14 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
 <p>As the database schema changes, and when data is added or removed, Datomic keeps a complete accounting of events. This approach contrasts with traditional SQL databases where updates or deletions overwrite the original data. In practice, between careful database migrations and database or server logs, you can sometimes stitch together a true historical record of what happened in a database. But as anyone who has worked as an application developer will know - it is far from easy.</p>
 <p>If you've maintained a traditional database for an extended period of time, you know that it sees incremental changes over time as enhancements are added. So even if you're able to look at past query results, it can be very difficult to keep track of the entire state of the database at a previous point of time- what the schema was at that time, what data was in there, and so on. In Datomic, all of this information is forever at your fingertips.</p>
 <p>You can query the database for its transaction history, and you'll get back a traversable Clojure sequence of results the same way you get back any other database result. Here's one way you can do it:</p>
-<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn collect-transactions [conn]
-  (let [tx-log (d&#x2F;log conn)]
-    (map (fn [tx]
-           {:transaction-id (:t tx)
-            :timestamp (get-tx-timestamp (d&#x2F;db conn) (:t tx))
-            :data tx})
-         (d&#x2F;tx-range tx-log nil nil))))
-</code></pre>
+<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn collect-transactions [conn]
+</span><span>  (let [tx-log (d/log conn)]
+</span><span>    (map (fn [tx]
+</span><span>           {:transaction-id (:t tx)
+</span><span>            :timestamp (get-tx-timestamp (d/db conn) (:t tx))
+</span><span>            :data tx})
+</span><span>         (d/tx-range tx-log nil nil))))
+</span></code></pre>
 <p>And this is what results look like through the eyes of the <a href="https://clojure.org/news/2023/04/28/introducing-morse">Morse</a> tool:</p>
 <video width=75% controls autoplay>
     <source src="/videos/morse.mp4" type="video/mp4">
@@ -113,11 +141,13 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
 <p>Another big drawback is that while the database tracks its &quot;value&quot; over time, you cannot go back and add previous historical data. It only records data as of the moment it passes through the transactor. This presents challenges for situations that will occur often enough in the real world that it bears mentioning. This is called &quot;bi-temporal history&quot;, which is a feature of other similar database systems, but is not a feature of Datomic.</p>
 <p>Overall, I really loved working with Datomic. If it fits your problem, it removes so many issues that arise with SQL. I'll be keeping an eye on the library and looking for opportunities to use it in the future.</p>
 
+</div>
 <nav>
   <div class="np">
     <a href="https://jeskin.net" title="Home">Home</a>
     <a href="https://github.com/jpe90" title="Github">Github</a>
     <a href="mailto:eskinjp@gmail.com">Contact</a>
+    <a href="/atom.xml" title="RSS Feed">RSS</a>
   </div>
 </nav>
 

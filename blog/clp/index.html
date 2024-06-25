@@ -6,21 +6,15 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
 
 </head>
 <body>
   <section class="section">
     <div class="container">
       
-<header>
-  <a href="https:&#x2F;&#x2F;jeskin.net" class="title">
-    <h2></h2>
-  </a>
-</header>
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
+pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 .np {
   display: flex;
   flex-direction: row;
@@ -30,19 +24,53 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
   max-width: 50%; /* Set maximum width to 50% */
   margin: auto; /* Center the element horizontally */
 }
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.section {
+    padding: 20px 0;
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 </style>
-
 <h1 class="title">
   Fast Command Line Syntax Highlighting with clp
 </h1>
-<p><em>clp's source code and installation instructions are available on <a href="https://github.com/jpe90/clp">Github</a> and <a href="https://sr.ht/~eskin/clp/">Sourcehut</a>. It’s a work in progress hobby project, so expect bugs and quirks.</em></p>
+<div class="post-content">
+  <p><em>clp's source code and installation instructions are available on <a href="https://github.com/jpe90/clp">Github</a> and <a href="https://sr.ht/~eskin/clp/">Sourcehut</a>. It’s a work in progress hobby project, so expect bugs and quirks.</em></p>
 <p>clp is a program that writes files to stdout with syntax highlighting. I built it to quickly fill fzf's preview window.</p>
 <p>It's similar to <a href="https://github.com/sharkdp/bat">bat</a> but is simpler, faster, and easier to add languages that don't have existing Sublime syntax definitions.</p>
 <p>When the --preview option is set in fzf, the preview command is kicked off in an external process and the results are displayed in the preview window, which in this case is clp.</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">
-fzf --preview &#x27;clp {}&#x27;
-
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#202020;" class="language-bash "><code class="language-bash" data-lang="bash"><span>
+</span><span>fzf --preview </span><span style="color:#707070;">&#39;clp {}&#39;
+</span><span>
+</span></code></pre>
 <p>Here's what we see when we execute the command:</p>
 <p><img src="/images/fzf_clp.png" alt="fzf_clp" /></p>
 <p>clp obtains syntax highlighting information from <a href="http://www.inf.puc-rio.br/~roberto/docs/peg.pdf">Parsing Expressing Grammar (PEG)</a> lexers provided by <a href="https://orbitalquark.github.io/scintillua/">Scintillua</a>.</p>
@@ -75,10 +103,10 @@ fzf --preview &#x27;clp {}&#x27;
 <h3 id="adding-color-themes">Adding color themes</h3>
 <p>I've added the ability to change clp's colors by selecting different built-in color themes or creating your own.</p>
 <p>To change your theme, create a configuration file in <code>~/.config/clp/clprc.lua</code> to override the system default. It should look like this:</p>
-<pre data-lang="lua" class="language-lua "><code class="language-lua" data-lang="lua">clprc = {}
-clprc.theme = &quot;ansi-16&quot;
-return clprc
-</code></pre>
+<pre data-lang="lua" style="background-color:#ffffff;color:#202020;" class="language-lua "><code class="language-lua" data-lang="lua"><span>clprc = {}
+</span><span>clprc.theme = </span><span style="color:#707070;">&quot;ansi-16&quot;
+</span><span>return clprc
+</span></code></pre>
 <p>The value of <code>clprc.theme</code> is the name of a colorscheme that <code>clp</code> will later <code>require</code>. The following themes are available out of the box:</p>
 <h3 id="3-bit-ansi-theme">3-bit ANSI theme</h3>
 <ul>
@@ -97,31 +125,33 @@ return clprc
 </ul>
 <p>The ANSI theme is enabled by default; it uses 16 color ANSI codes and should work on both light or dark terminals. The truecolors themes were exported from vim using <a href="https://github.com/jpe90/export-colorscheme.nvim">export-colorscheme.nvim</a>, which is a little neovim plugin I wrote recently.</p>
 <p>You can create your own themes in <code>~/.config/clp/themes/</code>. Like with <code>clprc.lua</code>, these should be Lua modules. Here's the definition of <code>ansi-16</code>:</p>
-<pre data-lang="lua" class="language-lua "><code class="language-lua" data-lang="lua">local M = {}
-M.theme = {
-	[&#x27;comment&#x27;] = {color=&quot;cyan&quot;},
-	[&#x27;keyword&#x27;] = {color=&quot;blue&quot;},
-	[&#x27;number&#x27;] = {color=&quot;red&quot;},
-	[&#x27;string&#x27;] = {color=&quot;green&quot;},
-	[&#x27;preprocessor&#x27;] = {color=&quot;magenta&quot;},
-	[&#x27;type&#x27;] = {color=&quot;yellow&quot;},
-}
-return M
-</code></pre>
+<pre data-lang="lua" style="background-color:#ffffff;color:#202020;" class="language-lua "><code class="language-lua" data-lang="lua"><span>local M = {}
+</span><span>M.theme = {
+</span><span>	[</span><span style="color:#707070;">&#39;comment&#39;</span><span>] = {</span><span style="color:#707070;">color</span><span>=</span><span style="color:#707070;">&quot;cyan&quot;</span><span>},
+</span><span>	[</span><span style="color:#707070;">&#39;keyword&#39;</span><span>] = {</span><span style="color:#707070;">color</span><span>=</span><span style="color:#707070;">&quot;blue&quot;</span><span>},
+</span><span>	[</span><span style="color:#707070;">&#39;number&#39;</span><span>] = {</span><span style="color:#707070;">color</span><span>=</span><span style="color:#707070;">&quot;red&quot;</span><span>},
+</span><span>	[</span><span style="color:#707070;">&#39;string&#39;</span><span>] = {</span><span style="color:#707070;">color</span><span>=</span><span style="color:#707070;">&quot;green&quot;</span><span>},
+</span><span>	[</span><span style="color:#707070;">&#39;preprocessor&#39;</span><span>] = {</span><span style="color:#707070;">color</span><span>=</span><span style="color:#707070;">&quot;magenta&quot;</span><span>},
+</span><span>	[</span><span style="color:#707070;">&#39;type&#39;</span><span>] = {</span><span style="color:#707070;">color</span><span>=</span><span style="color:#707070;">&quot;yellow&quot;</span><span>},
+</span><span>}
+</span><span>return M
+</span></code></pre>
 <p>The table keys on the left correspond to lexical tokens picked up by the lexer, and the right specifies the color assigned to that token when the text is written to stdout.</p>
 <p>When the right hand value is a Lua object like above, <code>clp</code> will use 16 color ANSI codes to highlight the token.</p>
 <p>To use truecolor, the right hand value should be a string in the form <code>&quot;#RRGGBB&quot;</code> using hex values, like here:</p>
-<pre data-lang="lua" class="language-lua "><code class="language-lua" data-lang="lua">[&#x27;comment&#x27;] = &quot;#6a9955&quot;,
-</code></pre>
+<pre data-lang="lua" style="background-color:#ffffff;color:#202020;" class="language-lua "><code class="language-lua" data-lang="lua"><span>[</span><span style="color:#707070;">&#39;comment&#39;</span><span>] = </span><span style="color:#707070;">&quot;#6a9955&quot;</span><span>,
+</span></code></pre>
 <p>This will cause <code>clp</code> to emit 24 bit color codes upon encountering the token. This means it will only render if the terminal being used <a href="https://github.com/termstandard/colors#fully-supporting">supports truecolor.</a></p>
 <p>Throw a bunch of these definitions in a lua file in <code>~/.config/clp/themes/</code>, then set <code>clprc.theme</code> to the name of the file (not including the file extension), and you should be good to go!</p>
 <p><em>Thanks to Ian Nomar and Christopher Wellons for their help with this program!</em></p>
 
+</div>
 <nav>
   <div class="np">
     <a href="https://jeskin.net" title="Home">Home</a>
     <a href="https://github.com/jpe90" title="Github">Github</a>
     <a href="mailto:eskinjp@gmail.com">Contact</a>
+    <a href="/atom.xml" title="RSS Feed">RSS</a>
   </div>
 </nav>
 

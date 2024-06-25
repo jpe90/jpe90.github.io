@@ -6,21 +6,15 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
 
 </head>
 <body>
   <section class="section">
     <div class="container">
       
-<header>
-  <a href="https:&#x2F;&#x2F;jeskin.net" class="title">
-    <h2></h2>
-  </a>
-</header>
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
+pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 .np {
   display: flex;
   flex-direction: row;
@@ -30,12 +24,46 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
   max-width: 50%; /* Set maximum width to 50% */
   margin: auto; /* Center the element horizontally */
 }
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.section {
+    padding: 20px 0;
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 </style>
-
 <h1 class="title">
   Getting Started with VR in C++ on Meta Quest
 </h1>
-<p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a>.</p>
+<div class="post-content">
+  <p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a>.</p>
 <p>I bought a Quest 3 at launch, and I've benefited a lot from studying the SDK and experimenting with the sample programs:</p>
 <ol>
 <li>It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware.</li>
@@ -76,183 +104,183 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
 <p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.</p>
 <p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
 <p>A benefit of this readability is that you end up build a lot of intuition on &quot;how VR works&quot; by making superficial observations. Take for example the following code from the main render loop of one of the samples.</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">typedef struct XrPosef {
-    XrQuaternionf    orientation;
-    XrVector3f       position;
-} XrPosef;
-
-&#x2F;&#x2F; ...
-
-XrPosef xfLocalFromEye[NUM_EYES];
-
-for (int eye = 0; eye &lt; NUM_EYES; eye++) {
-    &#x2F;&#x2F; LOG_POSE( &quot;viewTransform&quot;, &amp;projectionInfo.projections[eye].viewTransform );
-    XrPosef xfHeadFromEye = projections[eye].pose;
-    XrPosef_Multiply(&amp;xfLocalFromEye[eye], &amp;xfLocalFromHead, &amp;xfHeadFromEye);
-
-    XrPosef xfEyeFromLocal = XrPosef_Inverse(xfLocalFromEye[eye]);
-
-    XrMatrix4x4f viewMat{};
-    XrMatrix4x4f_CreateFromRigidTransform(&amp;viewMat, &amp;xfEyeFromLocal);
-
-    const XrFovf fov = projections[eye].fov;
-    XrMatrix4x4f projMat;
-    XrMatrix4x4f_CreateProjectionFov(&amp;projMat, GRAPHICS_OPENGL_ES, fov, 0.1f, 0.0f);
-
-    frameIn.View[eye] = OvrFromXr(viewMat);
-    frameIn.Proj[eye] = OvrFromXr(projMat);
-}
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>typedef struct XrPosef {
+</span><span>    XrQuaternionf    orientation;
+</span><span>    XrVector3f       position;
+</span><span>} XrPosef;
+</span><span>
+</span><span style="color:#bbbbbb;">// ...
+</span><span>
+</span><span>XrPosef xfLocalFromEye[NUM_EYES];
+</span><span>
+</span><span>for (int eye = </span><span style="color:#707070;">0</span><span>; eye &lt; NUM_EYES; eye++) {
+</span><span>    </span><span style="color:#bbbbbb;">// LOG_POSE( &quot;viewTransform&quot;, &amp;projectionInfo.projections[eye].viewTransform );
+</span><span>    XrPosef xfHeadFromEye = projections[eye].pose;
+</span><span>    XrPosef_Multiply(&amp;xfLocalFromEye[eye], &amp;xfLocalFromHead, &amp;xfHeadFromEye);
+</span><span>
+</span><span>    XrPosef xfEyeFromLocal = XrPosef_Inverse(xfLocalFromEye[eye]);
+</span><span>
+</span><span>    XrMatrix4x4f viewMat{};
+</span><span>    XrMatrix4x4f_CreateFromRigidTransform(&amp;viewMat, &amp;xfEyeFromLocal);
+</span><span>
+</span><span>    const XrFovf fov = projections[eye].fov;
+</span><span>    XrMatrix4x4f projMat;
+</span><span>    XrMatrix4x4f_CreateProjectionFov(&amp;projMat, GRAPHICS_OPENGL_ES, fov, </span><span style="color:#707070;">0.1f</span><span>, </span><span style="color:#707070;">0.0f</span><span>);
+</span><span>
+</span><span>    frameIn.View[eye] = OvrFromXr(viewMat);
+</span><span>    frameIn.Proj[eye] = OvrFromXr(projMat);
+</span><span>}
+</span></code></pre>
 <p>It becomes immediately clear when reading the above that the position for each eye is independently tracked, and as you might guess, independent frames are rendered for each eye.</p>
 <p>You can verify this by looking at that project's vertex shader (seen below) and note that each eye gets its own matrix transforms:</p>
-<pre data-lang="GLSL" class="language-GLSL "><code class="language-GLSL" data-lang="GLSL">#define NUM_VIEWS 2
-#define VIEW_ID gl_ViewID_OVR
-#extension GL_OVR_multiview2 : require
-layout(num_views=NUM_VIEWS) in;
-in vec3 vertexPosition;
-in vec4 vertexColor;
-uniform mat4 ModelMatrix;
-uniform vec4 ColorScale;
-uniform vec4 ColorBias;
-uniform SceneMatrices
-{
-    uniform mat4 ViewMatrix[NUM_VIEWS];
-    uniform mat4 ProjectionMatrix[NUM_VIEWS];
-} sm;
-out vec4 fragmentColor;
-void main()
-{
-    gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
-    fragmentColor = vertexColor * ColorScale + ColorBias;
-}
-</code></pre>
+<pre data-lang="GLSL" style="background-color:#ffffff;color:#202020;" class="language-GLSL "><code class="language-GLSL" data-lang="GLSL"><span>#define NUM_VIEWS </span><span style="color:#707070;">2
+</span><span>#define VIEW_ID gl_ViewID_OVR
+</span><span>#extension </span><span style="color:#707070;">GL_OVR_multiview2 </span><span>: require
+</span><span>layout(num_views=NUM_VIEWS) in;
+</span><span>in vec3 vertexPosition;
+</span><span>in vec4 vertexColor;
+</span><span>uniform mat4 ModelMatrix;
+</span><span>uniform vec4 ColorScale;
+</span><span>uniform vec4 ColorBias;
+</span><span>uniform SceneMatrices
+</span><span>{
+</span><span>    uniform mat4 ViewMatrix[NUM_VIEWS];
+</span><span>    uniform mat4 ProjectionMatrix[NUM_VIEWS];
+</span><span>} sm;
+</span><span>out vec4 fragmentColor;
+</span><span>void main()
+</span><span>{
+</span><span>    gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, </span><span style="color:#707070;">1.0 </span><span>) ) );
+</span><span>    fragmentColor = vertexColor * ColorScale + ColorBias;
+</span><span>}
+</span></code></pre>
 <p>In hindsight, it should be obvious that this is something you do for VR, but I hadn't really thought about it. I find that the code conveys the concept more clearly and completely than words.</p>
 <h2 id="structure-of-sample-projects">Structure of Sample Projects</h2>
 <p>Below is an overview of some representative files of a sample project. To build one of the same projects, you can grab a copy of Android Studio Bumblebee (2021.1.1) or earlier, and open settings.gradle. I ran projects in that IDE and worked on them in a separate text editor.</p>
-<pre><code>XrVirtualKeyboard
-├── Projects
-│   └── Android
-│       ├── AndroidManifest.xml
-│       ├── build
-│       ├── build.bat
-│       ├── build.gradle
-│       ├── build.py
-│       ├── jni
-│       │   ├── Android.mk
-│       │   └── Application.mk
-│       ├── local.properties
-│       └── settings.gradle
-├── Src
-│   ├── VirtualKeyboardModelRenderer.cpp
-│   ├── VirtualKeyboardModelRenderer.h
-│   ├── XrHandHelper.h
-│   ├── XrHelper.h
-│   ├── XrRenderModelHelper.cpp
-│   ├── XrRenderModelHelper.h
-│   ├── XrVirtualKeyboardHelper.cpp
-│   ├── XrVirtualKeyboardHelper.h
-│   └── main.cpp
-├── assets
-│   └── panel.ktx
-├── java
-│   └── MainActivity.java
-└── res
-    └── values
-        └── strings.xml
-</code></pre>
+<pre style="background-color:#ffffff;color:#202020;"><code><span>XrVirtualKeyboard
+</span><span>├── Projects
+</span><span>│   └── Android
+</span><span>│       ├── AndroidManifest.xml
+</span><span>│       ├── build
+</span><span>│       ├── build.bat
+</span><span>│       ├── build.gradle
+</span><span>│       ├── build.py
+</span><span>│       ├── jni
+</span><span>│       │   ├── Android.mk
+</span><span>│       │   └── Application.mk
+</span><span>│       ├── local.properties
+</span><span>│       └── settings.gradle
+</span><span>├── Src
+</span><span>│   ├── VirtualKeyboardModelRenderer.cpp
+</span><span>│   ├── VirtualKeyboardModelRenderer.h
+</span><span>│   ├── XrHandHelper.h
+</span><span>│   ├── XrHelper.h
+</span><span>│   ├── XrRenderModelHelper.cpp
+</span><span>│   ├── XrRenderModelHelper.h
+</span><span>│   ├── XrVirtualKeyboardHelper.cpp
+</span><span>│   ├── XrVirtualKeyboardHelper.h
+</span><span>│   └── main.cpp
+</span><span>├── assets
+</span><span>│   └── panel.ktx
+</span><span>├── java
+</span><span>│   └── MainActivity.java
+</span><span>└── res
+</span><span>    └── values
+</span><span>        └── strings.xml
+</span></code></pre>
 <p>Android.mk contains the Makefile that you'll be the most interested in. When you add source code or libraries, you'll be changing this file. They generally look like this:</p>
-<pre><code>LOCAL_PATH := $(call my-dir)
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := xrvirtualkeyboard
-
-include ..&#x2F;..&#x2F;..&#x2F;..&#x2F;cflags.mk
-
-LOCAL_C_INCLUDES := \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;SampleCommon&#x2F;Src \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;SampleXrFramework&#x2F;Src \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;1stParty&#x2F;OVR&#x2F;Include \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;1stParty&#x2F;utilities&#x2F;include \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;3rdParty&#x2F;stb&#x2F;src \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;3rdParty&#x2F;khronos&#x2F;openxr&#x2F;OpenXR-SDK&#x2F;include \
-                    $(LOCAL_PATH)&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;3rdParty&#x2F;khronos&#x2F;openxr&#x2F;OpenXR-SDK&#x2F;src&#x2F;common
-
-#
-LOCAL_SRC_FILES     :=  ..&#x2F;..&#x2F;..&#x2F;Src&#x2F;main.cpp \
-                        ..&#x2F;..&#x2F;..&#x2F;Src&#x2F;VirtualKeyboardModelRenderer.cpp \
-                        ..&#x2F;..&#x2F;..&#x2F;Src&#x2F;XrRenderModelHelper.cpp \
-                        ..&#x2F;..&#x2F;..&#x2F;Src&#x2F;XrVirtualKeyboardHelper.cpp \
-
-# include default libraries
-LOCAL_LDLIBS            := -llog -landroid -lGLESv3 -lEGL
-LOCAL_STATIC_LIBRARIES  := samplexrframework
-LOCAL_SHARED_LIBRARIES  := openxr_loader
-
-include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,SampleXrFramework&#x2F;Projects&#x2F;Android&#x2F;jni)
-$(call import-module,OpenXR&#x2F;Projects&#x2F;AndroidPrebuilt&#x2F;jni)
-</code></pre>
+<pre style="background-color:#ffffff;color:#202020;"><code><span>LOCAL_PATH := $(call my-dir)
+</span><span>include $(CLEAR_VARS)
+</span><span>
+</span><span>LOCAL_MODULE := xrvirtualkeyboard
+</span><span>
+</span><span>include ../../../../cflags.mk
+</span><span>
+</span><span>LOCAL_C_INCLUDES := \
+</span><span>                    $(LOCAL_PATH)/../../../../../SampleCommon/Src \
+</span><span>                    $(LOCAL_PATH)/../../../../../SampleXrFramework/Src \
+</span><span>                    $(LOCAL_PATH)/../../../../../1stParty/OVR/Include \
+</span><span>                    $(LOCAL_PATH)/../../../../../1stParty/utilities/include \
+</span><span>                    $(LOCAL_PATH)/../../../../../3rdParty/stb/src \
+</span><span>                    $(LOCAL_PATH)/../../../../../3rdParty/khronos/openxr/OpenXR-SDK/include \
+</span><span>                    $(LOCAL_PATH)/../../../../../3rdParty/khronos/openxr/OpenXR-SDK/src/common
+</span><span>
+</span><span>#
+</span><span>LOCAL_SRC_FILES     :=  ../../../Src/main.cpp \
+</span><span>                        ../../../Src/VirtualKeyboardModelRenderer.cpp \
+</span><span>                        ../../../Src/XrRenderModelHelper.cpp \
+</span><span>                        ../../../Src/XrVirtualKeyboardHelper.cpp \
+</span><span>
+</span><span># include default libraries
+</span><span>LOCAL_LDLIBS            := -llog -landroid -lGLESv3 -lEGL
+</span><span>LOCAL_STATIC_LIBRARIES  := samplexrframework
+</span><span>LOCAL_SHARED_LIBRARIES  := openxr_loader
+</span><span>
+</span><span>include $(BUILD_SHARED_LIBRARY)
+</span><span>
+</span><span>$(call import-module,SampleXrFramework/Projects/Android/jni)
+</span><span>$(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
+</span></code></pre>
 <p>The entry point of each project contains OpenGL and OXR initialization before entering the event loop.</p>
 <p>Graphics initialization is done with EGL in the same manner as on other embedded systems (or the desktop):</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">struct ovrEgl {
-    void Clear();
-    void CreateContext(const ovrEgl* shareEgl);
-    void DestroyContext();
-#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
-    EGLint MajorVersion;
-    EGLint MinorVersion;
-    EGLDisplay Display;
-    EGLConfig Config;
-    EGLSurface TinySurface;
-    EGLSurface MainSurface;
-    EGLContext Context;
-#elif defined(XR_USE_GRAPHICS_API_OPENGL)
-    HDC hDC;
-    HGLRC hGLRC;
-#endif &#x2F;&#x2F;
-};
-
-&#x2F;&#x2F; ...
-
-#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
-void ovrEgl::CreateContext(const ovrEgl* shareEgl) {
-    if (Display != 0) {
-        return;
-    }
-
-    Display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    ALOGV(&quot;        eglInitialize( Display, &amp;MajorVersion, &amp;MinorVersion )&quot;);
-    eglInitialize(Display, &amp;MajorVersion, &amp;MinorVersion);
-    &#x2F;&#x2F; Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
-    &#x2F;&#x2F; flags in eglChooseConfig if the user has selected the &quot;force 4x MSAA&quot; option in
-    &#x2F;&#x2F; settings, and that is completely wasted for our warp target.
-    const int MAX_CONFIGS = 1024;
-    EGLConfig configs[MAX_CONFIGS];
-    EGLint numConfigs = 0;
-    if (eglGetConfigs(Display, configs, MAX_CONFIGS, &amp;numConfigs) == EGL_FALSE) {
-        ALOGE(&quot;        eglGetConfigs() failed: %s&quot;, EglErrorString(eglGetError()));
-        return;
-    }
-    &#x2F;&#x2F; blah blah
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>struct ovrEgl {
+</span><span>    void Clear();
+</span><span>    void CreateContext(const ovrEgl* shareEgl);
+</span><span>    void DestroyContext();
+</span><span>#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+</span><span>    EGLint MajorVersion;
+</span><span>    EGLint MinorVersion;
+</span><span>    EGLDisplay Display;
+</span><span>    EGLConfig Config;
+</span><span>    EGLSurface TinySurface;
+</span><span>    EGLSurface MainSurface;
+</span><span>    EGLContext Context;
+</span><span>#elif defined(XR_USE_GRAPHICS_API_OPENGL)
+</span><span>    HDC hDC;
+</span><span>    HGLRC hGLRC;
+</span><span>#endif </span><span style="color:#bbbbbb;">//
+</span><span>};
+</span><span>
+</span><span style="color:#bbbbbb;">// ...
+</span><span>
+</span><span>#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+</span><span>void ovrEgl::CreateContext(const ovrEgl* shareEgl) {
+</span><span>    if (Display != </span><span style="color:#707070;">0</span><span>) {
+</span><span>        return;
+</span><span>    }
+</span><span>
+</span><span>    Display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+</span><span>    ALOGV(</span><span style="color:#707070;">&quot;        eglInitialize( Display, &amp;MajorVersion, &amp;MinorVersion )&quot;</span><span>);
+</span><span>    eglInitialize(Display, &amp;MajorVersion, &amp;MinorVersion);
+</span><span>    </span><span style="color:#bbbbbb;">// Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
+</span><span>    </span><span style="color:#bbbbbb;">// flags in eglChooseConfig if the user has selected the &quot;force 4x MSAA&quot; option in
+</span><span>    </span><span style="color:#bbbbbb;">// settings, and that is completely wasted for our warp target.
+</span><span>    const int MAX_CONFIGS = </span><span style="color:#707070;">1024</span><span>;
+</span><span>    EGLConfig configs[MAX_CONFIGS];
+</span><span>    EGLint numConfigs = </span><span style="color:#707070;">0</span><span>;
+</span><span>    if (eglGetConfigs(Display, configs, MAX_CONFIGS, &amp;numConfigs) == EGL_FALSE) {
+</span><span>        ALOGE(</span><span style="color:#707070;">&quot;        eglGetConfigs() failed: %s&quot;</span><span>, EglErrorString(eglGetError()));
+</span><span>        return;
+</span><span>    }
+</span><span>    </span><span style="color:#bbbbbb;">// blah blah
+</span></code></pre>
 <p>Logging is done with a macro that delegates to NDK's provided logging facilities when the code is running on Android, otherwise it just falls back on printf.</p>
-<pre><code>ALOGV(&quot;Creating passthrough layer&quot;);
-</code></pre>
+<pre style="background-color:#ffffff;color:#202020;"><code><span>ALOGV(&quot;Creating passthrough layer&quot;);
+</span></code></pre>
 <p>And OpenGL function calls use the common idiom of being wrapped in a macro that executes the OpenGL function, checks the global error message after execution, and prints an error message if an error flag is set after the line executes.</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
+</span></code></pre>
 <p>Code that calls into OXR functionality work similar to OpenGL in a few ways.</p>
 <p><code>OXR</code> is an error checking macro that behaves in the same manner as <code>GL</code>.</p>
 <p>And like with OpenGL, functions from the OpenXR specification are are dynamically linked to at runtime. This means you won't find their implementation in the SDK; they are running in their own address space outside of the program and are available to all applications on the device.</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">OXR(xrLocateViews(
-    app.Session,
-    &amp;projectionInfo,
-    &amp;viewState,
-    projectionCapacityInput,
-    &amp;projectionCountOutput,
-    projections));
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>OXR(xrLocateViews(
+</span><span>    app.Session,
+</span><span>    &amp;projectionInfo,
+</span><span>    &amp;viewState,
+</span><span>    projectionCapacityInput,
+</span><span>    &amp;projectionCountOutput,
+</span><span>    projections));
+</span></code></pre>
 <h2 id="making-modifications-to-sample-projects">Making Modifications to Sample Projects</h2>
 <p>Some codebases can be very daunting, and it can take a long time before you feel comfortable making changes.</p>
 <p>In this case, after skimming the code for a few of the samples, I was able to dive in and start poking at stuff.</p>
@@ -263,262 +291,264 @@ void ovrEgl::CreateContext(const ovrEgl* shareEgl) {
 </video>
 <p>Here are what the changes to make this work look like:</p>
 <p>The dimensions and colors were single line changes in the event loop.</p>
-<pre data-lang="diff" class="language-diff "><code class="language-diff" data-lang="diff">- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
-+ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);
-</code></pre>
-<pre data-lang="diff" class="language-diff "><code class="language-diff" data-lang="diff">- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); &#x2F;&#x2F; Orange
-+ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); &#x2F;&#x2F; Brown
-</code></pre>
+<pre data-lang="diff" style="background-color:#ffffff;color:#202020;" class="language-diff "><code class="language-diff" data-lang="diff"><span>- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
+</span><span>+ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);
+</span></code></pre>
+<pre data-lang="diff" style="background-color:#ffffff;color:#202020;" class="language-diff "><code class="language-diff" data-lang="diff"><span>- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); // Orange
+</span><span>+ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); // Brown
+</span></code></pre>
 <p>I dropped stb_image.h into the project and added some code that loads textures from images on the device and maintains a pool of the loaded textures which is cycled through during rendering.</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">#include &quot;TexturePool.h&quot;
-#include &lt;android&#x2F;log.h&gt;
-#define STB_IMAGE_IMPLEMENTATION
-#include &quot;stb_image.h&quot;
-#include &lt;android&#x2F;asset_manager_jni.h&gt;
-#include &lt;android&#x2F;asset_manager.h&gt;
-
-std::vector&lt;std::string&gt; texture_filenames = {&quot;NASA1.jpg&quot;, &quot;NASA2.jpg&quot;, &quot;NASA3.jpg&quot;, &quot;NASA4.jpg&quot;, &quot;NASA5.jpg&quot;, &quot;NASA6.jpg&quot;, &quot;NASA7.jpg&quot;, &quot;NASA8.jpg&quot;  };
-
-size_t texture_pointer = 0;
-
-std::vector&lt;GLuint&gt; texture_ids;
-
-void texture_pool_init(std::vector&lt;std::string&gt; filenames, AAssetManager *amgr) {
-	for (std::string filename : filenames) {
-        GLuint texture_id;
-
-        GL(glGenTextures(1, &amp;texture_id));
-        texture_ids.push_back(texture_id);
-        GL(glBindTexture(GL_TEXTURE_2D, texture_id));
-
-        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                           GL_LINEAR_MIPMAP_LINEAR));
-        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
-        GLenum format;
-
-		AAsset* asset = AAssetManager_open(amgr, filename.c_str(), AASSET_MODE_BUFFER);
-		if (asset == NULL) {
-			ALOGE(&quot;Failed to open %s&quot;, filename.c_str());
-		} else {
-			ALOGV(&quot;opened file %s&quot;, filename.c_str());
-		}
-
-		int width, height, channels;
-        stbi_set_flip_vertically_on_load(true);
-		void *data = stbi_load_from_memory((unsigned char*)AAsset_getBuffer(asset), AAsset_getLength(asset), &amp;width, &amp;height, &amp;channels, 0);
-		if (data == NULL) {
-			ALOGE(&quot;Failed to load %s&quot;, filename.c_str());
-		} else {
-			ALOGV(&quot;loaded file %s&quot;, filename.c_str());
-		}
-
-        if (channels == 3) {
-            format = GL_RGB;
-        } else if (channels == 4) {
-            format = GL_RGBA;
-        } else {
-            fprintf(stderr, &quot;Unsupported number of channels: %d\n&quot;, channels);
-            exit(EXIT_FAILURE);
-        }
-
-        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE,
-                        data));
-        GL(glGenerateMipmap(GL_TEXTURE_2D));
-
-        stbi_image_free(data);
-	}
-}
-
-&#x2F;&#x2F; reset at the start of each frame to keep the same rendering order
-void reset_texture_pointer() {
-    ALOGV(&quot;resetting texture from %u to 0&quot;,texture_pointer);
-    texture_pointer = 0;
-}
-
-&#x2F;&#x2F; if more textures are requested than are available, wrap around
-GLuint next_texture() {
-    size_t last_texture_idx = texture_pointer;
-    size_t next_texture_idx = (texture_pointer + 1) % texture_ids.size();
-    texture_pointer = next_texture_idx;
-    return texture_ids[last_texture_idx];
-}
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>#include </span><span style="color:#707070;">&quot;TexturePool.h&quot;
+</span><span>#include </span><span style="color:#707070;">&lt;android/log.h&gt;
+</span><span>#define STB_IMAGE_IMPLEMENTATION
+</span><span>#include </span><span style="color:#707070;">&quot;stb_image.h&quot;
+</span><span>#include </span><span style="color:#707070;">&lt;android/asset_manager_jni.h&gt;
+</span><span>#include </span><span style="color:#707070;">&lt;android/asset_manager.h&gt;
+</span><span>
+</span><span>std::vector&lt;std::string&gt; texture_filenames = {</span><span style="color:#707070;">&quot;NASA1.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA2.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA3.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA4.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA5.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA6.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA7.jpg&quot;</span><span>, </span><span style="color:#707070;">&quot;NASA8.jpg&quot;  </span><span>};
+</span><span>
+</span><span>size_t texture_pointer = </span><span style="color:#707070;">0</span><span>;
+</span><span>
+</span><span>std::vector&lt;GLuint&gt; texture_ids;
+</span><span>
+</span><span>void texture_pool_init(std::vector&lt;std::string&gt; filenames, AAssetManager *amgr) {
+</span><span>	for (std::string filename : filenames) {
+</span><span>        GLuint texture_id;
+</span><span>
+</span><span>        GL(glGenTextures(</span><span style="color:#707070;">1</span><span>, &amp;texture_id));
+</span><span>        texture_ids.push_back(texture_id);
+</span><span>        GL(glBindTexture(GL_TEXTURE_2D, texture_id));
+</span><span>
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+</span><span>                           GL_LINEAR_MIPMAP_LINEAR));
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+</span><span>        GLenum format;
+</span><span>
+</span><span>		AAsset* asset = AAssetManager_open(amgr, filename.c_str(), AASSET_MODE_BUFFER);
+</span><span>		if (asset == NULL) {
+</span><span>			ALOGE(</span><span style="color:#707070;">&quot;Failed to open %s&quot;</span><span>, filename.c_str());
+</span><span>		} else {
+</span><span>			ALOGV(</span><span style="color:#707070;">&quot;opened file %s&quot;</span><span>, filename.c_str());
+</span><span>		}
+</span><span>
+</span><span>		int width, height, channels;
+</span><span>        stbi_set_flip_vertically_on_load(true);
+</span><span>		void *data = stbi_load_from_memory((unsigned char*)AAsset_getBuffer(asset), AAsset_getLength(asset), &amp;width, &amp;height, &amp;channels, </span><span style="color:#707070;">0</span><span>);
+</span><span>		if (data == NULL) {
+</span><span>			ALOGE(</span><span style="color:#707070;">&quot;Failed to load %s&quot;</span><span>, filename.c_str());
+</span><span>		} else {
+</span><span>			ALOGV(</span><span style="color:#707070;">&quot;loaded file %s&quot;</span><span>, filename.c_str());
+</span><span>		}
+</span><span>
+</span><span>        if (channels == </span><span style="color:#707070;">3</span><span>) {
+</span><span>            format = GL_RGB;
+</span><span>        } else if (channels == </span><span style="color:#707070;">4</span><span>) {
+</span><span>            format = GL_RGBA;
+</span><span>        } else {
+</span><span>            fprintf(stderr, </span><span style="color:#707070;">&quot;Unsupported number of channels: %d\n&quot;</span><span>, channels);
+</span><span>            exit(EXIT_FAILURE);
+</span><span>        }
+</span><span>
+</span><span>        GL(glTexImage2D(GL_TEXTURE_2D, </span><span style="color:#707070;">0</span><span>, GL_RGB, width, height, </span><span style="color:#707070;">0</span><span>, format, GL_UNSIGNED_BYTE,
+</span><span>                        data));
+</span><span>        GL(glGenerateMipmap(GL_TEXTURE_2D));
+</span><span>
+</span><span>        stbi_image_free(data);
+</span><span>	}
+</span><span>}
+</span><span>
+</span><span style="color:#bbbbbb;">// reset at the start of each frame to keep the same rendering order
+</span><span>void reset_texture_pointer() {
+</span><span>    ALOGV(</span><span style="color:#707070;">&quot;resetting texture from %u to 0&quot;</span><span>,texture_pointer);
+</span><span>    texture_pointer = </span><span style="color:#707070;">0</span><span>;
+</span><span>}
+</span><span>
+</span><span style="color:#bbbbbb;">// if more textures are requested than are available, wrap around
+</span><span>GLuint next_texture() {
+</span><span>    size_t last_texture_idx = texture_pointer;
+</span><span>    size_t next_texture_idx = (texture_pointer + </span><span style="color:#707070;">1</span><span>) % texture_ids.size();
+</span><span>    texture_pointer = next_texture_idx;
+</span><span>    return texture_ids[last_texture_idx];
+</span><span>}
+</span></code></pre>
 <p>I added UVs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">
-void ovrGeometry::CreateCube()
-{
-    struct ovrCubeVertices
-    {
-        signed char positions[8][4];
-        unsigned char colors[8][4];
-        float uvs[8][2];
-    };
-
-    static const ovrCubeVertices cubeVertices = {
-        &#x2F;&#x2F; positions
-        {
-            {-127, -127, -127, +127},
-            {+127, -127, -127, +127},
-            {-127, +127, -127, +127},
-            {+127, +127, -127, +127},
-            {-127, -127, +127, +127},
-            {+127, -127, +127, +127},
-            {-127, +127, +127, +127},
-            {+127, +127, +127, +127}},
-        &#x2F;&#x2F; colors
-        {
-            {0x00, 0x00, 0x00, 0xff},
-            {0xff, 0x00, 0x00, 0xff},
-            {0x00, 0xff, 0x00, 0xff},
-            {0xff, 0xff, 0x00, 0xff},
-            {0x00, 0x00, 0xff, 0xff},
-            {0xff, 0x00, 0xff, 0xff},
-            {0x00, 0xff, 0xff, 0xff},
-            {0xff, 0xff, 0xff, 0xff}},
-        &#x2F;&#x2F; uvs
-        {
-            {0.0f, 0.0f}, &#x2F;&#x2F; Bottom back left corner
-            {1.0f, 0.0f}, &#x2F;&#x2F; Bottom back right corner
-            {0.0f, 1.0f}, &#x2F;&#x2F; Top back left corner
-            {1.0f, 1.0f}, &#x2F;&#x2F; Top back right corner
-            {0.0f, 0.0f}, &#x2F;&#x2F; Bottom front left corner
-            {1.0f, 0.0f}, &#x2F;&#x2F; Bottom front right corner
-            {0.0f, 1.0f}, &#x2F;&#x2F; Top front left corner
-            {1.0f, 1.0f}, &#x2F;&#x2F; Top front right corner
-        }
-    };
-
-    static const unsigned short cube_indices[30] = {
-        0, 2, 1, 2, 3, 1, &#x2F;&#x2F; back
-        6, 7, 2, 2, 7, 3, &#x2F;&#x2F; top
-        4, 0, 5, 5, 0, 1, &#x2F;&#x2F; bottom
-        0, 4, 2, 2, 4, 6, &#x2F;&#x2F; left
-        5, 1, 7, 7, 1, 3  &#x2F;&#x2F; right
-    };
-
-    static const unsigned short tex_indices[6] = {
-        4, 5, 6, 6, 5, 7, &#x2F;&#x2F; front
-    };
-
-    VertexCount = 8;
-    ColorIndexCount = 30;
-    TextureIndexCount = 6;
-    IndexCount = 0;
-
-    VertexAttribs[0].Index = VERTEX_ATTRIBUTE_LOCATION_POSITION;
-    VertexAttribs[0].Size = 4;
-    VertexAttribs[0].Type = GL_BYTE;
-    VertexAttribs[0].Normalized = true;
-    VertexAttribs[0].Stride = sizeof(cubeVertices.positions[0]);
-    VertexAttribs[0].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, positions);
-
-    VertexAttribs[1].Index = VERTEX_ATTRIBUTE_LOCATION_COLOR;
-    VertexAttribs[1].Size = 4;
-    VertexAttribs[1].Type = GL_UNSIGNED_BYTE;
-    VertexAttribs[1].Normalized = true;
-    VertexAttribs[1].Stride = sizeof(cubeVertices.colors[0]);
-    VertexAttribs[1].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, colors);
-
-    VertexAttribs[2].Index = VERTEX_ATTRIBUTE_LOCATION_UV; &#x2F;&#x2F; UV attribute
-    VertexAttribs[2].Size = 2;
-    VertexAttribs[2].Type = GL_FLOAT;
-    VertexAttribs[2].Normalized = false;
-    VertexAttribs[2].Stride = sizeof(cubeVertices.uvs[0]);
-    VertexAttribs[2].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, uvs);
-
-    GL(glGenBuffers(1, &amp;VertexBuffer));
-    GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
-    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &amp;cubeVertices, GL_STATIC_DRAW));
-    GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-    GL(glGenBuffers(1, &amp;ColorIndexBuffer));
-    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ColorIndexBuffer));
-    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_indices), cube_indices, GL_STATIC_DRAW));
-    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-
-    GL(glGenBuffers(1, &amp;TextureIndexBuffer));
-    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextureIndexBuffer));
-    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tex_indices), tex_indices, GL_STATIC_DRAW));
-    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-}
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>
+</span><span>void ovrGeometry::CreateCube()
+</span><span>{
+</span><span>    struct ovrCubeVertices
+</span><span>    {
+</span><span>        signed char positions[</span><span style="color:#707070;">8</span><span>][</span><span style="color:#707070;">4</span><span>];
+</span><span>        unsigned char colors[</span><span style="color:#707070;">8</span><span>][</span><span style="color:#707070;">4</span><span>];
+</span><span>        float uvs[</span><span style="color:#707070;">8</span><span>][</span><span style="color:#707070;">2</span><span>];
+</span><span>    };
+</span><span>
+</span><span>    static const ovrCubeVertices cubeVertices = {
+</span><span>        </span><span style="color:#bbbbbb;">// positions
+</span><span>        {
+</span><span>            {-</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {+</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {-</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {+</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {-</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {+</span><span style="color:#707070;">127</span><span>, -</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {-</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>},
+</span><span>            {+</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>, +</span><span style="color:#707070;">127</span><span>}},
+</span><span>        </span><span style="color:#bbbbbb;">// colors
+</span><span>        {
+</span><span>            {</span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0x00</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>},
+</span><span>            {</span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>, </span><span style="color:#707070;">0xff</span><span>}},
+</span><span>        </span><span style="color:#bbbbbb;">// uvs
+</span><span>        {
+</span><span>            {</span><span style="color:#707070;">0.0f</span><span>, </span><span style="color:#707070;">0.0f</span><span>}, </span><span style="color:#bbbbbb;">// Bottom back left corner
+</span><span>            {</span><span style="color:#707070;">1.0f</span><span>, </span><span style="color:#707070;">0.0f</span><span>}, </span><span style="color:#bbbbbb;">// Bottom back right corner
+</span><span>            {</span><span style="color:#707070;">0.0f</span><span>, </span><span style="color:#707070;">1.0f</span><span>}, </span><span style="color:#bbbbbb;">// Top back left corner
+</span><span>            {</span><span style="color:#707070;">1.0f</span><span>, </span><span style="color:#707070;">1.0f</span><span>}, </span><span style="color:#bbbbbb;">// Top back right corner
+</span><span>            {</span><span style="color:#707070;">0.0f</span><span>, </span><span style="color:#707070;">0.0f</span><span>}, </span><span style="color:#bbbbbb;">// Bottom front left corner
+</span><span>            {</span><span style="color:#707070;">1.0f</span><span>, </span><span style="color:#707070;">0.0f</span><span>}, </span><span style="color:#bbbbbb;">// Bottom front right corner
+</span><span>            {</span><span style="color:#707070;">0.0f</span><span>, </span><span style="color:#707070;">1.0f</span><span>}, </span><span style="color:#bbbbbb;">// Top front left corner
+</span><span>            {</span><span style="color:#707070;">1.0f</span><span>, </span><span style="color:#707070;">1.0f</span><span>}, </span><span style="color:#bbbbbb;">// Top front right corner
+</span><span>        }
+</span><span>    };
+</span><span>
+</span><span>    static const unsigned short cube_indices[</span><span style="color:#707070;">30</span><span>] = {
+</span><span>        </span><span style="color:#707070;">0</span><span>, </span><span style="color:#707070;">2</span><span>, </span><span style="color:#707070;">1</span><span>, </span><span style="color:#707070;">2</span><span>, </span><span style="color:#707070;">3</span><span>, </span><span style="color:#707070;">1</span><span>, </span><span style="color:#bbbbbb;">// back
+</span><span>        </span><span style="color:#707070;">6</span><span>, </span><span style="color:#707070;">7</span><span>, </span><span style="color:#707070;">2</span><span>, </span><span style="color:#707070;">2</span><span>, </span><span style="color:#707070;">7</span><span>, </span><span style="color:#707070;">3</span><span>, </span><span style="color:#bbbbbb;">// top
+</span><span>        </span><span style="color:#707070;">4</span><span>, </span><span style="color:#707070;">0</span><span>, </span><span style="color:#707070;">5</span><span>, </span><span style="color:#707070;">5</span><span>, </span><span style="color:#707070;">0</span><span>, </span><span style="color:#707070;">1</span><span>, </span><span style="color:#bbbbbb;">// bottom
+</span><span>        </span><span style="color:#707070;">0</span><span>, </span><span style="color:#707070;">4</span><span>, </span><span style="color:#707070;">2</span><span>, </span><span style="color:#707070;">2</span><span>, </span><span style="color:#707070;">4</span><span>, </span><span style="color:#707070;">6</span><span>, </span><span style="color:#bbbbbb;">// left
+</span><span>        </span><span style="color:#707070;">5</span><span>, </span><span style="color:#707070;">1</span><span>, </span><span style="color:#707070;">7</span><span>, </span><span style="color:#707070;">7</span><span>, </span><span style="color:#707070;">1</span><span>, </span><span style="color:#707070;">3  </span><span style="color:#bbbbbb;">// right
+</span><span>    };
+</span><span>
+</span><span>    static const unsigned short tex_indices[</span><span style="color:#707070;">6</span><span>] = {
+</span><span>        </span><span style="color:#707070;">4</span><span>, </span><span style="color:#707070;">5</span><span>, </span><span style="color:#707070;">6</span><span>, </span><span style="color:#707070;">6</span><span>, </span><span style="color:#707070;">5</span><span>, </span><span style="color:#707070;">7</span><span>, </span><span style="color:#bbbbbb;">// front
+</span><span>    };
+</span><span>
+</span><span>    VertexCount = </span><span style="color:#707070;">8</span><span>;
+</span><span>    ColorIndexCount = </span><span style="color:#707070;">30</span><span>;
+</span><span>    TextureIndexCount = </span><span style="color:#707070;">6</span><span>;
+</span><span>    IndexCount = </span><span style="color:#707070;">0</span><span>;
+</span><span>
+</span><span>    VertexAttribs[</span><span style="color:#707070;">0</span><span>].Index = VERTEX_ATTRIBUTE_LOCATION_POSITION;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">0</span><span>].Size = </span><span style="color:#707070;">4</span><span>;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">0</span><span>].Type = GL_BYTE;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">0</span><span>].Normalized = true;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">0</span><span>].Stride = sizeof(cubeVertices.positions[</span><span style="color:#707070;">0</span><span>]);
+</span><span>    VertexAttribs[</span><span style="color:#707070;">0</span><span>].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, positions);
+</span><span>
+</span><span>    VertexAttribs[</span><span style="color:#707070;">1</span><span>].Index = VERTEX_ATTRIBUTE_LOCATION_COLOR;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">1</span><span>].Size = </span><span style="color:#707070;">4</span><span>;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">1</span><span>].Type = GL_UNSIGNED_BYTE;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">1</span><span>].Normalized = true;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">1</span><span>].Stride = sizeof(cubeVertices.colors[</span><span style="color:#707070;">0</span><span>]);
+</span><span>    VertexAttribs[</span><span style="color:#707070;">1</span><span>].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, colors);
+</span><span>
+</span><span>    VertexAttribs[</span><span style="color:#707070;">2</span><span>].Index = VERTEX_ATTRIBUTE_LOCATION_UV; </span><span style="color:#bbbbbb;">// UV attribute
+</span><span>    VertexAttribs[</span><span style="color:#707070;">2</span><span>].Size = </span><span style="color:#707070;">2</span><span>;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">2</span><span>].Type = GL_FLOAT;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">2</span><span>].Normalized = false;
+</span><span>    VertexAttribs[</span><span style="color:#707070;">2</span><span>].Stride = sizeof(cubeVertices.uvs[</span><span style="color:#707070;">0</span><span>]);
+</span><span>    VertexAttribs[</span><span style="color:#707070;">2</span><span>].Pointer = (const GLvoid *)offsetof(ovrCubeVertices, uvs);
+</span><span>
+</span><span>    GL(glGenBuffers(</span><span style="color:#707070;">1</span><span>, &amp;VertexBuffer));
+</span><span>    GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
+</span><span>    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &amp;cubeVertices, GL_STATIC_DRAW));
+</span><span>    GL(glBindBuffer(GL_ARRAY_BUFFER, </span><span style="color:#707070;">0</span><span>));
+</span><span>
+</span><span>    GL(glGenBuffers(</span><span style="color:#707070;">1</span><span>, &amp;ColorIndexBuffer));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ColorIndexBuffer));
+</span><span>    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_indices), cube_indices, GL_STATIC_DRAW));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#707070;">0</span><span>));
+</span><span>
+</span><span>    GL(glGenBuffers(</span><span style="color:#707070;">1</span><span>, &amp;TextureIndexBuffer));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextureIndexBuffer));
+</span><span>    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tex_indices), tex_indices, GL_STATIC_DRAW));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#707070;">0</span><span>));
+</span><span>}
+</span></code></pre>
 <p>I re-used the existing color shaders and added new ones for the texture face:</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">static const char CUBE_TEX_VERTEX_SHADER[] =
-    R&quot;GLSL(
-        #define NUM_VIEWS 2
-        #define VIEW_ID gl_ViewID_OVR
-        #extension GL_OVR_multiview2 : require
-        layout(num_views=NUM_VIEWS) in;
-        in vec3 vertexPosition;
-        in vec2 vertexUv;
-        uniform mat4 ModelMatrix;
-        uniform SceneMatrices
-        {
-            uniform mat4 ViewMatrix[NUM_VIEWS];
-            uniform mat4 ProjectionMatrix[NUM_VIEWS];
-        } sm;
-        out vec2 UV;
-        void main()
-        {
-            gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
-            UV = vertexUv;
-        }
-    )GLSL&quot;;
-
-static const char CUBE_TEX_FRAGMENT_SHADER[] =
-    R&quot;GLSL(
-        in vec2 UV;
-        out vec4 color;
-
-        uniform sampler2D Texture0;
-        void main()
-        {
-            color = vec4(texture( Texture0, UV ).rgb, 1.0);
-        }
-        )GLSL&quot;;
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>static const char CUBE_TEX_VERTEX_SHADER[] =
+</span><span>    </span><span style="color:#707070;">R&quot;GLSL(
+</span><span style="color:#707070;">        #define NUM_VIEWS 2
+</span><span style="color:#707070;">        #define VIEW_ID gl_ViewID_OVR
+</span><span style="color:#707070;">        #extension GL_OVR_multiview2 : require
+</span><span style="color:#707070;">        layout(num_views=NUM_VIEWS) in;
+</span><span style="color:#707070;">        in vec3 vertexPosition;
+</span><span style="color:#707070;">        in vec2 vertexUv;
+</span><span style="color:#707070;">        uniform mat4 ModelMatrix;
+</span><span style="color:#707070;">        uniform SceneMatrices
+</span><span style="color:#707070;">        {
+</span><span style="color:#707070;">            uniform mat4 ViewMatrix[NUM_VIEWS];
+</span><span style="color:#707070;">            uniform mat4 ProjectionMatrix[NUM_VIEWS];
+</span><span style="color:#707070;">        } sm;
+</span><span style="color:#707070;">        out vec2 UV;
+</span><span style="color:#707070;">        void main()
+</span><span style="color:#707070;">        {
+</span><span style="color:#707070;">            gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
+</span><span style="color:#707070;">            UV = vertexUv;
+</span><span style="color:#707070;">        }
+</span><span style="color:#707070;">    )GLSL&quot;</span><span>;
+</span><span>
+</span><span>static const char CUBE_TEX_FRAGMENT_SHADER[] =
+</span><span>    </span><span style="color:#707070;">R&quot;GLSL(
+</span><span style="color:#707070;">        in vec2 UV;
+</span><span style="color:#707070;">        out vec4 color;
+</span><span style="color:#707070;">
+</span><span style="color:#707070;">        uniform sampler2D Texture0;
+</span><span style="color:#707070;">        void main()
+</span><span style="color:#707070;">        {
+</span><span style="color:#707070;">            color = vec4(texture( Texture0, UV ).rgb, 1.0);
+</span><span style="color:#707070;">        }
+</span><span style="color:#707070;">        )GLSL&quot;</span><span>;
+</span></code></pre>
 <p>The main other substantive change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:</p>
-<pre data-lang="cpp" class="language-cpp "><code class="language-cpp" data-lang="cpp">    GL(glUseProgram(Scene.TextureProgram.Program));
-    GL(glBindBufferBase(
-           GL_UNIFORM_BUFFER,
-           Scene.TextureProgram.UniformBinding[ovrUniform::Index::SCENE_MATRICES],
-           Scene.SceneMatrices));
-    if (Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID] &gt;=
-        0) &#x2F;&#x2F; NOTE: will not be present when multiview path is enabled.
-    {
-        GL(glUniform1i(Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID], 0));
-    }
-    for (auto c : Scene.CubeData) {
-        GL(glBindVertexArray(Scene.Cube.VertexArrayObject));
-        GLint loc = Scene.TextureProgram.UniformLocation[ovrUniform::Index::MODEL_MATRIX];
-        if (loc &gt;= 0) {
-            GL(glUniformMatrix4fv(loc, 1, GL_TRUE, &amp;c.Model.M[0][0]));
-        }
-
-        GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Scene.Cube.TextureIndexBuffer));
-        GL(glActiveTexture(GL_TEXTURE0));
-
-        GL(glBindTexture(GL_TEXTURE_2D, c.KaiTextureID));
-        GL(glDrawElements(GL_TRIANGLES, Scene.Cube.TextureIndexCount, GL_UNSIGNED_SHORT, nullptr));
-    }
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    GL(glBindVertexArray(0));
-    GL(glUseProgram(0));
-</code></pre>
+<pre data-lang="cpp" style="background-color:#ffffff;color:#202020;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>    GL(glUseProgram(Scene.TextureProgram.Program));
+</span><span>    GL(glBindBufferBase(
+</span><span>           GL_UNIFORM_BUFFER,
+</span><span>           Scene.TextureProgram.UniformBinding[ovrUniform::Index::SCENE_MATRICES],
+</span><span>           Scene.SceneMatrices));
+</span><span>    if (Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID] &gt;=
+</span><span>        </span><span style="color:#707070;">0</span><span>) </span><span style="color:#bbbbbb;">// NOTE: will not be present when multiview path is enabled.
+</span><span>    {
+</span><span>        GL(glUniform1i(Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID], </span><span style="color:#707070;">0</span><span>));
+</span><span>    }
+</span><span>    for (auto c : Scene.CubeData) {
+</span><span>        GL(glBindVertexArray(Scene.Cube.VertexArrayObject));
+</span><span>        GLint loc = Scene.TextureProgram.UniformLocation[ovrUniform::Index::MODEL_MATRIX];
+</span><span>        if (loc &gt;= </span><span style="color:#707070;">0</span><span>) {
+</span><span>            GL(glUniformMatrix4fv(loc, </span><span style="color:#707070;">1</span><span>, GL_TRUE, &amp;c.Model.M[</span><span style="color:#707070;">0</span><span>][</span><span style="color:#707070;">0</span><span>]));
+</span><span>        }
+</span><span>
+</span><span>        GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Scene.Cube.TextureIndexBuffer));
+</span><span>        GL(glActiveTexture(GL_TEXTURE0));
+</span><span>
+</span><span>        GL(glBindTexture(GL_TEXTURE_2D, c.KaiTextureID));
+</span><span>        GL(glDrawElements(GL_TRIANGLES, Scene.Cube.TextureIndexCount, GL_UNSIGNED_SHORT, nullptr));
+</span><span>    }
+</span><span>
+</span><span>    glBindTexture(GL_TEXTURE_2D, </span><span style="color:#707070;">0</span><span>);
+</span><span>    GL(glBindVertexArray(</span><span style="color:#707070;">0</span><span>));
+</span><span>    GL(glUseProgram(</span><span style="color:#707070;">0</span><span>));
+</span></code></pre>
 <p>What I'm trying to illustrate is that the code you're working with in this SDK looks and behaves very similarly to run of the mill OpenGL rendering code. For the fancy stuff, like per-eye matrix transforms, the sample programs give you a strong foundation to build on rather than you having to implement them from scratch.</p>
 <p>In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.</p>
 <p>There's a lot of overlap between the APIs, libraries, build systems used both in these projects and in other OpenGL code that has been authored over the last several decades - tutorials, example projects, open source games, and more. When you read those projects and learn from them, you eventually reach a plateau where it's unclear what to do next to continue learning. The answer here is just to continue getting exposure to more code and to continue building and thinking critically about what you write. This is the point where developing with Meta Quest becomes an extremely appealing.</p>
 <p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high frame rate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping).</p>
 <p>You probably already know if you would enjoy hacking on one. If so, I'd definitely recommend picking one up. Quest 2's are pretty cheap these days, and you've always got the return period if you're not feeling it.</p>
 
+</div>
 <nav>
   <div class="np">
     <a href="https://jeskin.net" title="Home">Home</a>
     <a href="https://github.com/jpe90" title="Github">Github</a>
     <a href="mailto:eskinjp@gmail.com">Contact</a>
+    <a href="/atom.xml" title="RSS Feed">RSS</a>
   </div>
 </nav>
 

@@ -6,21 +6,15 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
 
 </head>
 <body>
   <section class="section">
     <div class="container">
       
-<header>
-  <a href="https:&#x2F;&#x2F;jeskin.net" class="title">
-    <h2></h2>
-  </a>
-</header>
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
+pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 .np {
   display: flex;
   flex-direction: row;
@@ -30,12 +24,46 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
   max-width: 50%; /* Set maximum width to 50% */
   margin: auto; /* Center the element horizontally */
 }
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.section {
+    padding: 20px 0;
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 </style>
-
 <h1 class="title">
   Self Hosting Git Repositories with Stagit
 </h1>
-<h2 id="introduction">Introduction</h2>
+<div class="post-content">
+  <h2 id="introduction">Introduction</h2>
 <p>An alternative to hosting your source code on forges like <a href="https://github.com/">Github</a> is use your own server. This commonly involves running <a href="https://git-scm.com/book/en/v2/Git-on-the-Server-Git-Daemon">git as a daemon</a> and deploying a web interface such as <a href="https://gitea.io/en-us/">gitea</a>, <a href="https://about.gitlab.com/install/">gitlab</a>, <a href="https://git.zx2c4.com/cgit/about/">cgit</a>, or <a href="https://sourcehut.org">sourcehut</a>. These projects essentially serve web applications that interface with the git server.</p>
 <p>However, if you're not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is <a href="https://codemadness.org/stagit.html">stagit</a>. Unlike the aforementioned projects, stagit does not serve dynamic web content; it's a C program that traverses git repositories using <a href="https://libgit2.org">libgit2</a> and writes data to HTML files as it reads it. It doesn't run constantly and listen for filesystem changes, but is instead invoked manually or as a <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_post_receive">git hook</a>.</p>
 <h2 id="a-quick-tour-of-stagit">A quick tour of Stagit</h2>
@@ -81,11 +109,13 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
 <p>The source code is very clear and readable. I was able to understand and modify it without significant C experience and the codebase was a pleasure to work with.</p>
 <p>Definitely give Stagit a try if you're interested. You may want to read through the documentation's <a href="https://codemadness.org/stagit.html">list of pros and cons</a> to make sure it fits your needs.</p>
 
+</div>
 <nav>
   <div class="np">
     <a href="https://jeskin.net" title="Home">Home</a>
     <a href="https://github.com/jpe90" title="Github">Github</a>
     <a href="mailto:eskinjp@gmail.com">Contact</a>
+    <a href="/atom.xml" title="RSS Feed">RSS</a>
   </div>
 </nav>
 

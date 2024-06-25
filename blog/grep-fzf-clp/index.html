@@ -6,21 +6,15 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
 
 </head>
 <body>
   <section class="section">
     <div class="container">
       
-<header>
-  <a href="https:&#x2F;&#x2F;jeskin.net" class="title">
-    <h2></h2>
-  </a>
-</header>
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; word-wrap: normal; }
+pre { max-width: 100%; height: auto; white-space: pre-wrap; }
 .np {
   display: flex;
   flex-direction: row;
@@ -30,12 +24,46 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
   max-width: 50%; /* Set maximum width to 50% */
   margin: auto; /* Center the element horizontally */
 }
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.section {
+    padding: 20px 0;
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 </style>
-
 <h1 class="title">
   CLI Workflow with grep, fzf, and clp
 </h1>
-<h3 id="introduction">Introduction</h3>
+<div class="post-content">
+  <h3 id="introduction">Introduction</h3>
 <p><a href="https://tldr.ostera.io/grep">grep</a>, <a href="https://tldr.ostera.io/ag">ag</a>, and <a href="https://www.mankier.com/1/rg">ripgrep</a> search file contents for text that matches regular expressions. The previous links show some of their more advanced options.</p>
 <p>fzf is an interactive Unix filter. You can feed it anything from stdin (files, previously entered commands, etc) and it displays the results on the screen along with a prompt. When you type into the prompt, fzf filters the list.</p>
 <p>When combined, they can substantially speed up a CLI workflow.</p>
@@ -45,40 +73,42 @@ pre { max-width: 100%; height: auto; white-space: pre; word-break: break-word; w
 <p>As you type into the prompt, fzf narrows the results by fuzzy matching (e.g. typing &quot;vcaa&quot; matches <span style="color:red;">v</span>im ~/.<span style="color:red;">c</span>onfig/<span style="color:red;">a</span>erc/<span style="color:red;">a</span>erc.conf). I find this very useful for digging up infrequently used commands involving git, ssh, or the system clipboard.</p>
 <p>The --preview option will kick off a program in a subprocess and display its output <a href="https://github.com/junegunn/fzf#preview-window">in a tiled window</a>.</p>
 <p>The following command uses <a href="https://jeskin.net/blog/clp/">clp</a> to fill the preview window. clp takes a file and writes it to stdout with syntax highlighting. fzf will provide the filename for each result, feed it to clp, and display the output in the righthand pane.</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">fzf --preview &#x27;clp {}&#x27;
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#202020;" class="language-bash "><code class="language-bash" data-lang="bash"><span>fzf --preview </span><span style="color:#707070;">&#39;clp {}&#39;
+</span></code></pre>
 <p><img src="/images/fzf_clp.png" alt="fzf_clp" /></p>
 <p>You can scroll the preview window by holding shift pressing up/down, or by using your mouse wheel.</p>
 <h3 id="combination">Combination</h3>
 <p>You can combine fzf and grep tool such as grep with fzf with a Unix pipe. Let's see how that works.</p>
 <p>We'll start by grepping for the the word &quot;time&quot;, chosen for just for demonstrative purposes:</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">grep --recursive --line-number --binary-files=without-match &quot;time&quot; .
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#202020;" class="language-bash "><code class="language-bash" data-lang="bash"><span>grep --recursive --line-number --binary-files=without-match </span><span style="color:#707070;">&quot;time&quot;</span><span> .
+</span></code></pre>
 <p>Here's grep's output, run in the <a href="https://harelang.org">Hare programming language's</a> source directory:</p>
 <p><img src="/images/grep.png" alt="grep" /></p>
 <p>We can tell fzf to pick apart the output; we state that it's colon delimited and that we want to pass the first column (the filename) to clp:</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#x27;:&#x27; --preview &#x27;clp {1}&#x27;
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#202020;" class="language-bash "><code class="language-bash" data-lang="bash"><span>grep --recursive --line-number --binary-files=without-match </span><span style="color:#707070;">&quot;time&quot;</span><span> . | fzf --delimiter=</span><span style="color:#707070;">&#39;:&#39;</span><span> --preview </span><span style="color:#707070;">&#39;clp {1}&#39;
+</span></code></pre>
 <p><img src="/images/fzf_grep.png" alt="fzf_grep" /></p>
 <p>Observe that the second column of grep's output contains the line number of the match.</p>
 <p>We can tell fzf to center the output of the preview window on the matched line and tell clp to highlight the line with the -h flag.</p>
-<pre><code>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#x27;:&#x27; -n 2.. --preview-window &#x27;+{2}-&#x2F;2&#x27; --preview &#x27;clp -h {2} {1}&#x27;
-</code></pre>
+<pre style="background-color:#ffffff;color:#202020;"><code><span>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#39;:&#39; -n 2.. --preview-window &#39;+{2}-/2&#39; --preview &#39;clp -h {2} {1}&#39;
+</span></code></pre>
 <p><img src="/images/fzf_clp_line2.png" alt="fzf_clp_line" /></p>
 <p>Finally, we can bind a key to open the file in a text editor and jump to the location of the matched line. When we quit the editor, we'll be right back where we were in fzf.</p>
-<pre><code>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#x27;:&#x27; -n 2.. --preview-window &#x27;+{2}-&#x2F;2&#x27; --preview &#x27;clp -h {2} {1}&#x27; --bind &#x27;ctrl-o:execute(vim +{2} {1} &lt; &#x2F;dev&#x2F;tty)&#x27;
-</code></pre>
+<pre style="background-color:#ffffff;color:#202020;"><code><span>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#39;:&#39; -n 2.. --preview-window &#39;+{2}-/2&#39; --preview &#39;clp -h {2} {1}&#39; --bind &#39;ctrl-o:execute(vim +{2} {1} &lt; /dev/tty)&#39;
+</span></code></pre>
 <p>Note that you can trivially swap out grep for ag or ripgrep and it'll work just fine.</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">ag --color --line-number &quot;time&quot; | fzf --delimiter=&#x27;:&#x27; -n 2.. --preview-window &#x27;+{2}-&#x2F;2&#x27; --preview &#x27;clp -h {2} {1}&#x27; --bind &#x27;ctrl-o:execute(vim +{2} {1} &lt; &#x2F;dev&#x2F;tty)&#x27;
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#202020;" class="language-bash "><code class="language-bash" data-lang="bash"><span>ag --color --line-number </span><span style="color:#707070;">&quot;time&quot; </span><span>| fzf --delimiter=</span><span style="color:#707070;">&#39;:&#39;</span><span> -n 2.. --preview-window </span><span style="color:#707070;">&#39;+{2}-/2&#39;</span><span> --preview </span><span style="color:#707070;">&#39;clp -h {2} {1}&#39;</span><span> --bind </span><span style="color:#707070;">&#39;ctrl-o:execute(vim +{2} {1} &lt; /dev/tty)&#39;
+</span></code></pre>
 <p>The command has grown pretty long. I tend to throw everything after the first pipe in a script on my path and pipe grep commands to that instead.</p>
 <p>In conclusion, we've seen that this approach provides editor agnostic searching and file previewing. Having grep at your fingertips allows you to effortlessly make elaborate searches without the constraints of editor plugins.</p>
 
+</div>
 <nav>
   <div class="np">
     <a href="https://jeskin.net" title="Home">Home</a>
     <a href="https://github.com/jpe90" title="Github">Github</a>
     <a href="mailto:eskinjp@gmail.com">Contact</a>
+    <a href="/atom.xml" title="RSS Feed">RSS</a>
   </div>
 </nav>
 
