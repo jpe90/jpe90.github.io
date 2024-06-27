@@ -75,55 +75,55 @@ a {
 <h2 id="rest-api">REST API</h2>
 <p>Ollama has a REST API for running and managing models.</p>
 <h3 id="generate-a-response">Generate a response</h3>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>curl http://localhost:11434/api/generate -d &#39;{
-</span><span>  &quot;model&quot;: &quot;llama3&quot;,
-</span><span>  &quot;prompt&quot;:&quot;Why is the sky blue?&quot;
-</span><span>}&#39;
-</span></code></pre>
+<pre><code>curl http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate -d &#x27;{
+  &quot;model&quot;: &quot;llama3&quot;,
+  &quot;prompt&quot;:&quot;Why is the sky blue?&quot;
+}&#x27;
+</code></pre>
 <h3 id="chat-with-a-model">Chat with a model</h3>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>curl http://localhost:11434/api/chat -d &#39;{
-</span><span>  &quot;model&quot;: &quot;llama3&quot;,
-</span><span>  &quot;messages&quot;: [
-</span><span>    { &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;why is the sky blue?&quot; }
-</span><span>  ]
-</span><span>}&#39;
-</span></code></pre>
+<pre><code>curl http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;chat -d &#x27;{
+  &quot;model&quot;: &quot;llama3&quot;,
+  &quot;messages&quot;: [
+    { &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;why is the sky blue?&quot; }
+  ]
+}&#x27;
+</code></pre>
 <p>See the <a href="https://jeskin.net/blog/llama-chat/./docs/api.md">API documentation</a> for all endpoints.</p>
 <hr />
 <p>We can try one of those curl commands and see what the responses look like:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.629748Z&quot;,&quot;response&quot;:&quot;The&quot;,&quot;done&quot;:false}
-</span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.662856Z&quot;,&quot;response&quot;:&quot; sky&quot;,&quot;done&quot;:false}
-</span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.695868Z&quot;,&quot;response&quot;:&quot; appears&quot;,&quot;done&quot;:false}
-</span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.729704Z&quot;,&quot;response&quot;:&quot; blue&quot;,&quot;done&quot;:false}
-</span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.763045Z&quot;,&quot;response&quot;:&quot; because&quot;,&quot;done&quot;:false}
-</span><span>...
-</span></code></pre>
+<pre><code>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.629748Z&quot;,&quot;response&quot;:&quot;The&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.662856Z&quot;,&quot;response&quot;:&quot; sky&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.695868Z&quot;,&quot;response&quot;:&quot; appears&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.729704Z&quot;,&quot;response&quot;:&quot; blue&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.763045Z&quot;,&quot;response&quot;:&quot; because&quot;,&quot;done&quot;:false}
+...
+</code></pre>
 <p>These stream in over time instead of being dumped out when the message is complete. Here's the code from ollama that's generating the stream:</p>
-<pre data-lang="Go" style="background-color:#ffffff;color:#202020;" class="language-Go "><code class="language-Go" data-lang="Go"><span>func streamResponse(c *gin.Context, ch chan any) {
-</span><span>	c.Header(</span><span style="color:#707070;">&quot;Content-Type&quot;</span><span>, </span><span style="color:#707070;">&quot;application/x-ndjson&quot;</span><span>)
-</span><span>	c.Stream(func(w io.Writer) bool {
-</span><span>		val, ok := &lt;-ch
-</span><span>		if !ok {
-</span><span>			return false
-</span><span>		}
-</span><span>
-</span><span>		bts, err := json.Marshal(val)
-</span><span>		if err != nil {
-</span><span>			slog.Info(fmt.Sprintf(</span><span style="color:#707070;">&quot;streamResponse: json.Marshal failed with %s&quot;</span><span>, err))
-</span><span>			return false
-</span><span>		}
-</span><span>
-</span><span>		</span><span style="color:#bbbbbb;">// Delineate chunks with new-line delimiter
-</span><span>		bts = append(bts, &#39;\n&#39;)
-</span><span>		if _, err := w.Write(bts); err != nil {
-</span><span>			slog.Info(fmt.Sprintf(</span><span style="color:#707070;">&quot;streamResponse: w.Write failed with %s&quot;</span><span>, err))
-</span><span>			return false
-</span><span>		}
-</span><span>
-</span><span>		return true
-</span><span>	})
-</span><span>}
-</span></code></pre>
+<pre data-lang="Go" class="language-Go "><code class="language-Go" data-lang="Go">func streamResponse(c *gin.Context, ch chan any) {
+	c.Header(&quot;Content-Type&quot;, &quot;application&#x2F;x-ndjson&quot;)
+	c.Stream(func(w io.Writer) bool {
+		val, ok := &lt;-ch
+		if !ok {
+			return false
+		}
+
+		bts, err := json.Marshal(val)
+		if err != nil {
+			slog.Info(fmt.Sprintf(&quot;streamResponse: json.Marshal failed with %s&quot;, err))
+			return false
+		}
+
+		&#x2F;&#x2F; Delineate chunks with new-line delimiter
+		bts = append(bts, &#x27;\n&#x27;)
+		if _, err := w.Write(bts); err != nil {
+			slog.Info(fmt.Sprintf(&quot;streamResponse: w.Write failed with %s&quot;, err))
+			return false
+		}
+
+		return true
+	})
+}
+</code></pre>
 <p><code>application/x-ndjson</code> means &quot;Newline delimited JSON&quot;. This detail makes it easier to delineate between messages. Since you know they are broken on newlines, you know you can use line-reading functionality that's present in many languages to process them.</p>
 <h1 id="a-simple-chatgpt-clone">A Simple ChatGPT Clone</h1>
 <p>For fun, we can build a simple ChatGPT-style web application on top of this API with a few components:</p>
@@ -139,79 +139,79 @@ a {
 <p>With that in mind, let's get to work!</p>
 <h1 id="go-implementation">Go Implementation</h1>
 <p>We can do everything in Go using just the standard library.</p>
-<pre data-lang="Go" style="background-color:#ffffff;color:#202020;" class="language-Go "><code class="language-Go" data-lang="Go"><span>package main
-</span><span>
-</span><span>import (
-</span><span>	</span><span style="color:#707070;">&quot;bytes&quot;
-</span><span>	</span><span style="color:#707070;">&quot;encoding/json&quot;
-</span><span>	</span><span style="color:#707070;">&quot;fmt&quot;
-</span><span>	</span><span style="color:#707070;">&quot;html/template&quot;
-</span><span>	</span><span style="color:#707070;">&quot;io&quot;
-</span><span>	</span><span style="color:#707070;">&quot;log&quot;
-</span><span>	</span><span style="color:#707070;">&quot;net/http&quot;
-</span><span>)
-</span><span>
-</span><span>func main() {
-</span><span>	tmpl := template.Must(template.ParseFiles(</span><span style="color:#707070;">&quot;index.html&quot;</span><span>))
-</span><span>
-</span><span>	http.HandleFunc(</span><span style="color:#707070;">&quot;/&quot;</span><span>, func(w http.ResponseWriter, r *http.Request) {
-</span><span>		if err := tmpl.Execute(w, nil); err != nil {
-</span><span>			http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>		}
-</span><span>	})
-</span><span>
-</span><span>	http.HandleFunc(</span><span style="color:#707070;">&quot;/api/generate&quot;</span><span>, func(w http.ResponseWriter, r *http.Request) {
-</span><span>		var request struct {
-</span><span>			Model  string </span><span style="color:#707070;">`json:&quot;model&quot;`
-</span><span>			Prompt string </span><span style="color:#707070;">`json:&quot;prompt&quot;`
-</span><span>		}
-</span><span>		if err := json.NewDecoder(r.Body).Decode(&amp;request); err != nil {
-</span><span>			http.Error(w, err.Error(), http.StatusBadRequest)
-</span><span>			return
-</span><span>		}
-</span><span>
-</span><span>		payload := map[string]string{
-</span><span>			</span><span style="color:#707070;">&quot;model&quot;</span><span>:  request.Model,
-</span><span>			</span><span style="color:#707070;">&quot;prompt&quot;</span><span>: request.Prompt,
-</span><span>		}
-</span><span>
-</span><span>		payloadBytes, err := json.Marshal(payload)
-</span><span>		if err != nil {
-</span><span>			http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>			return
-</span><span>		}
-</span><span>
-</span><span>		resp, err := http.Post(</span><span style="color:#707070;">&quot;http://localhost:11434/api/generate&quot;</span><span>, </span><span style="color:#707070;">&quot;application/json&quot;</span><span>, bytes.NewBuffer(payloadBytes))
-</span><span>		if err != nil {
-</span><span>			http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>			return
-</span><span>		}
-</span><span>		defer resp.Body.Close()
-</span><span>
-</span><span>		w.Header().Set(</span><span style="color:#707070;">&quot;Content-Type&quot;</span><span>, </span><span style="color:#707070;">&quot;application/json&quot;</span><span>)
-</span><span>		w.WriteHeader(http.StatusOK)
-</span><span>
-</span><span>		decoder := json.NewDecoder(resp.Body)
-</span><span>		for {
-</span><span>			var response map[string]interface{}
-</span><span>			if err := decoder.Decode(&amp;response); err == io.EOF {
-</span><span>				break
-</span><span>			} else if err != nil {
-</span><span>				http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>				return
-</span><span>			}
-</span><span>			if err := json.NewEncoder(w).Encode(response); err != nil {
-</span><span>				http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>				return
-</span><span>			}
-</span><span>			w.(http.Flusher).Flush()
-</span><span>		}
-</span><span>	})
-</span><span>
-</span><span>	fmt.Println(</span><span style="color:#707070;">&quot;Server is running on http://localhost:8080&quot;</span><span>)
-</span><span>	log.Fatal(http.ListenAndServe(</span><span style="color:#707070;">&quot;:8080&quot;</span><span>, nil))
-</span><span>}
-</span></code></pre>
+<pre data-lang="Go" class="language-Go "><code class="language-Go" data-lang="Go">package main
+
+import (
+	&quot;bytes&quot;
+	&quot;encoding&#x2F;json&quot;
+	&quot;fmt&quot;
+	&quot;html&#x2F;template&quot;
+	&quot;io&quot;
+	&quot;log&quot;
+	&quot;net&#x2F;http&quot;
+)
+
+func main() {
+	tmpl := template.Must(template.ParseFiles(&quot;index.html&quot;))
+
+	http.HandleFunc(&quot;&#x2F;&quot;, func(w http.ResponseWriter, r *http.Request) {
+		if err := tmpl.Execute(w, nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	http.HandleFunc(&quot;&#x2F;api&#x2F;generate&quot;, func(w http.ResponseWriter, r *http.Request) {
+		var request struct {
+			Model  string `json:&quot;model&quot;`
+			Prompt string `json:&quot;prompt&quot;`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&amp;request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		payload := map[string]string{
+			&quot;model&quot;:  request.Model,
+			&quot;prompt&quot;: request.Prompt,
+		}
+
+		payloadBytes, err := json.Marshal(payload)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		resp, err := http.Post(&quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;, &quot;application&#x2F;json&quot;, bytes.NewBuffer(payloadBytes))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		w.Header().Set(&quot;Content-Type&quot;, &quot;application&#x2F;json&quot;)
+		w.WriteHeader(http.StatusOK)
+
+		decoder := json.NewDecoder(resp.Body)
+		for {
+			var response map[string]interface{}
+			if err := decoder.Decode(&amp;response); err == io.EOF {
+				break
+			} else if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if err := json.NewEncoder(w).Encode(response); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.(http.Flusher).Flush()
+		}
+	})
+
+	fmt.Println(&quot;Server is running on http:&#x2F;&#x2F;localhost:8080&quot;)
+	log.Fatal(http.ListenAndServe(&quot;:8080&quot;, nil))
+}
+</code></pre>
 <p>Handling the chunked JSON is done in that last block with the decoder. The decoder is a state machine that handles its own buffering. The <code>for</code> loop checks for error conditions, and if they aren't found, will flush the buffer contents to the client, which in this case is a javascript program running inside the browser. As the Javascript program receives those messages, it writes them on the page.</p>
 <p>Decoding and immediately re-encoding the result looks a little silly, we could have just pointed the client directly to ollama and left all of this out of the server. But in a more realistic deployment, we would not want clients interacting directly with the model - it would be important for the server to sit in between and manage the process.</p>
 <p>Here is how it looks when it's running:</p>
@@ -225,332 +225,332 @@ a {
 <p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library. </p>
 <p>I used <a href="https://http-kit.github.io">http-kit</a> for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
 <p>In Clojure, Ring-compliant HTTP server's use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn read-html-template []
-</span><span>  (println </span><span style="color:#707070;">&quot;fetching html template&quot;</span><span>)
-</span><span>  (slurp (io/resource </span><span style="color:#707070;">&quot;index.html&quot;</span><span>)))
-</span><span>
-</span><span>(defn index-handler [req]
-</span><span>  (println </span><span style="color:#707070;">&quot;in index handler&quot;</span><span>)
-</span><span>  {:status  </span><span style="color:#707070;">200
-</span><span>   :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;text/html&quot;</span><span>}
-</span><span>   :body    (read-html-template)})
-</span><span>   
-</span><span>(defn not-found-handler [req]
-</span><span>  {:status  </span><span style="color:#707070;">404
-</span><span>   :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;text/plain&quot;</span><span>}
-</span><span>   :body    </span><span style="color:#707070;">&quot;Page not found.&quot;</span><span>})
-</span><span>   
-</span><span>(defn app [req]
-</span><span>  (let [uri (:uri req)
-</span><span>        method (:request-method req)]
-</span><span>    (cond
-</span><span>      (and (= uri </span><span style="color:#707070;">&quot;/&quot;</span><span>) (= method :get)) (index-handler req)
-</span><span>      :else (not-found-handler req)))) 
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn read-html-template []
+  (println &quot;fetching html template&quot;)
+  (slurp (io&#x2F;resource &quot;index.html&quot;)))
+
+(defn index-handler [req]
+  (println &quot;in index handler&quot;)
+  {:status  200
+   :headers {&quot;Content-Type&quot; &quot;text&#x2F;html&quot;}
+   :body    (read-html-template)})
+   
+(defn not-found-handler [req]
+  {:status  404
+   :headers {&quot;Content-Type&quot; &quot;text&#x2F;plain&quot;}
+   :body    &quot;Page not found.&quot;})
+   
+(defn app [req]
+  (let [uri (:uri req)
+        method (:request-method req)]
+    (cond
+      (and (= uri &quot;&#x2F;&quot;) (= method :get)) (index-handler req)
+      :else (not-found-handler req)))) 
+</code></pre>
 <p>That all works because you can pass any arbitrary string as your response body and set its content type to text/html, it will render correctly.</p>
 <p>At this point, the client has a javascript programming that wants to pass a prompt and listen for the streaming response. We will want an asynchronous handler to do this, so we'll use http-kit's <code>as-channel</code> function. It's not covered in the project's main documentation, but the docstring in the source itself has enough to get started with. Let's use it and wire it up.</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(def clients_ (atom #{}))
-</span><span>(defn my-async-handler [ring-req]
-</span><span>  (http/as-channel ring-req
-</span><span>              {:on-open (fn [ch]
-</span><span>                          (println </span><span style="color:#707070;">&quot;conn open!&quot;</span><span>)
-</span><span>                          (println ring-req)
-</span><span>                          (swap! clients_ conj ch))
-</span><span>               :on-close (fn [ch]
-</span><span>                           (println </span><span style="color:#707070;">&quot;conn close!&quot;</span><span>)
-</span><span>                           (swap! clients_ disj ch))}))
-</span><span>
-</span><span>(defn app [req]
-</span><span>  (let [uri (:uri req)
-</span><span>        method (:request-method req)]
-</span><span>    (cond
-</span><span>      (and (= uri </span><span style="color:#707070;">&quot;/&quot;</span><span>) (= method :get)) (index-handler req)
-</span><span>      (and (= uri </span><span style="color:#707070;">&quot;/api/generate&quot;</span><span>) (= method :post)) (my-async-handler req)
-</span><span>      :else (not-found-handler req))))
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(def clients_ (atom #{}))
+(defn my-async-handler [ring-req]
+  (http&#x2F;as-channel ring-req
+              {:on-open (fn [ch]
+                          (println &quot;conn open!&quot;)
+                          (println ring-req)
+                          (swap! clients_ conj ch))
+               :on-close (fn [ch]
+                           (println &quot;conn close!&quot;)
+                           (swap! clients_ disj ch))}))
+
+(defn app [req]
+  (let [uri (:uri req)
+        method (:request-method req)]
+    (cond
+      (and (= uri &quot;&#x2F;&quot;) (= method :get)) (index-handler req)
+      (and (= uri &quot;&#x2F;api&#x2F;generate&quot;) (= method :post)) (my-async-handler req)
+      :else (not-found-handler req))))
+</code></pre>
 <p>When I evaluate these forms, switch back to my browser, and hit the &quot;Submit&quot; buttton, I see the print statements fire. When I evaliate <code>clients_</code>, I see it now has a new client.</p>
 <p>To get the actual messages, we can start writing a function to send a POST request to the ollama server. After that, we want to find a way to access messages as they stream in and send them to the client.</p>
 <p>In typical asynchronous programming, this kind of message passage is done with callbacks. http-kit has its own concept of channels that is separate from core.async with its own semantics. When we get a message, we will want to send it to the client like this:</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(http/send! ch {:status </span><span style="color:#707070;">200
-</span><span>                :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                :body json-encoded}
-</span><span>            false)
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(http&#x2F;send! ch {:status 200
+                :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
+                :body json-encoded}
+            false)
+</code></pre>
 <p>To kick off the HTTP request to ollama with the prompt, we want to use http-kit's client functionality. There is documentation on making asynchronous requests with callbacks:</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span style="color:#bbbbbb;">;fire and forget, returns immediately[1], returned promise is ignored
-</span><span>(http/get </span><span style="color:#707070;">&quot;http://host.com/path&quot;</span><span>)
-</span><span>
-</span><span>(def options {:timeout </span><span style="color:#707070;">200             </span><span style="color:#bbbbbb;">; ms
-</span><span>              :basic-auth [</span><span style="color:#707070;">&quot;user&quot; &quot;pass&quot;</span><span>]
-</span><span>              :query-params {:param </span><span style="color:#707070;">&quot;value&quot; </span><span>:param2 [</span><span style="color:#707070;">&quot;value1&quot; &quot;value2&quot;</span><span>]}
-</span><span>              :user-agent </span><span style="color:#707070;">&quot;User-Agent-string&quot;
-</span><span>              :headers {</span><span style="color:#707070;">&quot;X-Header&quot; &quot;Value&quot;</span><span>}})
-</span><span>(http/get </span><span style="color:#707070;">&quot;http://host.com/path&quot;</span><span> options
-</span><span>          (fn [{:keys [status headers body error]}] </span><span style="color:#bbbbbb;">;; asynchronous response handling
-</span><span>            (if error
-</span><span>              (println </span><span style="color:#707070;">&quot;Failed, exception is &quot;</span><span> error)
-</span><span>              (println </span><span style="color:#707070;">&quot;Async HTTP GET: &quot;</span><span> status))))
-</span><span> </span><span style="color:#bbbbbb;">; [1] may not always true, since DNS lookup maybe slow
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">;fire and forget, returns immediately[1], returned promise is ignored
+(http&#x2F;get &quot;http:&#x2F;&#x2F;host.com&#x2F;path&quot;)
+
+(def options {:timeout 200             ; ms
+              :basic-auth [&quot;user&quot; &quot;pass&quot;]
+              :query-params {:param &quot;value&quot; :param2 [&quot;value1&quot; &quot;value2&quot;]}
+              :user-agent &quot;User-Agent-string&quot;
+              :headers {&quot;X-Header&quot; &quot;Value&quot;}})
+(http&#x2F;get &quot;http:&#x2F;&#x2F;host.com&#x2F;path&quot; options
+          (fn [{:keys [status headers body error]}] ;; asynchronous response handling
+            (if error
+              (println &quot;Failed, exception is &quot; error)
+              (println &quot;Async HTTP GET: &quot; status))))
+ ; [1] may not always true, since DNS lookup maybe slow
+</code></pre>
 <p>This will kind of work, but it will fire the promise once all the messages are received. We're looking for some way to access the messages as the stream in.</p>
 <p>I looked at the source for help and found the following. Without guidance from the documentation, the <code>:stream</code> option sounded like a good option to try.</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>  Returned body type is controlled by `:as` option:
-</span><span>
-</span><span>   Without automatic unzipping:
-</span><span>     `:none`           - org.httpkit.DynamicBytes
-</span><span>     `:raw-byte-array` - bytes[]
-</span><span>
-</span><span>   With automatic unzipping:
-</span><span>     `:byte-array`     - bytes[]
-</span><span>     `:stream`         - ByteInputStream
-</span><span>     `:text`           - String (charset based on Content-Type header)
-</span><span>     `:auto`           - As `:text` or `:stream` (based on Content-Type header)
-</span></code></pre>
+<pre><code>  Returned body type is controlled by `:as` option:
+
+   Without automatic unzipping:
+     `:none`           - org.httpkit.DynamicBytes
+     `:raw-byte-array` - bytes[]
+
+   With automatic unzipping:
+     `:byte-array`     - bytes[]
+     `:stream`         - ByteInputStream
+     `:text`           - String (charset based on Content-Type header)
+     `:auto`           - As `:text` or `:stream` (based on Content-Type header)
+</code></pre>
 <p>There's no further mention of how to use a ByteInputStream in the docs, so we can check the source for that.</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>package org.httpkit;
-</span><span>
-</span><span>import java.io.IOException;
-</span><span>import java.io.InputStream;
-</span><span>import java.util.Arrays;
-</span><span>
-</span><span>/**
-</span><span> * No synchronization, better toString
-</span><span> */
-</span><span>public class BytesInputStream extends InputStream {
-</span><span>    private final byte[] buf;
-</span><span>    private final int count;
-</span><span>    private int mark = 0;
-</span><span>
-</span><span>    private int pos;
-</span><span>
-</span><span>    public BytesInputStream(byte[] data, int length) {
-</span><span>        this.buf = data;
-</span><span>        this.count = length;
-</span><span>        this.pos = 0;
-</span><span>    }
-</span><span>
-</span><span>    /**
-</span><span>     * get the underlying bytes, copied
-</span><span>     *
-</span><span>     * @return
-</span><span>     */
-</span><span>    public byte[] bytes() {
-</span><span>        return Arrays.copyOf(buf, count);
-</span><span>    }
-</span><span>
-</span><span>    public int read() throws IOException {
-</span><span>        return (pos &lt; count) ? (buf[pos++] &amp; 0xff) : -1;
-</span><span>    }
-</span><span>...
-</span></code></pre>
+<pre><code>package org.httpkit;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+&#x2F;**
+ * No synchronization, better toString
+ *&#x2F;
+public class BytesInputStream extends InputStream {
+    private final byte[] buf;
+    private final int count;
+    private int mark = 0;
+
+    private int pos;
+
+    public BytesInputStream(byte[] data, int length) {
+        this.buf = data;
+        this.count = length;
+        this.pos = 0;
+    }
+
+    &#x2F;**
+     * get the underlying bytes, copied
+     *
+     * @return
+     *&#x2F;
+    public byte[] bytes() {
+        return Arrays.copyOf(buf, count);
+    }
+
+    public int read() throws IOException {
+        return (pos &lt; count) ? (buf[pos++] &amp; 0xff) : -1;
+    }
+...
+</code></pre>
 <p>Since this class subclasses InputStream, it can be read by an <a href="https://docs.oracle.com/javase%2F8%2Fdocs%2Fapi%2F%2F/java/io/InputStreamReader.html">InputStreamReader</a>. </p>
 <p>The docs for InputStreamReader recommend wrapping with a BufferedReader, so let's do that. We want to take inputs line by line</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn send-prompt-to-ollama [ch prompt]
-</span><span>  (let [url </span><span style="color:#707070;">&quot;http://localhost:11434/api/generate&quot;</span><span>]
-</span><span>    (client/post url
-</span><span>                 {:as :stream
-</span><span>                  :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                  :body (json/write-str {:model </span><span style="color:#707070;">&quot;llama3&quot; </span><span>:prompt prompt})}
-</span><span>                 (fn [{:keys [status headers body error]}]
-</span><span>                   (if error
-</span><span>                     (do
-</span><span>                       (http/send! ch {:status </span><span style="color:#707070;">500 </span><span>:body (str </span><span style="color:#707070;">&quot;Internal Server Error: &quot;</span><span> error)})
-</span><span>                       (http/close ch))
-</span><span>                     (let [stream ^java.io.InputStream body
-</span><span>                           reader (java.io.BufferedReader. (java.io.InputStreamReader. stream </span><span style="color:#707070;">&quot;UTF-8&quot;</span><span>))]
-</span><span>                       (loop []
-</span><span>                         (let [line (.readLine reader)]
-</span><span>                           (if (nil? line)
-</span><span>                             (do
-</span><span>                               (.close reader)
-</span><span>                               (http/close ch))
-</span><span>                             (do
-</span><span>                               (let [response (:response (json/read-json line))
-</span><span>                                     json-encoded (json/write-str {:response response})]
-</span><span>                                 (http/send! ch {:status </span><span style="color:#707070;">200
-</span><span>                                                 :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                                                 :body json-encoded}
-</span><span>                                             false))
-</span><span>                               (recur)))))))))))
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn send-prompt-to-ollama [ch prompt]
+  (let [url &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;]
+    (client&#x2F;post url
+                 {:as :stream
+                  :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
+                  :body (json&#x2F;write-str {:model &quot;llama3&quot; :prompt prompt})}
+                 (fn [{:keys [status headers body error]}]
+                   (if error
+                     (do
+                       (http&#x2F;send! ch {:status 500 :body (str &quot;Internal Server Error: &quot; error)})
+                       (http&#x2F;close ch))
+                     (let [stream ^java.io.InputStream body
+                           reader (java.io.BufferedReader. (java.io.InputStreamReader. stream &quot;UTF-8&quot;))]
+                       (loop []
+                         (let [line (.readLine reader)]
+                           (if (nil? line)
+                             (do
+                               (.close reader)
+                               (http&#x2F;close ch))
+                             (do
+                               (let [response (:response (json&#x2F;read-json line))
+                                     json-encoded (json&#x2F;write-str {:response response})]
+                                 (http&#x2F;send! ch {:status 200
+                                                 :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
+                                                 :body json-encoded}
+                                             false))
+                               (recur)))))))))))
+</code></pre>
 <p>Unfortunately, after writing this up, I observed the same behavior as earlier: responses were not streamed in, but rather returned all at once.</p>
 <p>It turns out this appears to be a <a href="https://github.com/http-kit/http-kit/issues/90">known limitation</a> of http-kit's client functionality. The comment thread mentioned that clj-http works for this use case, but part of the reason I went with http-kit in the first place was to minimize dependencies.</p>
 <p>Another option to try without introducing a new dependency is to interop with <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html">java.net.http.HttpClient</a>, which has been included with the JDK since Java 11.</p>
 <p>Here's how I initially got that working:</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
-</span><span>        (java.net URI)
-</span><span>        (java.nio.charset StandardCharsets)
-</span><span>        (java.io InputStreamReader BufferedReader)
-</span><span>        (java.util.concurrent CompletableFuture))
-</span><span>        
-</span><span>(defn handle-response [ch response]
-</span><span>  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]
-</span><span>    (loop []
-</span><span>      (let [line (.readLine reader)]
-</span><span>        (if (nil? line)
-</span><span>          (do
-</span><span>            (.close reader)
-</span><span>            (http/close ch))
-</span><span>          (do
-</span><span>            (println </span><span style="color:#707070;">&quot;got line&quot;</span><span> line)
-</span><span>            (let [response (:response (json/read-json line))
-</span><span>                  json-encoded (json/write-str {:response response})]
-</span><span>              (println </span><span style="color:#707070;">&quot;sending response&quot;</span><span> response)
-</span><span>              (http/send! ch {:status </span><span style="color:#707070;">200
-</span><span>                              :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                              :body json-encoded}
-</span><span>                          false))
-</span><span>            (recur)))))))
-</span><span>
-</span><span>(defn send-async-request [ch model prompt]
-</span><span>  (let [client (HttpClient/newHttpClient)
-</span><span>        body (str </span><span style="color:#707070;">&quot;{\&quot;model\&quot;:\&quot;&quot;</span><span> model </span><span style="color:#707070;">&quot;\&quot;, \&quot;prompt\&quot;:\&quot;&quot;</span><span> prompt </span><span style="color:#707070;">&quot;\&quot;}&quot;</span><span>)
-</span><span>        request (-&gt; (HttpRequest/newBuilder)
-</span><span>                    (.uri (URI/create </span><span style="color:#707070;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
-</span><span>                    (.header </span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
-</span><span>                    (.POST (HttpRequest$BodyPublishers/ofString body))
-</span><span>                     (.build))]
-</span><span>    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))
-</span><span>        (.thenAccept (reify java.util.function.Consumer
-</span><span>                       (accept [_ response]
-</span><span>                         (handle-response ch response))))
-</span><span>        (.exceptionally (reify java.util.function.Function
-</span><span>                          (apply [_ error]
-</span><span>                            (println (str </span><span style="color:#707070;">&quot;Request failed: &quot;</span><span> error))
-</span><span>                            nil))))))
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
+        (java.net URI)
+        (java.nio.charset StandardCharsets)
+        (java.io InputStreamReader BufferedReader)
+        (java.util.concurrent CompletableFuture))
+        
+(defn handle-response [ch response]
+  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets&#x2F;UTF_8))]
+    (loop []
+      (let [line (.readLine reader)]
+        (if (nil? line)
+          (do
+            (.close reader)
+            (http&#x2F;close ch))
+          (do
+            (println &quot;got line&quot; line)
+            (let [response (:response (json&#x2F;read-json line))
+                  json-encoded (json&#x2F;write-str {:response response})]
+              (println &quot;sending response&quot; response)
+              (http&#x2F;send! ch {:status 200
+                              :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
+                              :body json-encoded}
+                          false))
+            (recur)))))))
+
+(defn send-async-request [ch model prompt]
+  (let [client (HttpClient&#x2F;newHttpClient)
+        body (str &quot;{\&quot;model\&quot;:\&quot;&quot; model &quot;\&quot;, \&quot;prompt\&quot;:\&quot;&quot; prompt &quot;\&quot;}&quot;)
+        request (-&gt; (HttpRequest&#x2F;newBuilder)
+                    (.uri (URI&#x2F;create &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;))
+                    (.header &quot;Content-Type&quot; &quot;application&#x2F;json&quot;)
+                    (.POST (HttpRequest$BodyPublishers&#x2F;ofString body))
+                     (.build))]
+    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers&#x2F;ofInputStream))
+        (.thenAccept (reify java.util.function.Consumer
+                       (accept [_ response]
+                         (handle-response ch response))))
+        (.exceptionally (reify java.util.function.Function
+                          (apply [_ error]
+                            (println (str &quot;Request failed: &quot; error))
+                            nil))))))
+</code></pre>
 <p>This gave me the behavior I was looking for: responses were sent to the client as soon as they come in.</p>
 <p>The code is a little noisy because the library uses Java idioms that were introduced after Clojure was created.</p>
 <p>Luckily, Clojure's maintainers recently introduced language changes that make using these features less painful. From the release notes of Clojure 1.12.0-alpha12:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>Functional interfaces
-</span><span>
-</span><span>Java programs define &quot;functions&quot; with Java functional interfaces (marked with the @FunctionalInterface annotation), which have a single method.
-</span><span>
-</span><span>Clojure developers can now invoke Java methods taking functional interfaces by passing functions with matching arity. The Clojure compiler implicitly converts Clojure functions to the required functional interface by constructing a lambda adapter. You can explicitly coerce a Clojure function to a functional interface by hinting the binding name in a let binding, e.g. to avoid repeated adapter construction in a loop.
-</span><span>
-</span><span>See: CLJ-2799
-</span><span>
-</span></code></pre>
+<pre><code>Functional interfaces
+
+Java programs define &quot;functions&quot; with Java functional interfaces (marked with the @FunctionalInterface annotation), which have a single method.
+
+Clojure developers can now invoke Java methods taking functional interfaces by passing functions with matching arity. The Clojure compiler implicitly converts Clojure functions to the required functional interface by constructing a lambda adapter. You can explicitly coerce a Clojure function to a functional interface by hinting the binding name in a let binding, e.g. to avoid repeated adapter construction in a loop.
+
+See: CLJ-2799
+
+</code></pre>
 <p>To take advantage of these changes, we can use a preview build of the language by updating the language version in <code>deps.edn</code>:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>org.clojure/clojure       {:mvn/version &quot;1.12.0-beta1&quot;}
-</span></code></pre>
+<pre><code>org.clojure&#x2F;clojure       {:mvn&#x2F;version &quot;1.12.0-beta1&quot;}
+</code></pre>
 <p>After doing so, we can change the above functions to this:</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn handle-response [ch response]
-</span><span>  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]
-</span><span>    (loop []
-</span><span>      (let [line (.readLine reader)]
-</span><span>        (if (nil? line)
-</span><span>          (do
-</span><span>            (.close reader)
-</span><span>            (http/close ch))
-</span><span>          (let [response (:response (json/read-json line))
-</span><span>                json-encoded (json/write-str {:response response})]
-</span><span>            (http/send! ch {:status </span><span style="color:#707070;">200
-</span><span>                            :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                            :body json-encoded}
-</span><span>                        false))
-</span><span>          (recur))))))
-</span><span>
-</span><span>(defn send-async-request [ch model prompt]
-</span><span>  (let [client (HttpClient/newHttpClient)
-</span><span>        body (str </span><span style="color:#707070;">&quot;{\&quot;model\&quot;:\&quot;&quot;</span><span> model </span><span style="color:#707070;">&quot;\&quot;, \&quot;prompt\&quot;:\&quot;&quot;</span><span> prompt </span><span style="color:#707070;">&quot;\&quot;}&quot;</span><span>)
-</span><span>        request (-&gt; (HttpRequest/newBuilder)
-</span><span>                    (.uri (URI/create </span><span style="color:#707070;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
-</span><span>                    (.header </span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
-</span><span>                    (.POST (HttpRequest$BodyPublishers/ofString body))
-</span><span>                    (.build))]
-</span><span>    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))
-</span><span>        (.thenAccept (fn [response] (handle-response ch response)))
-</span><span>        (.exceptionally (fn [error] (println (str </span><span style="color:#707070;">&quot;Request failed: &quot;</span><span> error)))))))
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn handle-response [ch response]
+  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets&#x2F;UTF_8))]
+    (loop []
+      (let [line (.readLine reader)]
+        (if (nil? line)
+          (do
+            (.close reader)
+            (http&#x2F;close ch))
+          (let [response (:response (json&#x2F;read-json line))
+                json-encoded (json&#x2F;write-str {:response response})]
+            (http&#x2F;send! ch {:status 200
+                            :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
+                            :body json-encoded}
+                        false))
+          (recur))))))
+
+(defn send-async-request [ch model prompt]
+  (let [client (HttpClient&#x2F;newHttpClient)
+        body (str &quot;{\&quot;model\&quot;:\&quot;&quot; model &quot;\&quot;, \&quot;prompt\&quot;:\&quot;&quot; prompt &quot;\&quot;}&quot;)
+        request (-&gt; (HttpRequest&#x2F;newBuilder)
+                    (.uri (URI&#x2F;create &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;))
+                    (.header &quot;Content-Type&quot; &quot;application&#x2F;json&quot;)
+                    (.POST (HttpRequest$BodyPublishers&#x2F;ofString body))
+                    (.build))]
+    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers&#x2F;ofInputStream))
+        (.thenAccept (fn [response] (handle-response ch response)))
+        (.exceptionally (fn [error] (println (str &quot;Request failed: &quot; error)))))))
+</code></pre>
 <p>From here, I just needed to wire up the request logic to my async handler and then update my main handler to route to it.</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn my-async-handler [ring-req]
-</span><span>  (let [body (slurp (:body ring-req))
-</span><span>        prompt (try
-</span><span>                 (:prompt (json/read-json body))
-</span><span>                 (catch Exception e
-</span><span>                   (println </span><span style="color:#707070;">&quot;Error parsing request body:&quot;</span><span> e)
-</span><span>                   nil))]
-</span><span>    (if prompt
-</span><span>      (http/as-channel ring-req
-</span><span>                       {:on-open (fn [ch]
-</span><span>                                   (println </span><span style="color:#707070;">&quot;conn open!&quot;</span><span>)
-</span><span>                                   (swap! clients_ conj ch)
-</span><span>                                   (send-async-request ch </span><span style="color:#707070;">&quot;llama3&quot;</span><span> prompt))
-</span><span>                        :on-close (fn [ch]
-</span><span>                                    (println </span><span style="color:#707070;">&quot;conn close!&quot;</span><span>)
-</span><span>                                    (swap! clients_ disj ch))})
-</span><span>      {:status </span><span style="color:#707070;">400
-</span><span>       :headers {</span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>       :body (json/write-str {:error </span><span style="color:#707070;">&quot;Invalid request&quot;</span><span>})})))
-</span><span>
-</span><span>(defn app [req]
-</span><span>  (let [uri (:uri req)
-</span><span>        method (:request-method req)]
-</span><span>    (cond
-</span><span>      (and (= uri </span><span style="color:#707070;">&quot;/&quot;</span><span>) (= method :get)) (index-handler req)
-</span><span>      (and (= uri </span><span style="color:#707070;">&quot;/api/generate&quot;</span><span>) (= method :post)) (#&#39;my-async-handler req)
-</span><span>      :else (not-found-handler req))))
-</span><span>
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn my-async-handler [ring-req]
+  (let [body (slurp (:body ring-req))
+        prompt (try
+                 (:prompt (json&#x2F;read-json body))
+                 (catch Exception e
+                   (println &quot;Error parsing request body:&quot; e)
+                   nil))]
+    (if prompt
+      (http&#x2F;as-channel ring-req
+                       {:on-open (fn [ch]
+                                   (println &quot;conn open!&quot;)
+                                   (swap! clients_ conj ch)
+                                   (send-async-request ch &quot;llama3&quot; prompt))
+                        :on-close (fn [ch]
+                                    (println &quot;conn close!&quot;)
+                                    (swap! clients_ disj ch))})
+      {:status 400
+       :headers {&quot;Content-Type&quot; &quot;application&#x2F;json&quot;}
+       :body (json&#x2F;write-str {:error &quot;Invalid request&quot;})})))
+
+(defn app [req]
+  (let [uri (:uri req)
+        method (:request-method req)]
+    (cond
+      (and (= uri &quot;&#x2F;&quot;) (= method :get)) (index-handler req)
+      (and (= uri &quot;&#x2F;api&#x2F;generate&quot;) (= method :post)) (#&#x27;my-async-handler req)
+      :else (not-found-handler req))))
+
+</code></pre>
 <h1 id="clojure-pedestal-implementation">Clojure - Pedestal Implementation</h1>
 <p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
 <p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it. </p>
 <p>In this version, my request function sends a request with the user's prompt and returns a channel that has the messages queued.</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn handle-response [response-ch ^HttpResponse response]
-</span><span>  (let [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]
-</span><span>    (go-loop []
-</span><span>      (if-let [line (.readLine reader)]
-</span><span>        (do
-</span><span>          (println line)
-</span><span>          (a/&gt;! response-ch line)
-</span><span>          (recur))
-</span><span>        (a/close! response-ch)))))
-</span><span>
-</span><span>(defn send-async-request [model prompt]
-</span><span>  (let [client (HttpClient/newHttpClient)
-</span><span>        body (generate-string {:model model :prompt prompt})
-</span><span>        request (-&gt; (HttpRequest/newBuilder)
-</span><span>                    (.uri (URI/create </span><span style="color:#707070;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
-</span><span>                    (.header </span><span style="color:#707070;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
-</span><span>                    (.POST (HttpRequest$BodyPublishers/ofString body))
-</span><span>                    (.build))
-</span><span>        response-ch (a/chan)]
-</span><span>    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))
-</span><span>        (.thenAccept (fn [response] (handle-response response-ch response)))
-</span><span>        (.exceptionally (fn [error] (println (str </span><span style="color:#707070;">&quot;Request failed: &quot;</span><span> error)))))
-</span><span>    response-ch))
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn handle-response [response-ch ^HttpResponse response]
+  (let [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets&#x2F;UTF_8))]
+    (go-loop []
+      (if-let [line (.readLine reader)]
+        (do
+          (println line)
+          (a&#x2F;&gt;! response-ch line)
+          (recur))
+        (a&#x2F;close! response-ch)))))
+
+(defn send-async-request [model prompt]
+  (let [client (HttpClient&#x2F;newHttpClient)
+        body (generate-string {:model model :prompt prompt})
+        request (-&gt; (HttpRequest&#x2F;newBuilder)
+                    (.uri (URI&#x2F;create &quot;http:&#x2F;&#x2F;localhost:11434&#x2F;api&#x2F;generate&quot;))
+                    (.header &quot;Content-Type&quot; &quot;application&#x2F;json&quot;)
+                    (.POST (HttpRequest$BodyPublishers&#x2F;ofString body))
+                    (.build))
+        response-ch (a&#x2F;chan)]
+    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers&#x2F;ofInputStream))
+        (.thenAccept (fn [response] (handle-response response-ch response)))
+        (.exceptionally (fn [error] (println (str &quot;Request failed: &quot; error)))))
+    response-ch))
+</code></pre>
 <p>I used Pedestal's <a href="http://pedestal.io/pedestal/0.6/reference/server-sent-events.html">Server Sent Events</a> functionality to make it work. The json interceptor is necessary to get access to the json params sent from the client to the asynchronous endpoint.</p>
 <p><code>start-event-stream</code> returns an interceptor and a function to call which takes a channel as an argument - you'll put messages on it to send them to the client. The channel's buffer is maintained by the library. In my callback function, I pop messages off the request channel and put them onto the request channel.</p>
-<pre data-lang="Clojure" style="background-color:#ffffff;color:#202020;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(defn stream-ready [event-ch ctx]
-</span><span>  (let [{:keys [model prompt] :as raw} (-&gt; ctx :request :json-params)
-</span><span>        response-chan (send-async-request model prompt)]
-</span><span>    (go-loop []
-</span><span>      (if-let [msg (&lt;! response-chan)]
-</span><span>        (do
-</span><span>          (a/put! event-ch (generate-string {:response msg}))
-</span><span>          (recur))
-</span><span>        (a/close! event-ch)))))
-</span><span>
-</span><span>(def my-json-interceptor
-</span><span>  {:name  ::my-json-interceptor
-</span><span>   :enter (fn [{:keys [request] :as ctx}]
-</span><span>            (if (#{:post :put} (:request-method request))
-</span><span>              (let [raw-body-str (slurp (:body request))
-</span><span>                    json-params (parse-string raw-body-str true)]
-</span><span>                (assoc-in (assoc-in ctx [:request :json-params] json-params)
-</span><span>                          [:request :raw-body-str] raw-body-str))
-</span><span>              ctx))})
-</span><span>
-</span><span>(def routes
-</span><span>  #{[</span><span style="color:#707070;">&quot;/&quot; </span><span>:get
-</span><span>     [index-handler]
-</span><span>     :route-name :index]
-</span><span>    [</span><span style="color:#707070;">&quot;/api/generate&quot; </span><span>:post
-</span><span>     [my-json-interceptor (sse/start-event-stream stream-ready)]
-</span><span>     :route-name :stream]})
-</span></code></pre>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn stream-ready [event-ch ctx]
+  (let [{:keys [model prompt] :as raw} (-&gt; ctx :request :json-params)
+        response-chan (send-async-request model prompt)]
+    (go-loop []
+      (if-let [msg (&lt;! response-chan)]
+        (do
+          (a&#x2F;put! event-ch (generate-string {:response msg}))
+          (recur))
+        (a&#x2F;close! event-ch)))))
+
+(def my-json-interceptor
+  {:name  ::my-json-interceptor
+   :enter (fn [{:keys [request] :as ctx}]
+            (if (#{:post :put} (:request-method request))
+              (let [raw-body-str (slurp (:body request))
+                    json-params (parse-string raw-body-str true)]
+                (assoc-in (assoc-in ctx [:request :json-params] json-params)
+                          [:request :raw-body-str] raw-body-str))
+              ctx))})
+
+(def routes
+  #{[&quot;&#x2F;&quot; :get
+     [index-handler]
+     :route-name :index]
+    [&quot;&#x2F;api&#x2F;generate&quot; :post
+     [my-json-interceptor (sse&#x2F;start-event-stream stream-ready)]
+     :route-name :stream]})
+</code></pre>
 <p>I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there's a lot of cool stuff you can do with core.async in general. It can be difficult to use, so you are pretty much required to be willing to read the source and ask for help on Clojurians slack when needed.</p>
 <p>For a project as small as this, Go was way easier to work with. I've written Clojure on and off over the last few years and I still spent 10-20x longer getting those implementations working. With Go, it's really easy to just pick the first dumb implementation that pops into your head and it will work. And of course, trivial deployment is always a relief.</p>
 <p>I do still reach for Clojure from time to time, both because I enjoy the development process of building projects in small pieces without ceremony - i.e., you don't have to create mini-projects or something similar to experiment with new ideas, you just immediately try them out from whatever file you're currently working in. I also find it much easier to maintain a bird's eye view of your codebase I'm working on. Clojure code tends to be much higher level and I find it easier to reason about when I'm focused, provided I've kept everything logically organized and somewhat tidy.</p>

@@ -74,9 +74,9 @@ a {
 <p>Representing processes by files in this manner is known as using a “Named Pipe” or a “FIFO” in Unix systems.</p>
 <h1 id="using-ii">using ii</h1>
 <p>If you run <code>ii</code> on its own, you’ll see a concise summary of its usage:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>usage: ii -s host [-p port | -u sockname] [-i ircdir]
-</span><span>[-n nickname] [-f fullname] [-k env_pass]
-</span></code></pre>
+<pre><code>usage: ii -s host [-p port | -u sockname] [-i ircdir]
+[-n nickname] [-f fullname] [-k env_pass]
+</code></pre>
 <p>When I run <code>ii -s irc.libera.chat -n eskin</code>, ii connects me to libera.chat. By default this creates a few folders in “~/irc”:</p>
 <img src="/images/ii1.png" width="100%">
 <p>The tty that I ran <code>ii</code> from is now taken over by a process that maintains a connection to the server and displays all messages from the server. To interact with ii, I switch to another terminal and interact with the <code>in</code> and <code>out</code> files created for the server I joined.</p>
@@ -93,23 +93,23 @@ a {
 <p>lchat will work with any program that uses FIFO this way, including a few programs listed on the <a href="https://tools.suckless.org/lchat/">lchat homepage</a>.</p>
 <h1 id="installation">Installation</h1>
 <p>If you'd like to try out lchat, you'll first need to grab ii:</p>
-<pre data-lang="Bash" style="background-color:#ffffff;color:#202020;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>git clone https://git.suckless.org/ii
-</span><span>cd ii
-</span></code></pre>
+<pre data-lang="Bash" class="language-Bash "><code class="language-Bash" data-lang="Bash">git clone https:&#x2F;&#x2F;git.suckless.org&#x2F;ii
+cd ii
+</code></pre>
 <p>If you want to use SSL, you'll want to apply a patch to the repository:</p>
-<pre data-lang="Bash" style="background-color:#ffffff;color:#202020;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>wget https://tools.suckless.org/ii/patches/ssl/ii-2.0-ssl.diff
-</span><span>git apply ii-2.0-ssl.diff
-</span></code></pre>
+<pre data-lang="Bash" class="language-Bash "><code class="language-Bash" data-lang="Bash">wget https:&#x2F;&#x2F;tools.suckless.org&#x2F;ii&#x2F;patches&#x2F;ssl&#x2F;ii-2.0-ssl.diff
+git apply ii-2.0-ssl.diff
+</code></pre>
 <p>Then build and install ii:</p>
-<pre data-lang="Bash" style="background-color:#ffffff;color:#202020;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>make
-</span><span>sudo make install
-</span></code></pre>
+<pre data-lang="Bash" class="language-Bash "><code class="language-Bash" data-lang="Bash">make
+sudo make install
+</code></pre>
 <p>Finally, you'll want to clone, build, make, and install lchat:</p>
-<pre data-lang="Bash" style="background-color:#ffffff;color:#202020;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>git clone https://git.suckless.org/lchat
-</span><span>cd lchat
-</span><span>make
-</span><span>sudo make install
-</span></code></pre>
+<pre data-lang="Bash" class="language-Bash "><code class="language-Bash" data-lang="Bash">git clone https:&#x2F;&#x2F;git.suckless.org&#x2F;lchat
+cd lchat
+make
+sudo make install
+</code></pre>
 <hr />
 <p>I'm a fan of the filebased approach to irc, so that I can keep it passively running without keeping track of an active window.</p>
 <p><code>ii</code> and <code>lchat</code> are fun, hackable projects that are fun to play around with. <code>lchat</code> was the first use I saw of <a href="https://libs.suckless.org/libgrapheme/">libgrapheme</a> in the wild, so that was cool to see. Check it out if you're in to that sort of stuff!</p>

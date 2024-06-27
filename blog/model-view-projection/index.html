@@ -73,18 +73,18 @@ a {
 <h2 id="defining-vertices">Defining Vertices</h2>
 <p>Before you can draw an object, you must tell the graphics API the locations of its vertices. Vertices are normalized floating point values between -1.0f and 1.0f that define points on a surface.</p>
 <p>For example, the following define the position of a cube in 3D space:</p>
-<pre data-lang="C" style="background-color:#ffffff;color:#202020;" class="language-C "><code class="language-C" data-lang="C"><span>static GLfloat cube_verts[] =
-</span><span>{
-</span><span>    -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 0 -- front
-</span><span>    -</span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 1
-</span><span>     </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 2
-</span><span>     </span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 3
-</span><span>     </span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 4 -- back
-</span><span>     </span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 5
-</span><span>    -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 6
-</span><span>    -</span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>, -</span><span style="color:#707070;">0.5f</span><span>,  </span><span style="color:#bbbbbb;">// 7
-</span><span>};
-</span></code></pre>
+<pre data-lang="C" class="language-C "><code class="language-C" data-lang="C">static GLfloat cube_verts[] =
+{
+    -0.5f,  0.5f,  0.5f,  &#x2F;&#x2F; 0 -- front
+    -0.5f, -0.5f,  0.5f,  &#x2F;&#x2F; 1
+     0.5f,  0.5f,  0.5f,  &#x2F;&#x2F; 2
+     0.5f, -0.5f,  0.5f,  &#x2F;&#x2F; 3
+     0.5f,  0.5f, -0.5f,  &#x2F;&#x2F; 4 -- back
+     0.5f, -0.5f, -0.5f,  &#x2F;&#x2F; 5
+    -0.5f,  0.5f, -0.5f,  &#x2F;&#x2F; 6
+    -0.5f, -0.5f, -0.5f,  &#x2F;&#x2F; 7
+};
+</code></pre>
 <img src="/images/rectpts.png" alt="verts" style="width: 100%;" />
 <p>Any values outside -1.0f and 1.0f are discarded because these points are supposed to be normalized. They serve to describe the location of each vertex relative to other vertices on the model, but give no context about their location in the world.</p>
 <p>These floating points are bound to objects in the graphics API and are stored in GPU memory. After the models are defined in terms of vertices, the graphics API maps the object to screen space through a series of matrix transforms. </p>
@@ -94,80 +94,80 @@ a {
 <img src="/images/fgx2.png" alt="fgx" style="width: 100%;" />
 <p>Matrix transformations represent functions that map one point in space to another point in space.</p>
 <p>As such, when you see a matrix transformation like this:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>⎡2 0 0 0⎤
-</span><span>⎢0 2 0 0⎥
-</span><span>⎢0 0 2 0⎥
-</span><span>⎣0 0 0 1⎦
-</span></code></pre>
+<pre><code>⎡2 0 0 0⎤
+⎢0 2 0 0⎥
+⎢0 0 2 0⎥
+⎣0 0 0 1⎦
+</code></pre>
 <p>You should be thinking of it as serving the same purpose of a polynomial function f(x). This particular matrix scales up any vector in 3D space to make it twice as large and is analogous to f(x) = 2x.</p>
 <p>And when you see matrix multiplication like this:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>⎡1 0 0 0⎤   ⎡2 0 0 0⎤
-</span><span>⎢0 1 0 0⎥ * ⎢0 2 0 0⎥
-</span><span>⎢0 0 1 0⎥   ⎢0 0 2 0⎥
-</span><span>⎣0 0 0 1⎦   ⎣0 0 0 1⎦
-</span></code></pre>
+<pre><code>⎡1 0 0 0⎤   ⎡2 0 0 0⎤
+⎢0 1 0 0⎥ * ⎢0 2 0 0⎥
+⎢0 0 1 0⎥   ⎢0 0 2 0⎥
+⎣0 0 0 1⎦   ⎣0 0 0 1⎦
+</code></pre>
 <p>You should think of it as the composition f(g(x)). The first function in this sequence is the identity matrix, which leaves any input unchanged and is analogous to f(x) = x.</p>
 <p>If linear algebra is new to you, you might want to check out <a href="https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/a/multiplying-matrices">Khan Academy</a> to get a feel for the basics. If you're not put off by dense reading material, I think <a href="https://linear.axler.net">Linear Algebra Done Right</a> gives very clear and thorough explanations of the material in a more logical order than the subject is usually tought.</p>
 <h2 id="model-matrix">Model Matrix</h2>
 <p>Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix's values to change.</p>
 <img src="/images/model.gif" alt="model" style="width: 100%;" />
 <p>In the demo application, values for translation, scaling, and rotation in the x, y, and z directions are stored in a global variable.</p>
-<pre data-lang="C" style="background-color:#ffffff;color:#202020;" class="language-C "><code class="language-C" data-lang="C"><span>struct orientation
-</span><span>{
-</span><span>    </span><span style="color:#bbbbbb;">// translation
-</span><span>    float tx; float ty; float tz;
-</span><span>    </span><span style="color:#bbbbbb;">// scaling
-</span><span>    float sx; float sy; float sz;
-</span><span>    </span><span style="color:#bbbbbb;">// rotation
-</span><span>    float rx; float ry; float rz;
-</span><span>};
-</span><span>...
-</span><span>static struct orientation cube_transform;
-</span></code></pre>
+<pre data-lang="C" class="language-C "><code class="language-C" data-lang="C">struct orientation
+{
+    &#x2F;&#x2F; translation
+    float tx; float ty; float tz;
+    &#x2F;&#x2F; scaling
+    float sx; float sy; float sz;
+    &#x2F;&#x2F; rotation
+    float rx; float ry; float rz;
+};
+...
+static struct orientation cube_transform;
+</code></pre>
 <p>Eventually, these get wired up to the UI with a slider.</p>
-<pre data-lang="C" style="background-color:#ffffff;color:#202020;" class="language-C "><code class="language-C" data-lang="C"><span>nk_layout_row_dynamic(ctx, </span><span style="color:#707070;">32</span><span>, </span><span style="color:#707070;">2</span><span>);
-</span><span>nk_label(ctx, </span><span style="color:#707070;">&quot;Scale x&quot;</span><span>, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-</span><span>nk_slider_float(ctx, </span><span style="color:#707070;">0</span><span>, &amp;cube_transform.sx, </span><span style="color:#707070;">5.0f</span><span>, </span><span style="color:#707070;">0.01f</span><span>);
-</span></code></pre>
+<pre data-lang="C" class="language-C "><code class="language-C" data-lang="C">nk_layout_row_dynamic(ctx, 32, 2);
+nk_label(ctx, &quot;Scale x&quot;, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+nk_slider_float(ctx, 0, &amp;cube_transform.sx, 5.0f, 0.01f);
+</code></pre>
 <p>The vector and matrix math used in the application uses <a href="https://github.com/HandmadeMath/HandmadeMath">Handmade Math</a>, which supports matrix and vector multiplication.</p>
 <h2 id="view-matrix">View Matrix</h2>
 <p>A view matrix in 3D rendering is a mathematical representation of the position and orientation of the virtual camera in the 3D scene. It defines the position and orientation of the camera in relation to the 3D world, and is used in conjunction with the model and projection matrices to transform the vertices of an object into the 2D screen space of the rendering engine. This allows the object to be accurately rendered on the screen from the perspective of the virtual camera.</p>
 <p>Changing the 3D position of the camera (sometimes referred to as the &quot;eye&quot;), or changing the direction the camera is looking (sometimes referred to as the &quot;center&quot;) is done by modifying 3D vectors which are parameters to the function that build the view matrix. In <code>HandmadeMath</code>, this is <code>HMM_LookAt</code>:</p>
-<pre data-lang="C" style="background-color:#ffffff;color:#202020;" class="language-C "><code class="language-C" data-lang="C"><span>COVERAGE(HMM_LookAt, </span><span style="color:#707070;">1</span><span>)
-</span><span>HMM_INLINE hmm_mat4 HMM_PREFIX(LookAt)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up)
-</span><span>{
-</span><span>    ASSERT_COVERED(HMM_LookAt);
-</span><span>
-</span><span>    hmm_mat4 Result;
-</span><span>
-</span><span>    hmm_vec3 F = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(SubtractVec3)(Center, Eye));
-</span><span>    hmm_vec3 S = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(Cross)(F, Up));
-</span><span>    hmm_vec3 U = HMM_PREFIX(Cross)(S, F);
-</span><span>
-</span><span>    Result.Elements[</span><span style="color:#707070;">0</span><span>][</span><span style="color:#707070;">0</span><span>] = S.X;
-</span><span>    Result.Elements[</span><span style="color:#707070;">0</span><span>][</span><span style="color:#707070;">1</span><span>] = U.X;
-</span><span>    Result.Elements[</span><span style="color:#707070;">0</span><span>][</span><span style="color:#707070;">2</span><span>] = -F.X;
-</span><span>    Result.Elements[</span><span style="color:#707070;">0</span><span>][</span><span style="color:#707070;">3</span><span>] = </span><span style="color:#707070;">0.0f</span><span>;
-</span><span>
-</span><span>    Result.Elements[</span><span style="color:#707070;">1</span><span>][</span><span style="color:#707070;">0</span><span>] = S.Y;
-</span><span>    Result.Elements[</span><span style="color:#707070;">1</span><span>][</span><span style="color:#707070;">1</span><span>] = U.Y;
-</span><span>    Result.Elements[</span><span style="color:#707070;">1</span><span>][</span><span style="color:#707070;">2</span><span>] = -F.Y;
-</span><span>    Result.Elements[</span><span style="color:#707070;">1</span><span>][</span><span style="color:#707070;">3</span><span>] = </span><span style="color:#707070;">0.0f</span><span>;
-</span><span>
-</span><span>    Result.Elements[</span><span style="color:#707070;">2</span><span>][</span><span style="color:#707070;">0</span><span>] = S.Z;
-</span><span>    Result.Elements[</span><span style="color:#707070;">2</span><span>][</span><span style="color:#707070;">1</span><span>] = U.Z;
-</span><span>    Result.Elements[</span><span style="color:#707070;">2</span><span>][</span><span style="color:#707070;">2</span><span>] = -F.Z;
-</span><span>    Result.Elements[</span><span style="color:#707070;">2</span><span>][</span><span style="color:#707070;">3</span><span>] = </span><span style="color:#707070;">0.0f</span><span>;
-</span><span>
-</span><span>    Result.Elements[</span><span style="color:#707070;">3</span><span>][</span><span style="color:#707070;">0</span><span>] = -HMM_PREFIX(DotVec3)(S, Eye);
-</span><span>    Result.Elements[</span><span style="color:#707070;">3</span><span>][</span><span style="color:#707070;">1</span><span>] = -HMM_PREFIX(DotVec3)(U, Eye);
-</span><span>    Result.Elements[</span><span style="color:#707070;">3</span><span>][</span><span style="color:#707070;">2</span><span>] = HMM_PREFIX(DotVec3)(F, Eye);
-</span><span>    Result.Elements[</span><span style="color:#707070;">3</span><span>][</span><span style="color:#707070;">3</span><span>] = </span><span style="color:#707070;">1.0f</span><span>;
-</span><span>
-</span><span>    return (Result);
-</span><span>}
-</span><span>
-</span></code></pre>
+<pre data-lang="C" class="language-C "><code class="language-C" data-lang="C">COVERAGE(HMM_LookAt, 1)
+HMM_INLINE hmm_mat4 HMM_PREFIX(LookAt)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up)
+{
+    ASSERT_COVERED(HMM_LookAt);
+
+    hmm_mat4 Result;
+
+    hmm_vec3 F = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(SubtractVec3)(Center, Eye));
+    hmm_vec3 S = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(Cross)(F, Up));
+    hmm_vec3 U = HMM_PREFIX(Cross)(S, F);
+
+    Result.Elements[0][0] = S.X;
+    Result.Elements[0][1] = U.X;
+    Result.Elements[0][2] = -F.X;
+    Result.Elements[0][3] = 0.0f;
+
+    Result.Elements[1][0] = S.Y;
+    Result.Elements[1][1] = U.Y;
+    Result.Elements[1][2] = -F.Y;
+    Result.Elements[1][3] = 0.0f;
+
+    Result.Elements[2][0] = S.Z;
+    Result.Elements[2][1] = U.Z;
+    Result.Elements[2][2] = -F.Z;
+    Result.Elements[2][3] = 0.0f;
+
+    Result.Elements[3][0] = -HMM_PREFIX(DotVec3)(S, Eye);
+    Result.Elements[3][1] = -HMM_PREFIX(DotVec3)(U, Eye);
+    Result.Elements[3][2] = HMM_PREFIX(DotVec3)(F, Eye);
+    Result.Elements[3][3] = 1.0f;
+
+    return (Result);
+}
+
+</code></pre>
 <p>In the gif below, the free roam camera is implemented by changing the camera's position in response to keyboard and mouse input. You can observe that when the camera pans around the cube, only the view transform is changing.</p>
 <img src="/images/view.gif" alt="view" style="width: 100%;" />
 <h2 id="projection-matrix">Projection Matrix</h2>
@@ -180,19 +180,19 @@ a {
 <p>To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you'll see they often conditionally use <a href="https://www.intel.com/content/www/us/en/support/articles/000005779/processors.html">instruction set extensions</a> when the user's hardware supports them to calculate the transformation more quickly and efficiently.</p>
 <p>The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.</p>
 <p>The programmer utilizes it by creating a shader program, such as the one below, that sits in GPU memory and is executed on the GPU every frame.</p>
-<pre data-lang="C" style="background-color:#ffffff;color:#202020;" class="language-C "><code class="language-C" data-lang="C"><span>static const char
-</span><span>frustum_vert_shader[] =
-</span><span>    </span><span style="color:#707070;">&quot;precision mediump float;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;uniform mat4 mvp;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;attribute vec4 a_position;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;attribute vec4 a_color;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;varying vec4 v_color;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;void main()&quot;
-</span><span>    </span><span style="color:#707070;">&quot;{&quot;
-</span><span>    </span><span style="color:#707070;">&quot;gl_Position = mvp * a_position;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;v_color = a_color;&quot;
-</span><span>    </span><span style="color:#707070;">&quot;}&quot;</span><span>;
-</span></code></pre>
+<pre data-lang="C" class="language-C "><code class="language-C" data-lang="C">static const char
+frustum_vert_shader[] =
+    &quot;precision mediump float;&quot;
+    &quot;uniform mat4 mvp;&quot;
+    &quot;attribute vec4 a_position;&quot;
+    &quot;attribute vec4 a_color;&quot;
+    &quot;varying vec4 v_color;&quot;
+    &quot;void main()&quot;
+    &quot;{&quot;
+    &quot;gl_Position = mvp * a_position;&quot;
+    &quot;v_color = a_color;&quot;
+    &quot;}&quot;;
+</code></pre>
 <p>Hope this helps somebody!</p>
 <h2 id="additional-resources">Additional Resources</h2>
 <ul>

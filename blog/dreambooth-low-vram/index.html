@@ -65,37 +65,37 @@ a {
 <p>This adds the ability to fine-tune models on images of particular subjects.</p>
 <p>Images generated this way come out much better than the baseline model, especially when you start adding additional context.</p>
 <p>Unfortunately, the process is resource-intensive, and if your system low VRAM it's easy for dreambooth to crash with an error like this:</p>
-<pre data-lang="bash" style="background-color:#ffffff;color:#202020;" class="language-bash "><code class="language-bash" data-lang="bash"><span>RuntimeError: No executable batch size found, reached zero.
-</span></code></pre>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">RuntimeError: No executable batch size found, reached zero.
+</code></pre>
 <p>In this blog post, I'll show a few of the optimizations I used to fix this error and get dreambooth running with on my 8GB Nvidia Geforce 1070. I'll also show a few of the problems I encountered along the way and how I fixed them.</p>
 <p>An arch linux system was used, but these optimizations should work on any OS, possibly with minor modifications.</p>
 <h2 id="optimizations">Optimizations</h2>
 <h3 id="use-xformers-for-image-generation">Use xFormers for image generation</h3>
 <p><a href="https://github.com/facebookresearch/xformers">xFormers</a> is a library written by facebook research that improves the speed and memory efficiency of image generation. To install it, stop stable-diffusion-webui if its running and build xformers from source by following <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers">these instructions</a>.</p>
 <p>Next, you'll need to add a commandline parameter to enable xformers the next time you start the web ui, like in this line from my <code>webui-user.sh</code>:</p>
-<pre data-lang="Bash" style="background-color:#ffffff;color:#202020;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>export COMMANDLINE_ARGS=</span><span style="color:#707070;">&quot;--medvram --xformers&quot;
-</span></code></pre>
+<pre data-lang="Bash" class="language-Bash "><code class="language-Bash" data-lang="Bash">export COMMANDLINE_ARGS=&quot;--medvram --xformers&quot;
+</code></pre>
 <p>The next time you launch the web ui it should use xFormers for image generation.</p>
 <p>You'll also need to make sure to explicitly use xformer when you're training inside Dreambooth tab of the web UI under <code>Settings &gt; Advanced &gt; Memory Attention (select xformers)</code></p>
 <h3 id="tweak-dreambooth-settings">Tweak dreambooth settings</h3>
 <p>Dreambooth ran succesffully when I used the following settings in the Dreambooth tab of the web ui:</p>
-<pre style="background-color:#ffffff;color:#202020;"><code><span>Use LORA: unchecked
-</span><span>Training Steps Per Image (Epochs): 150
-</span><span>batch size: 1
-</span><span>Learning Rate Scheduler: constant with warmup
-</span><span>Learning Rate: 0.000002
-</span><span>Resolution: 512
-</span><span>Use EMA: unchecked
-</span><span>Use 8bit Adam: checked
-</span><span>Mixed precision: fp16
-</span><span>Memory Attention: xformers
-</span><span>Cache Latents: unchecked
-</span></code></pre>
+<pre><code>Use LORA: unchecked
+Training Steps Per Image (Epochs): 150
+batch size: 1
+Learning Rate Scheduler: constant with warmup
+Learning Rate: 0.000002
+Resolution: 512
+Use EMA: unchecked
+Use 8bit Adam: checked
+Mixed precision: fp16
+Memory Attention: xformers
+Cache Latents: unchecked
+</code></pre>
 <h3 id="run-stable-diffusion-without-a-graphical-environment">Run Stable Diffusion without a graphical environment</h3>
 <p>I need to squeeze every last meg of VRAM out of my card, so I usually opt not to run a graphical environment on the machine running stable diffusion. On Linux, this means never starting the X server/Wayland compositor.</p>
 <p>To do this, first you'll need to configure the web ui to work from another machine on your local network.</p>
-<pre data-lang="Bash" style="background-color:#ffffff;color:#202020;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>export COMMANDLINE_ARGS=</span><span style="color:#707070;">&quot;--medvram --listen --xformers&quot;
-</span></code></pre>
+<pre data-lang="Bash" class="language-Bash "><code class="language-Bash" data-lang="Bash">export COMMANDLINE_ARGS=&quot;--medvram --listen --xformers&quot;
+</code></pre>
 <p>You'll want to disable your display manager or similar mechanism and then reboot to free up as much memory as possible.</p>
 <p>Then, using another machine on your network (a wifi-connected smartphone works as well), navigate to [ip address of machine running webui]:[port shown in process output] and control it from there.</p>
 <h3 id="reboot-between-attempted-trainings">Reboot between attempted trainings</h3>
