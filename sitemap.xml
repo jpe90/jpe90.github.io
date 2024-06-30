@@ -7,10 +7,6 @@
         <loc>https://jeskin.net/blog/</loc>
     </url>
     <url>
-        <loc>https://jeskin.net/blog/ai-assisted-task-automation/</loc>
-        <lastmod>2024-06-30</lastmod>
-    </url>
-    <url>
         <loc>https://jeskin.net/blog/clp/</loc>
         <lastmod>2022-07-28</lastmod>
     </url>
@@ -25,6 +21,10 @@
     <url>
         <loc>https://jeskin.net/blog/dreambooth-low-vram/</loc>
         <lastmod>2023-01-14</lastmod>
+    </url>
+    <url>
+        <loc>https://jeskin.net/blog/experimenting-with-llama-clj/</loc>
+        <lastmod>2024-06-30</lastmod>
     </url>
     <url>
         <loc>https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/</loc>
