@@ -85,114 +85,114 @@ a {
 <h2 id="motion-1">Motion</h2>
 <p>First, I installed <code>motion</code> on my Pis with <code>sudo apt install motion</code>.</p>
 <p>This is all that was needed to run <code>motion</code> from the command line. The default behavior is to record videos when motion is detected, but I wanted to save pictures instead, so I made a couple changes in <code>/etc/motion/motion.conf</code>:</p>
-<pre data-lang="diff" class="language-diff "><code class="language-diff" data-lang="diff">@@ -110,7 +110,7 @@ post_capture 0
- ############################################################
-
- # Output pictures when motion is detected
--picture_output off
-+picture_output on
-
- # File name(without extension) for pictures relative to target directory
- picture_filename %Y%m%d%H%M%S-%q
-@@ -120,7 +120,7 @@ picture_filename %Y%m%d%H%M%S-%q
- ############################################################
-
- # Create movies of motion events.
--movie_output on
-+movie_output off
-
- # Maximum length of movie in seconds.
- movie_max_time 60
-@@ -155,7 +155,7 @@ webcontrol_parms 0
- stream_port 8081
-
- # Restrict stream connections to the localhost.
--stream_localhost on
-+stream_localhost off
-
- ##############################################################
- # Camera config files - One for each camera.
-@@ -169,3 +169,4 @@ stream_localhost on
- # Directory to read &#x27;.conf&#x27; files for cameras.
- ##############################################################
- ; camera_dir &#x2F;usr&#x2F;etc&#x2F;motion&#x2F;conf.d
-+
-</code></pre>
+<pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-110,7 +110,7 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">post_capture 0
+</span><span> ############################################################
+</span><span>
+</span><span> # Output pictures when motion is detected
+</span><span style="background-color:#420e09;color:#ffffff;">-picture_output off
+</span><span style="background-color:#253b22;color:#ffffff;">+picture_output on
+</span><span>
+</span><span> # File name(without extension) for pictures relative to target directory
+</span><span> picture_filename %Y%m%d%H%M%S-%q
+</span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-120,7 +120,7 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">picture_filename %Y%m%d%H%M%S-%q
+</span><span> ############################################################
+</span><span>
+</span><span> # Create movies of motion events.
+</span><span style="background-color:#420e09;color:#ffffff;">-movie_output on
+</span><span style="background-color:#253b22;color:#ffffff;">+movie_output off
+</span><span>
+</span><span> # Maximum length of movie in seconds.
+</span><span> movie_max_time 60
+</span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-155,7 +155,7 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">webcontrol_parms 0
+</span><span> stream_port 8081
+</span><span>
+</span><span> # Restrict stream connections to the localhost.
+</span><span style="background-color:#420e09;color:#ffffff;">-stream_localhost on
+</span><span style="background-color:#253b22;color:#ffffff;">+stream_localhost off
+</span><span>
+</span><span> ##############################################################
+</span><span> # Camera config files - One for each camera.
+</span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-169,3 +169,4 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">stream_localhost on
+</span><span> # Directory to read &#39;.conf&#39; files for cameras.
+</span><span> ##############################################################
+</span><span> ; camera_dir /usr/etc/motion/conf.d
+</span><span style="background-color:#253b22;color:#ffffff;">+
+</span></code></pre>
 <h3 id="tweaking-motion-sensitivity">Tweaking Motion Sensitivity</h3>
 <p>The default settings are extremely sensitive to motion, so I dialed them back a bit.</p>
-<pre data-lang="diff" class="language-diff "><code class="language-diff" data-lang="diff">@@ -72,7 +72,7 @@ text_right %Y-%m-%d\n%T-%q
- emulate_motion off
-
- # Threshold for number of changed pixels that triggers motion.
--threshold 1500
-+threshold 3000
-
- # Noise threshold for the motion detection.
- ; noise_level 32
-@@ -81,7 +81,7 @@ threshold 1500
- despeckle_filter EedDl
-
- # Number of images that must contain motion to trigger an event.
--minimum_motion_frames 1
-+minimum_motion_frames 5
-
- # Gap in seconds of no motion detected that triggers the end of an event.
- event_gap 60
-</code></pre>
+<pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-72,7 +72,7 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">text_right %Y-%m-%d\n%T-%q
+</span><span> emulate_motion off
+</span><span>
+</span><span> # Threshold for number of changed pixels that triggers motion.
+</span><span style="background-color:#420e09;color:#ffffff;">-threshold 1500
+</span><span style="background-color:#253b22;color:#ffffff;">+threshold 3000
+</span><span>
+</span><span> # Noise threshold for the motion detection.
+</span><span> ; noise_level 32
+</span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-81,7 +81,7 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">threshold 1500
+</span><span> despeckle_filter EedDl
+</span><span>
+</span><span> # Number of images that must contain motion to trigger an event.
+</span><span style="background-color:#420e09;color:#ffffff;">-minimum_motion_frames 1
+</span><span style="background-color:#253b22;color:#ffffff;">+minimum_motion_frames 5
+</span><span>
+</span><span> # Gap in seconds of no motion detected that triggers the end of an event.
+</span><span> event_gap 60
+</span></code></pre>
 <h3 id="running-motion-as-a-systemd-service">Running Motion as a Systemd Service</h3>
 <p>Distribution packages of motion for Raspberry OS, Debian, and Ubuntu include systemd services for running motion. However, the permissions for this won't work out of the box.</p>
 <p>As of writing, if you try to run <code>systemctl start motion</code>, you'll get an error:</p>
-<pre><code>motion[3326]: [0:motion] [EMG] [ALL] motion_startup: Exit motion, cannot create log file &#x2F;var&#x2F;log&#x2F;motion&#x2F;motion.log: Permission denied
-</code></pre>
+<pre style="background-color:#ffffff;color:#010101;"><code><span>motion[3326]: [0:motion] [EMG] [ALL] motion_startup: Exit motion, cannot create log file /var/log/motion/motion.log: Permission denied
+</span></code></pre>
 <p>To address this, I decided to have motion write logs and images to <code>/home/pi/motion</code> with permissions set to the <code>motion</code> user.</p>
-<pre><code>mkdir -p &#x2F;home&#x2F;pi&#x2F;motion&#x2F;pictures
-sudo chown -R motion:motion &#x2F;home&#x2F;pi&#x2F;motion
-</code></pre>
+<pre style="background-color:#ffffff;color:#010101;"><code><span>mkdir -p /home/pi/motion/pictures
+</span><span>sudo chown -R motion:motion /home/pi/motion
+</span></code></pre>
 <p>Then I changed the config file to point to these locations.</p>
-<pre data-lang="diff" class="language-diff "><code class="language-diff" data-lang="diff">@@ -22,13 +22,13 @@ setup_mode off
- ; pid_file value
-
- # File to write logs messages into.  If not defined stderr and syslog is used.
--log_file &#x2F;var&#x2F;log&#x2F;motion&#x2F;motion.log
-+log_file &#x2F;home&#x2F;pi&#x2F;motion&#x2F;motion.log
-
- # Level of log messages [1..9] (EMG, ALR, CRT, ERR, WRN, NTC, INF, DBG, ALL).
- log_level 6
-
- # Target directory for pictures, snapshots and movies
--target_dir &#x2F;var&#x2F;lib&#x2F;motion
-+target_dir &#x2F;home&#x2F;pi&#x2F;motion&#x2F;pictures
-
- # Video device (e.g. &#x2F;dev&#x2F;video0) to be used for capturing.
- videodevice &#x2F;dev&#x2F;video0
-</code></pre>
+<pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-22,13 +22,13 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">setup_mode off
+</span><span> ; pid_file value
+</span><span>
+</span><span> # File to write logs messages into.  If not defined stderr and syslog is used.
+</span><span style="background-color:#420e09;color:#ffffff;">-log_file /var/log/motion/motion.log
+</span><span style="background-color:#253b22;color:#ffffff;">+log_file /home/pi/motion/motion.log
+</span><span>
+</span><span> # Level of log messages [1..9] (EMG, ALR, CRT, ERR, WRN, NTC, INF, DBG, ALL).
+</span><span> log_level 6
+</span><span>
+</span><span> # Target directory for pictures, snapshots and movies
+</span><span style="background-color:#420e09;color:#ffffff;">-target_dir /var/lib/motion
+</span><span style="background-color:#253b22;color:#ffffff;">+target_dir /home/pi/motion/pictures
+</span><span>
+</span><span> # Video device (e.g. /dev/video0) to be used for capturing.
+</span><span> videodevice /dev/video0
+</span></code></pre>
 <h3 id="copying-images-offsite">Copying Images Offsite</h3>
 <p>To copy pictures off-site as they were written, I invoked shell hook <code>on-picture-save</code> to scp them to my VPS.</p>
 <p>To demonstrate how this is done, here's a script I saved to <code>/home/pi/test.sh</code> that copies every created image to <code>/home/pi/test</code>.</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">#!&#x2F;bin&#x2F;bash
-
-# Get the filename of the saved picture from the first argument
-filename=$1
-
-# Copy the file to the specified directory
-cp &quot;$filename&quot; &#x2F;home&#x2F;pi&#x2F;test
-# Alternatively you could scp to another device on your network, or to a VPS, or
-# email the images to yourself, etc
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#010101;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#898989;">#!/bin/bash
+</span><span>
+</span><span style="color:#898989;"># Get the filename of the saved picture from the first argument
+</span><span style="color:#696989;">filename</span><span style="color:#016692;">=</span><span style="color:#009f78;">$</span><span style="color:#756565;">1
+</span><span>
+</span><span style="color:#898989;"># Copy the file to the specified directory
+</span><span style="color:#696989;">cp </span><span style="color:#009f78;">&quot;$</span><span style="color:#756565;">filename</span><span style="color:#009f78;">&quot;</span><span> /home/pi/test
+</span><span style="color:#898989;"># Alternatively you could scp to another device on your network, or to a VPS, or
+</span><span style="color:#898989;"># email the images to yourself, etc
+</span></code></pre>
 <p>You need to make these scripts executable, and if you want to use systemd, they need the right permissions:</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">sudo chmod u+x &#x2F;home&#x2F;pi&#x2F;test.sh
-sudo chown motion:motion &#x2F;home&#x2F;pi&#x2F;test.sh
-</code></pre>
+<pre data-lang="bash" style="background-color:#ffffff;color:#010101;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#696989;">sudo</span><span> chmod u+x /home/pi/test.sh
+</span><span style="color:#696989;">sudo</span><span> chown motion:motion /home/pi/test.sh
+</span></code></pre>
 <p>And here's how you wire it up in the config file:</p>
-<pre data-lang="diff" class="language-diff "><code class="language-diff" data-lang="diff">@@ -101,6 +101,7 @@ post_capture 0
-
- # Command to be executed when an event ends.
- ; on_event_end value
-+on_picture_save &#x2F;home&#x2F;pi&#x2F;test.sh %f
-
- # Command to be executed when a movie file is closed.
- ; on_movie_end value
-</code></pre>
+<pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;font-style:italic;color:#ffffff;">-101,6 +101,7 </span><span style="background-color:#0e2231;color:#ffffff;">@@ </span><span style="background-color:#0e2231;color:#a15001;">post_capture 0
+</span><span>
+</span><span> # Command to be executed when an event ends.
+</span><span> ; on_event_end value
+</span><span style="background-color:#253b22;color:#ffffff;">+on_picture_save /home/pi/test.sh %f
+</span><span>
+</span><span> # Command to be executed when a movie file is closed.
+</span><span> ; on_movie_end value
+</span></code></pre>
 <h2 id="realvnc">RealVNC</h2>
 <p>To set up RealVNC server on my Raspberry Pis and the client on my external devices, I followed the following guide:</p>
 <p><a href="https://help.realvnc.com/hc/en-us/articles/360002249917-VNC-Connect-and-Raspberry-Pi#establishing-a-cloud-connection-0-3">https://help.realvnc.com/hc/en-us/articles/360002249917-VNC-Connect-and-Raspberry-Pi#establishing-a-cloud-connection-0-3</a></p>

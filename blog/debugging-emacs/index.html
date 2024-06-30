@@ -64,12 +64,12 @@ a {
 <p>I recently stumbled upon an <a href="https://github.com/keegancsmith/advent/blob/master/advent.el">Advent of Code utility</a> which lets you authenticate with the advent of code server via <code>M-x advent-login</code> and download your daily input file with <code>M-x advent-input</code>.</p>
 <p>When I ran <code>advent-login</code> followed by <code>advent-input</code>, instead of receiving my input file, Emacs printed an HTTP 400 error in the message area.</p>
 <p>To find out why, I opened up <code>advent.el</code> and started with the function definition of <code>advent-login</code>:</p>
-<pre data-lang="Lisp" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp">(defun advent-login (session)
-  &quot;Login to adventofcode.com.
-Argument SESSION session cookie value.&quot;
-  (interactive &quot;sValue of session cookie from logged in browser: &quot;)
-  (url-cookie-store &quot;session&quot; session &quot;Thu, 25 Dec 2027 20:17:36 -0000&quot; &quot;.adventofcode.com&quot; &quot;&#x2F;&quot; t))
-</code></pre>
+<pre data-lang="Lisp" style="background-color:#ffffff;color:#010101;" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp"><span>(</span><span style="color:#877611;">defun </span><span style="color:#a15001;">advent-login </span><span>(session)
+</span><span>  </span><span style="color:#009f78;">&quot;Login to adventofcode.com.
+</span><span style="color:#009f78;">Argument SESSION session cookie value.&quot;
+</span><span>  (interactive </span><span style="color:#009f78;">&quot;sValue of session cookie from logged in browser: &quot;</span><span>)
+</span><span>  (url</span><span style="color:#016692;">-</span><span>cookie</span><span style="color:#016692;">-</span><span>store </span><span style="color:#009f78;">&quot;session&quot;</span><span> session </span><span style="color:#009f78;">&quot;Thu, 25 Dec 2027 20:17:36 -0000&quot; &quot;.adventofcode.com&quot; &quot;/&quot; </span><span style="color:#333366;">t</span><span>))
+</span></code></pre>
 <p>I wasn't familiar with the <code>url-cookie-store</code>, or Emacs's URL capabilities in general, so I placed my cursor on <code>url-cookie-store</code> and hit <code>M-.</code> to hop to its definition. I skimmed the <a href="https://github.com/emacs-mirror/emacs/blob/master/lisp/url/url-cookie.el">source file</a> it's found in, noting the top-level functions and variables and reading their docstrings.</p>
 <p>From the source code, I noted that cookies stored in variables <code>url-cookie-storage</code> and <code>url-secure-cookie-storage</code>, and that you can list currently stored cookies with <code>M-x url-cookie-list</code>.</p>
 <h2 id="step-debugging-a-function">Step Debugging a Function</h2>
@@ -88,19 +88,19 @@ Argument SESSION session cookie value.&quot;
 <p>With the cookie visible, <code>advent-input</code> still failed with a 400 error.</p>
 <p>At this point, I re-ran <code>url-cookie-list</code> and found that the cookie was gone and had been replaced by an unrelated StackOverflow session cookie at some point during the execution of <code>advent-input</code> even though I hadn't visited the site between the two commands.</p>
 <p><img src="/images/stackoverflow.png" alt="stackoverflow" /></p>
-<pre data-lang="Lisp" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp">(defun advent-input (&amp;optional day)
-  &quot;Load todays adventofcode.com input in other window.
-Optional argument DAY Load this day instead.  Defaults to today.&quot;
-  (interactive &quot;P&quot;)
-  (let* ((year (format-time-string &quot;%Y&quot;))
-         (day (or day (advent--day)))
-         (url (format &quot;https:&#x2F;&#x2F;adventofcode.com&#x2F;%s&#x2F;day&#x2F;%d&#x2F;input&quot; year day))
-         (dir (format &quot;%s&#x2F;%s&#x2F;%d&quot; (expand-file-name advent-dir) year day))
-         (file (format &quot;%s&#x2F;input&quot; dir)))
-    (if (not (file-exists-p file))
-        (url-retrieve url &#x27;advent--download-callback (list file))
-      (find-file-other-window file))))
-</code></pre>
+<pre data-lang="Lisp" style="background-color:#ffffff;color:#010101;" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp"><span>(</span><span style="color:#877611;">defun </span><span style="color:#a15001;">advent-input </span><span>(&amp;optional day)
+</span><span>  </span><span style="color:#009f78;">&quot;Load todays adventofcode.com input in other window.
+</span><span style="color:#009f78;">Optional argument DAY Load this day instead.  Defaults to today.&quot;
+</span><span>  (interactive </span><span style="color:#009f78;">&quot;P&quot;</span><span>)
+</span><span>  (</span><span style="color:#016692;">let* </span><span>((year (</span><span style="color:#7a7025;">format</span><span style="color:#016692;">-</span><span style="color:#7a7025;">time</span><span style="color:#016692;">-</span><span style="color:#7a7025;">string </span><span style="color:#009f78;">&quot;%Y&quot;</span><span>))
+</span><span>         (day (</span><span style="color:#016692;">or</span><span> day (advent</span><span style="color:#016692;">--</span><span>day)))
+</span><span>         (url (</span><span style="color:#7a7025;">format </span><span style="color:#009f78;">&quot;https://adventofcode.com/%s/day/%d/input&quot;</span><span> year day))
+</span><span>         (dir (</span><span style="color:#7a7025;">format </span><span style="color:#009f78;">&quot;%s/%s/%d&quot; </span><span>(</span><span style="color:#7a7025;">expand</span><span style="color:#016692;">-</span><span>file</span><span style="color:#016692;">-</span><span>name advent</span><span style="color:#016692;">-</span><span>dir) year day))
+</span><span>         (file (</span><span style="color:#7a7025;">format </span><span style="color:#009f78;">&quot;%s/input&quot;</span><span> dir)))
+</span><span>    (</span><span style="color:#016692;">if </span><span>(</span><span style="color:#016692;">not </span><span>(file</span><span style="color:#016692;">-</span><span>exists</span><span style="color:#016692;">-</span><span>p file))
+</span><span>        (url</span><span style="color:#016692;">-</span><span>retrieve url &#39;advent</span><span style="color:#016692;">--</span><span>download</span><span style="color:#016692;">-</span><span>callback (</span><span style="color:#7a7025;">list</span><span> file))
+</span><span>      (</span><span style="color:#7a7025;">find</span><span style="color:#016692;">-</span><span>file</span><span style="color:#016692;">-</span><span>other</span><span style="color:#016692;">-</span><span>window file))))
+</span></code></pre>
 <p>The problem was almost certainly going to be found somewhere in <code>url-retrieve</code>. But rather than hunt through the source, I decided to use a watchpoint to more easily track down what was changing <code>url-cookie-secure-storage</code>.</p>
 <h2 id="adding-a-watchpoint">Adding a Watchpoint</h2>
 <p>In debuggers, a &quot;watch&quot; refers to a mechanism that helps you observe when a variable changes.</p>
@@ -109,21 +109,21 @@ Optional argument DAY Load this day instead.  Defaults to today.&quot;
 <p><img src="/images/debugwatch.gif" alt="debugwatch" /></p>
 <p>From the stack trace, I could see that a file <code>~/.emacs.d/url/cookies</code> was being parsed and loaded, and as a result  expression <code>(setq url-cookie-secure-storage 'nil)</code> was being evaluated, which was blowing away the session token I had previously entered.</p>
 <p>I opened up <code>~/.emacs.d/url/cookies</code> and saw what was being loaded and executed:</p>
-<pre data-lang="Lisp" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp">;; Emacs-W3 HTTP cookies file
-;; Automatically generated file!!! DO NOT EDIT!!!
-
-(setq url-cookie-storage
- &#x27;((&quot;.stackoverflow.com&quot;
-  [url-cookie &quot;prov&quot; &quot;dramatic-reenactment&quot; &quot;Fri, 01-Jan-2055 00:00:00 GMT&quot; &quot;&#x2F;&quot; &quot;.stackoverflow.com&quot; nil]))
-)
-(setq url-cookie-secure-storage
- &#x27;nil)
-
-;; Local Variables:
-;; version-control: never
-;; no-byte-compile: t
-;; End:
-</code></pre>
+<pre data-lang="Lisp" style="background-color:#ffffff;color:#010101;" class="language-Lisp "><code class="language-Lisp" data-lang="Lisp"><span style="color:#898989;">;; Emacs-W3 HTTP cookies file
+</span><span style="color:#898989;">;; Automatically generated file!!! DO NOT EDIT!!!
+</span><span>
+</span><span>(</span><span style="color:#7a7025;">setq</span><span> url</span><span style="color:#016692;">-</span><span>cookie</span><span style="color:#016692;">-</span><span>storage
+</span><span> &#39;((</span><span style="color:#009f78;">&quot;.stackoverflow.com&quot;
+</span><span>  [url</span><span style="color:#016692;">-</span><span>cookie </span><span style="color:#009f78;">&quot;prov&quot; &quot;dramatic-reenactment&quot; &quot;Fri, 01-Jan-2055 00:00:00 GMT&quot; &quot;/&quot; &quot;.stackoverflow.com&quot; </span><span style="color:#333366;">nil</span><span>]))
+</span><span>)
+</span><span>(</span><span style="color:#7a7025;">setq</span><span> url</span><span style="color:#016692;">-</span><span>cookie</span><span style="color:#016692;">-</span><span>secure</span><span style="color:#016692;">-</span><span>storage
+</span><span> &#39;</span><span style="color:#333366;">nil</span><span>)
+</span><span>
+</span><span style="color:#898989;">;; Local Variables:
+</span><span style="color:#898989;">;; version-control: never
+</span><span style="color:#898989;">;; no-byte-compile: t
+</span><span style="color:#898989;">;; End:
+</span></code></pre>
 <p>I'm not sure how the file was created, but I suspected that removing it would resolve my issue. Once I did, I was able to successfully download my input.</p>
 <p>As a bonus, I created a new cookies file that contained my advent of code session cookie to save myself the trouble of logging in.</p>
 <p>Thanks for reading!</p>

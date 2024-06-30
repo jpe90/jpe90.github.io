@@ -77,24 +77,24 @@ a {
 <p>Once deployed, Clojure applications can listen on a socket for connections. Developers can connect to the program from their editor and run commands to inspect or manipulate the program. In fact, it is common to develop applications while they are running, without the need for recompilation. For medium to large sized projects, this is significant. Java projects I worked on in the past could take fifteen minutes to compile, and larger projects took longer.</p>
 <h2 id="templating">Templating</h2>
 <p>In languages like Java, you tend to use HTML templating languages like Thymeleaf or JSPs to embed dynamic data from the server into pages. It generally looks something like this:</p>
-<pre data-lang="HTML" class="language-HTML "><code class="language-HTML" data-lang="HTML">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;Sample Page&lt;&#x2F;title&gt;
-&lt;&#x2F;head&gt;
-&lt;body&gt;
-    &lt;div th:text=&quot;&#x27;Hello, &#x27; + ${user}&quot;&gt;Hello, World!&lt;&#x2F;div&gt;
-&lt;&#x2F;body&gt;
-&lt;&#x2F;html&gt;
-</code></pre>
+<pre data-lang="HTML" style="background-color:#ffffff;color:#010101;" class="language-HTML "><code class="language-HTML" data-lang="HTML"><span style="color:#0067c2;">&lt;!</span><span style="color:#016692;">DOCTYPE </span><span style="color:#333366;">html</span><span style="color:#0067c2;">&gt;
+</span><span style="color:#0067c2;">&lt;html&gt;
+</span><span style="color:#0067c2;">&lt;head&gt;
+</span><span>    </span><span style="color:#00528b;">&lt;title&gt;</span><span>Sample Page</span><span style="color:#00528b;">&lt;/title&gt;
+</span><span style="color:#0067c2;">&lt;/head&gt;
+</span><span style="color:#0067c2;">&lt;body&gt;
+</span><span>    </span><span style="color:#0067c2;">&lt;div </span><span style="color:#bc4d00;">th:text</span><span style="color:#0067c2;">=</span><span style="color:#009f78;">&quot;&#39;Hello, &#39; + ${user}&quot;</span><span style="color:#0067c2;">&gt;</span><span>Hello, World!</span><span style="color:#0067c2;">&lt;/div&gt;
+</span><span style="color:#0067c2;">&lt;/body&gt;
+</span><span style="color:#0067c2;">&lt;/html&gt;
+</span></code></pre>
 <p>The Java template above is stored in a file, parsed, and processed by Java code. These work well and are instantly familiar to all web developers, but it's easy to wind up with either heavy amounts of duplication or a rat's nest of nested page includes that are difficult to work with.</p>
 <p>Clojure, by contrast, has a popular library named Hiccup to render with Clojure data structures directly. Using Hiccup looks like the following:</p>
-<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">[:html
- [:head
-  [:title &quot;Sample Page&quot;]]
- [:body
-  [:div &quot;Hello, &quot; user]]]
-</code></pre>
+<pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>[</span><span style="color:#333366;">:html
+</span><span> [</span><span style="color:#333366;">:head
+</span><span>  [</span><span style="color:#333366;">:title </span><span style="color:#009f78;">&quot;Sample Page&quot;</span><span>]]
+</span><span> [</span><span style="color:#333366;">:body
+</span><span>  [</span><span style="color:#333366;">:div </span><span style="color:#009f78;">&quot;Hello, &quot;</span><span> user]]]
+</span></code></pre>
 <p>The Clojure definition is source code in the syntax of the language. You can access and manipulate it by directly operating on the underlying data structure - a <a href="https://clojuredocs.org/clojure.core/vector">vector</a>. In templating languages, you have to usually have to use a combination of A) splitting templates into many pages and B) using a weird templating language that is different from the main programming language. In practice, that can get very hairy. </p>
 <p>Using hiccup makes it easy to maintain page logic as it gets increasingly complex. A lot of the noise gets boiled out and you can operate on HTML output as data, rather than relying on template mechanisms and String processing. The value proposition mirrors that of Clojure vs traditional imperative languages.</p>
 <h2 id="datomic">Datomic</h2>
@@ -102,14 +102,14 @@ a {
 <p>As the database schema changes, and when data is added or removed, Datomic keeps a complete accounting of events. This approach contrasts with traditional SQL databases where updates or deletions overwrite the original data. In practice, between careful database migrations and database or server logs, you can sometimes stitch together a true historical record of what happened in a database. But as anyone who has worked as an application developer will know - it is far from easy.</p>
 <p>If you've maintained a traditional database for an extended period of time, you know that it sees incremental changes over time as enhancements are added. So even if you're able to look at past query results, it can be very difficult to keep track of the entire state of the database at a previous point of time- what the schema was at that time, what data was in there, and so on. In Datomic, all of this information is forever at your fingertips.</p>
 <p>You can query the database for its transaction history, and you'll get back a traversable Clojure sequence of results the same way you get back any other database result. Here's one way you can do it:</p>
-<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn collect-transactions [conn]
-  (let [tx-log (d&#x2F;log conn)]
-    (map (fn [tx]
-           {:transaction-id (:t tx)
-            :timestamp (get-tx-timestamp (d&#x2F;db conn) (:t tx))
-            :data tx})
-         (d&#x2F;tx-range tx-log nil nil))))
-</code></pre>
+<pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#014a69;">defn </span><span style="color:#a15001;">collect-transactions </span><span>[conn]
+</span><span>  (</span><span style="color:#696989;">let </span><span>[tx-log (</span><span style="color:#696989;">d/log</span><span> conn)]
+</span><span>    (</span><span style="color:#696989;">map </span><span>(</span><span style="color:#014a69;">fn </span><span>[tx]
+</span><span>           {</span><span style="color:#333366;">:transaction-id </span><span>(</span><span style="color:#333366;">:t</span><span> tx)
+</span><span>            </span><span style="color:#333366;">:timestamp </span><span>(</span><span style="color:#696989;">get-tx-timestamp </span><span>(</span><span style="color:#696989;">d/db</span><span> conn) (</span><span style="color:#333366;">:t</span><span> tx))
+</span><span>            </span><span style="color:#333366;">:data</span><span> tx})
+</span><span>         (</span><span style="color:#696989;">d/tx-range</span><span> tx-log </span><span style="color:#333366;">nil nil</span><span>))))
+</span></code></pre>
 <p>And this is what results look like through the eyes of the <a href="https://clojure.org/news/2023/04/28/introducing-morse">Morse</a> tool:</p>
 <video width=100% controls autoplay>
     <source src="/videos/morse.mp4" type="video/mp4">
