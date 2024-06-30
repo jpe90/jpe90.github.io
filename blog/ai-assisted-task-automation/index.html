@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jon Eskin's Blog</title>
+  
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      
+<style>
+img { max-width: 100%; height: auto; }
+pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; }
+.np {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-bottom: .5em;
+  font-style: italic;
+  max-width: 100%; /* Set maximum width to 100% */
+  margin: auto; /* Center the element horizontally */
+}
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.section {
+    padding: 20px 0;
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    text-decoration: none;
+}
+</style>
+<h1 class="title">
+  Experimenting with llama.clj
+</h1>
+<div class="post-content">
+  <p><a href="https://github.com/phronmophobic/llama.clj">llama.clj</a> is a clojure wrapper around llama.cpp. It lets you run LLM models locally on your system.</p>
+<p>Having a clojure wrapper provides a fun interface to learning how LLMs work. It also has <a href="https://phronmophobic.github.io/llama.clj/notebooks/intro.html">excellent documentation</a> go surprisingly in-depth on the basics of LLMs, provided you're familiar with Clojure.</p>
+<p>Getting your hands dirty is a great way to learn new libraries, so I tried to think of some situations where LLMs could have helped me automate tasks. For example, there's been many tasks that I would be able to automate, except that I needed to do some non-trivial initial classification manually before you branch on different tasks. </p>
+<p>I decided to put together an example to experiment with to simulate such a case, where we have a number of customer service inquiries and we want to figure out whether they are refund requests, order inquiries, or just general feedback.</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(require &#x27;[com.phronemophobic.llama :as llama])
+(require &#x27;[com.phronemophobic.llama.util :as llutil])
+
+;; 8B parameter llama 3 model with 4bit quantization that easily runs on my Macbook M1
+(def model-path &quot;&#x2F;Users&#x2F;jon&#x2F;development&#x2F;cpp&#x2F;llama.cpp&#x2F;models&#x2F;Meta-Llama-3-8B-Instruct.Q4_0.gguf&quot;)
+(def llama-context (llama&#x2F;create-context model-path {}))
+
+(def inquiries
+  [{:classification &quot;Order Inquiry&quot; :inquiry &quot;Where is my order? It was supposed to arrive yesterday.&quot;}
+   {:classification &quot;Refund Request&quot; :inquiry &quot;I want to return an item and get a refund. Can you help me with that?&quot;}
+   {:classification &quot;General Feedback&quot; :inquiry &quot;I think your website could be more user-friendly.&quot;}
+   ;; ...
+])
+
+(def classifications [&quot;Order Inquiry&quot; &quot;Refund Request&quot; &quot;General Feedback&quot;])
+</code></pre>
+<p>llama.clj provides a few different sampling functions that you can use, or you can try rolling your own. For my experiment, I started with pre-defined microstatv2 and greedy sampling functions.</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn naive-classify [inquiry]
+  (llama&#x2F;generate-string
+   llama-context
+   (llama3-inquiry inquiry)))
+
+(defn naive-greedy-classify [inquiry]
+  (llama&#x2F;generate-string
+   llama-context
+   (llama3-inquiry inquiry)
+   {:samplef llama&#x2F;sample-logits-greedy}))
+</code></pre>
+<p>My setup was to run each classification over a classify function and append the experimental result to the actual result so that I could compare them.</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn classify-inquiries [classify-fn inquiries]
+  (map (fn [inquiry]
+         (assoc inquiry
+                :experimental-classification
+                (classify-fn (:inquiry inquiry))))
+       inquiries))
+       
+(defn correct-results [results]
+  (filter #(= (:classification %) (:experimental-classification %)) results))
+
+(defn incorrect-results [results]
+  (filter #(not= (:classification %) (:experimental-classification %)) results))
+
+(defn summary-results [results]
+  {:correct (count (correct-results results))
+   :incorrect (count (incorrect-results results))
+   :accuracy (&#x2F; (count (correct-results results)) (count results))})
+</code></pre>
+<p>I noticed I would generally get about 92% accuracy with model, data, and prompts. When I looked at the responses that were incorrect, I noticed that many of them were from responses that would misformat the response, for example by returning it as &quot;[Order Inquiry]&quot; instead of just &quot;Order Inquiry&quot;. It seemed like a good idea to try to constrain responses to avoid these, so I first put together a function that just retries if it gets a response that is not one of our predefined responses:</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn retry-classify [inquiry]
+  (loop [count 0]
+    (let [response (llama&#x2F;generate-string
+                    llama-context
+                    (llama3-inquiry inquiry))]
+      (if (some #(= response %) classifications)
+        response
+        (if (&gt; count 3)
+          nil
+          (recur (inc count)))))))
+</code></pre>
+<p>This took care of those cases nicely and brought accuracy up to about 95%. It didn't noticeably decrease performance because it doesn't retry often - only in specific failure cases. </p>
+<p>One potential issue is that if the model ever went haywire and started filling the context window with garbage (which does happen occasionally on some models), it would take inordinate amounts of time to generate responses and fail, which would slow everything to a crawl. I decided to try hand rolling a greedy sampling function that selects the first token which completes a valid classification to avoid this situation.</p>
+<pre data-lang="Clojure" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure">(defn greedy-constrained-classify [inquiry]
+  (let [prompt (llama3-prompt (str &quot;Inquiries can be one of &#x27;Order Inquiry&#x27;, &#x27;Refund Request&#x27;, or &#x27;General Feedback&#x27;. What is the classification of the following inquiry? Reply with only the classification and nothing else: \&quot;&quot; inquiry &quot;\&quot;&quot;))
+        prompt-tokens (llutil&#x2F;tokenize llama-context prompt)]
+    (llama&#x2F;llama-update llama-context (llama&#x2F;bos) 0)
+    (doseq [token prompt-tokens]
+      (llama&#x2F;llama-update llama-context token))
+    (loop [classification-tokens (map #(llutil&#x2F;tokenize llama-context %) classifications)
+           acc []]
+      (let [logits (llama&#x2F;get-logits llama-context)
+            valid-tokens (map first classification-tokens)
+            token (-&gt;&gt; logits
+                       (map-indexed (fn [idx p]
+                                      [idx p]))
+                       (filter #(contains? (set valid-tokens) (first %)))
+                       (apply max-key second)
+                       first)
+            next-acc (conj acc token)
+            next-classification-tokens (-&gt;&gt; classification-tokens
+                                            (filter #(= (first %) token))
+                                            (map rest)
+                                            (map vec)
+                                            (into []))]
+        (if (or (empty? next-classification-tokens) (every? empty? next-classification-tokens))
+          (llutil&#x2F;untokenize llama-context next-acc)
+          (do
+            (llama&#x2F;llama-update llama-context token)
+            (recur next-classification-tokens next-acc)))))))
+</code></pre>
+<p>Unfortunately, in my testing, this brought accuracy way down to around 84%. When I dug into the issue, it seemed that in failing cases, the very first response token it generates is for the wrong classification. This suggests that there is an issue with the initial context setup while reading in the prompt. I emulated the setup steps that I found in llama.clj's documentation, but it's possible that llama.cpp has changed since the repository was written, or that there is something different about llama 3 compared to llama 2 which was used in examples, or that I overlooked another mistake in my code. </p>
+<p>Overall, the library is extremely fun to learn and sketch out ideas with. I came in expecting just a dry but functional wrapper to llama.cpp, but the documentation was fantastic and I learned a lot of new techniques and concepts from the clojure code used throughout the project. </p>
+<p>I don't think llama.cpp aims for API stability for its wrapper libraries, so it seems like it must be a challenge to keep the wrapper up to date, but I haven't dug in much to know for sure. I'm planning to dig into llama.cpp more in depth next to learn more and continue experimenting.</p>
+
+</div>
+<nav>
+  <div class="np">
+    <a href="https://jeskin.net" title="Home">Home</a>
+    <a href="https://github.com/jpe90" title="Github">Github</a>
+    <a href="mailto:eskinjp@gmail.com">Contact</a>
+    <a href="/atom.xml" title="RSS Feed">RSS</a>
+  </div>
+</nav>
+
+    </div>
+  </section>
+</body>
+
+</html>
