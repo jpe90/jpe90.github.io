@@ -14,7 +14,7 @@
       
 <style>
 img { max-width: 100%; height: auto; }
-pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 13px;}
+pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px;}
 .np {
   display: flex;
   flex-direction: row;
@@ -32,6 +32,9 @@ body {
     padding: 0;
     background-color: #f4f4f9;
     color: #333;
+}
+code {
+    font-size: 12px;
 }
 .container {
     max-width: 800px;
@@ -120,7 +123,7 @@ p {
 </span><span>   </span><span style="color:#333366;">:incorrect </span><span>(</span><span style="color:#696989;">count </span><span>(</span><span style="color:#696989;">incorrect-results</span><span> results))
 </span><span>   </span><span style="color:#333366;">:accuracy </span><span>(</span><span style="color:#696989;">/ </span><span>(</span><span style="color:#696989;">count </span><span>(</span><span style="color:#696989;">correct-results</span><span> results)) (</span><span style="color:#696989;">count</span><span> results))})
 </span></code></pre>
-<p>llama.clj provides a few different sampling functions that you can use to generate text. Sampling functions are the means by which the text tokens which form the response are selected. In addition to giving a few options for pre-defined functions, the library also gives you the ability to create your own. For my experiments, I started with pre-defined microstatv2 (which <code>naive-classify</code> above uses above - llama.clj uses this function by default) and a greedy sampling function  (which <code>naive-greedy-classify</code> requests via the <code>samplef</code> key).</p>
+<p>llama.clj provides a few different sampling functions that you can use to generate text. Sampling functions are the means by which the text tokens which form the response are selected. In addition to giving a few options for pre-defined functions, the library also gives you the ability to create your own. For my experiments, I started with microstatv2 (which <code>naive-classify</code> above uses above - llama.clj uses this function by default) and a greedy sampling function  (which <code>naive-greedy-classify</code> requests via the <code>samplef</code> key).</p>
 <p>I noticed I would generally get about 92% accuracy with the model, data, and prompts I used. When I looked at the responses that were incorrect, I noticed that many of them were from responses that would misformat the specific response format that I asked for, e.g. returning something like &quot;[Order Inquiry]&quot; instead of just &quot;Order Inquiry&quot;. Since llama.cpp is feeding you text straight from the model, you have to get a little creative to deal with this. Both llama.cpp and llama.clj provide different ways to constrain models to produce valid json, which you can then further validate. I decided to try constraining responses by first just retrying if the gets a response does not belong to the set of strings I'm looking for:</p>
 <pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#014a69;">defn </span><span style="color:#a15001;">retry-classify </span><span>[inquiry]
 </span><span>  (</span><span style="color:#696989;">loop </span><span>[count </span><span style="color:#8c008a;">0</span><span>]
