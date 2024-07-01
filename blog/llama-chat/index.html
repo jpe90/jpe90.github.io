@@ -230,12 +230,14 @@ p {
 </span></code></pre>
 <p>Handling the chunked JSON is done in that last block with the decoder. The decoder is a state machine that handles its own buffering. The <code>for</code> loop checks for error conditions, and if they aren't found, will flush the buffer contents to the client, which in this case is a javascript program running inside the browser. As the Javascript program receives those messages, it writes them on the page.</p>
 <p>Decoding and immediately re-encoding the result looks a little silly, we could have just pointed the client directly to ollama and left all of this out of the server. But in a more realistic deployment, we would not want clients interacting directly with the model - it would be important for the server to sit in between and manage the process.</p>
-<p>Here is how it looks when it's running:</p>
 <center>
+<figure>
     <video width=75% controls autoplay>
         <source src="/videos/LlamaWebapp.m4v" type="video/mp4">
         Your browser does not support the video tag.
     </video>
+<figcaption>The final product</figcaption>
+</figure>
 </center>
 <p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you're looking for is all it really takes to get up and running in the language. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of its design.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
