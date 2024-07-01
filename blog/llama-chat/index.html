@@ -74,10 +74,12 @@ p {
 </h1>
 <div class="post-content">
   <p><code>ollama</code> is a software project which makes it easy to run LLMs on your local machine. Running <code>ollama run llama3</code> downloaded a 4-bit quantized model that could run on my Macbook M2, and then dropped me into a CLI where I could enter prompts and responses stream into my terminal.</p>
-<video width=100% controls autoplay>
-    <source src="/videos/LlamaTerminal.m4v" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
+<center>
+    <video width=75% controls autoplay>
+        <source src="/videos/LlamaTerminal.m4v" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</center>
 <p>In the above clip, I'm running Meta's latest open source model <a href="https://ai.meta.com/blog/meta-llama-3/">Llama 3</a>. These models are less powerful than OpenAI's models - which are mainly GPT-4o, GPT-4, and GPT-3.5 Turbo as of writing, but they pack a serious punch. The fact that a model that can run on a laptop can get within throwing distance of GPT-3.5, which powered all of ChatGPT not long ago is pretty insane.</p>
 <p>There's a number of reasons you would want to run your own local AI instead of something like ChatGPT:</p>
 <ol>
@@ -229,10 +231,12 @@ p {
 <p>Handling the chunked JSON is done in that last block with the decoder. The decoder is a state machine that handles its own buffering. The <code>for</code> loop checks for error conditions, and if they aren't found, will flush the buffer contents to the client, which in this case is a javascript program running inside the browser. As the Javascript program receives those messages, it writes them on the page.</p>
 <p>Decoding and immediately re-encoding the result looks a little silly, we could have just pointed the client directly to ollama and left all of this out of the server. But in a more realistic deployment, we would not want clients interacting directly with the model - it would be important for the server to sit in between and manage the process.</p>
 <p>Here is how it looks when it's running:</p>
-<video width=100% controls autoplay>
-    <source src="/videos/LlamaWebapp.m4v" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
+<center>
+    <video width=75% controls autoplay>
+        <source src="/videos/LlamaWebapp.m4v" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</center>
 <p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you're looking for is all it really takes to get up and running in the language. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of its design.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
 <h1 id="clojure-http-kit-implementation">Clojure - HTTP kit Implementation</h1>
