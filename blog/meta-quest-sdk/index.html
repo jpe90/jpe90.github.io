@@ -85,21 +85,33 @@ p {
 <p>In this blog post I'll introduce how developing on Quest devices works. I'll touch on the inner workings of the SDK, cover the structure of sample projects, and go over a small set of changes I made to one of them.</p>
 <h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
 <p>The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.</p>
-<p>For example, one project builds out a working virtual keyboard from scratch:</p>
-<video width=100% controls autoplay>
+<center>
+<figure>
+<video width=75% controls autoplay>
     <source src="/videos/xrkeyboard.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
-<p>Another demonstrates manipulating passthrough:</p>
-<video width=100% controls autoplay>
+<figcaption>Building a working virtual keyboard from scratch</figcaption>
+</figure>
+</center>
+<center>
+<figure>
+<video width=75% controls autoplay>
     <source src="/videos/xrpassthrough.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
-<p>And another demonstrates how to use spatial anchors:</p>
-<video width=100% controls autoplay>
+<figcaption>Manipulating passthrough</figcaption>
+</figure>
+</center>
+<center>
+<figure>
+<video width=75% controls autoplay>
     <source src="/videos/spatial1.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
+<figcaption>Placing spatial anchors</figcaption>
+</figure>
+</center>
 <p>In total, you'll find 18 such projects in the SDK.</p>
 <p>For people who are curious about VR development, enjoy low-level programming, and have at least glanced at the core topics covered by OpenGL tutorials that are floating around online (<a href="https://learnopengl.com/Getting-started/OpenGL">1</a>,<a href="https://www.opengl-tutorial.org/">2</a>), these devices are a slam dunk for hands-on learning.</p>
 <h3 id="meta-quest-android-beefy-gpu-sensors">Meta Quest = Android + Beefy GPU + Sensors</h3>
@@ -295,10 +307,14 @@ p {
 <p>Some codebases can be very daunting, and it can take a long time before you feel comfortable making changes.</p>
 <p>In this case, after skimming the code for a few of the samples, I was able to dive in and start poking at stuff.</p>
 <p>One of the first things I did was to modify the spatial anchors project shown above to change the dimensions of the anchors and to draw a texture on one side of the cube.</p>
-<video width=100% controls autoplay>
+<center>
+<figure>
+<video width=75% controls autoplay>
     <source src="/videos/spatial2.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
+</figure>
+</center>
 <p>Here are what the changes to make this work look like:</p>
 <p>The dimensions and colors were single line changes in the event loop.</p>
 <pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#420e09;color:#ffffff;">- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
