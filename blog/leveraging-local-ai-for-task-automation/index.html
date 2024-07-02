@@ -51,7 +51,7 @@ code {
 }
 header, footer {
     text-align: center;
-    padding: 10px 0;
+    padding: 10px 0;    
     background-color: #333;
     color: #fff;
 }
@@ -68,15 +68,21 @@ p {
     font-size: 15px;
     font-weight: 300;
 }
+figcaption {
+  font-size: 12px;
+  font-style: italic; 
+}
 </style>
 <h1 class="title">
-  Experimenting with llama.clj
+  Leveraging Local AI for Task Automation
 </h1>
 <div class="post-content">
-  <p><a href="https://github.com/phronmophobic/llama.clj">llama.clj</a> is a clojure wrapper around llama.cpp. It lets you run LLM models locally on your system.</p>
-<p>Having a clojure wrapper available for llama.cpp, coupled with the <a href="https://phronmophobic.github.io/llama.clj/notebooks/intro.html">excellent documentation</a> from the project (which goes surprisingly in-depth on the basics of LLMs) gives an awesome sandbox to play around with the library, provided you're familiar with Clojure.</p>
-<p>Getting your hands dirty with small projects is a great way to learn, so I tried to think of some situations where LLMs could have helped me automate tasks. For example, I've run into many tasks that are almost automatable, except that I needed to do some non-trivial manual classification and then perform different follow up tasks (each of which are easy to automate) depending on that classification.</p>
-<p>I decided to put together an example to experiment with to simulate such a case, where we have a bunch of customer service inquiries and we want to figure out whether they are refund requests, order inquiries, or just general feedback.</p>
+  <p>I've encountered many tasks that could almost be automated, except that they have some kind of ambigious step that requires manual attention. These include instances where internal communications that met certain criteria needed to be tracked, or emails that pertained to specific subjects needed to be noted and moved.</p>
+<p>For such tasks, it's easy to write software to interact with a database or move files around, but ambiguous text-processing can be painful and error-prone. Solutions that use regular expressions or other simple text processing techniques can be finnicky, inaccurate, and difficult to tune.</p>
+<p>LLMs have presented an opportunity to make big gains in this problem space. Most programming languages can easily call into large commercial models like OpenAI's GPT-4 or Google's Gemini. You can read text in from your program, pass it to these service's API, and perform actions based on the results. However, using external services for this can be problematic because of the cost and privacy implications. You may not want to depend on a paid service for an important task, and you <em>really</em> may not want to pass organizational data to it.</p>
+<p>On the other hand, open source LLMs that run locally on your system have been rapidly improving. They aren't quite as powerful as commercial models, but they can be surprisingly effective, particularly if you give them simple tasks and make efforts to constrain their responses. Additionally, you always have the option of fine-tuning to improve performance.</p>
+<p>One of the biggest open source project to run these models is <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a>, which performs inference on open source models. It can be built as a library and utilized from other languages which write bindings to its API. I really like to experiment with new problem spaces in Clojure, so I used <a href="https://github.com/phronmophobic/llama.clj">llama.clj</a> to experiment with programatically interfacing with LLMs to automate tasks. </p>
+<p>I decided to put together an example to experiment with to simulate a case where we have a bunch of customer service inquiries and we want to figure out whether they are refund requests, order inquiries, or just general feedback. The goal of these experiments was only to perform this classification step.</p>
 <pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#696989;">require </span><span style="color:#016692;">&#39;</span><span>[com.phronemophobic.llama </span><span style="color:#333366;">:as</span><span> llama])
 </span><span>(</span><span style="color:#696989;">require </span><span style="color:#016692;">&#39;</span><span>[com.phronemophobic.llama.util </span><span style="color:#333366;">:as</span><span> llutil])
 </span><span>
@@ -168,8 +174,8 @@ p {
 </span><span>            (</span><span style="color:#696989;">recur</span><span> next-classification-tokens next-acc)))))))
 </span></code></pre>
 <p>Unfortunately, in my testing, this brought accuracy way down to around 84%. When I dug into the issue, it seemed that in failing cases, the very first response token it generates is for the wrong classification. It's kind of hard for me to tell what the issue is without more knowledge about llama.cpp or how the wrapper works. It's possible that that there may be an issue with the initial context setup while reading in the prompt. I emulated the setup steps that I found in llama.clj's documentation, but perhaps llama.cpp has changed since the repository was written (the examples and tutorials were written with llama 2), or maybe llama 3 is fundamentally different and requires different processing from llama 2, or maybe I overlooked some other mistake in my code.</p>
-<p>I'm planning to dig into llama.cpp more in depth next to learn more and continue experimenting. By looking at llama.cpp's internal mechanics, it would be interesting to see why my sampling function failed. Before that, I think it might be a good idea to work through <a href="https://karpathy.ai/zero-to-hero.html">Andrej Karpathy's neural network course</a> to try to get some more context and understanding of how these libraries work under the hood. It probably isn't necessary, but it might help me understand the purpose of some the llama.cpp code and make it easier to understand the architecture of the library as a whole.</p>
-<p>Overall, llama.clj is extremely fun to learn and sketch out ideas with. It's well suited for people who don't know much about neural networks or LLMs. Even without that knowledge, I think you could probably put together some interesting and effective applications using LLMs. I came in expecting just a dry but functional wrapper to llama.cpp, but the documentation was fantastic and I learned a lot of new techniques and concepts from the clojure code used throughout the project. I don't think llama.cpp aims for API stability, so it seems like it must be a challenge for wrapper libraries such as llama.clj to stay current, but it's hard to say. I have a lot more learning to do!</p>
+<p>I'm planning to dig into llama.cpp more in depth next to learn more and continue experimenting. By looking at llama.cpp's internal mechanics, it would be interesting to see why my sampling function failed. Before that, I think it might be a good idea to work through <a href="https://karpathy.ai/zero-to-hero.html">Andrej Karpathy's neural network course</a> to try to get some more context and understanding of how these libraries work under the hood. It probably isn't strictly necessary, but the more domain knowledge you have, the easier it is to understand the architecture of software projects.</p>
+<p>Overall, llama.clj is extremely fun to learn and sketch out ideas with. Even without much knowledge about LLMs, you could probably use it put together some interesting and effective applications. I came in expecting just a dry but functional wrapper to llama.cpp, but the documentation was fantastic and I learned a lot of new techniques and concepts from the clojure code used throughout the project. From the little bit of llama.cpp that I looked at, it didn't really seem to strive to maintain API stability, so it seems like it must be a challenge for wrapper libraries such as llama.clj to keep up to date. In any case, I had a great time and I'm looking forward to learning more about training and inference.</p>
 
 </div>
 <nav>

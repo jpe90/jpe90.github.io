@@ -23,10 +23,6 @@
         <lastmod>2023-01-14</lastmod>
     </url>
     <url>
-        <loc>https://jeskin.net/blog/experimenting-with-llama-clj/</loc>
-        <lastmod>2024-06-30</lastmod>
-    </url>
-    <url>
         <loc>https://jeskin.net/blog/getting-started-with-cosmopolitan-libc/</loc>
         <lastmod>2022-09-04</lastmod>
     </url>
@@ -37,6 +33,10 @@
     <url>
         <loc>https://jeskin.net/blog/irc-ii-lchat/</loc>
         <lastmod>2023-01-03</lastmod>
+    </url>
+    <url>
+        <loc>https://jeskin.net/blog/leveraging-local-ai-for-task-automation/</loc>
+        <lastmod>2024-06-30</lastmod>
     </url>
     <url>
         <loc>https://jeskin.net/blog/llama-chat/</loc>
