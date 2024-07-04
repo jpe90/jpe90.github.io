@@ -6,47 +6,73 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>
 img { max-width: 100%; height: auto; }
 pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
-.np {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-bottom: .5em;
-  font-style: italic;
-  max-width: 100%; /* Set maximum width to 100% */
-  margin: auto; /* Center the element horizontally */
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 code {
     font-size: 12px;
 }
 .container {
-    max-width: 800px;
-    margin: auto;
-    /* padding: 20px; */
-    padding-top: 1px;
+
     padding-left: 20px;
     padding-right: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -119,17 +145,8 @@ figcaption {
 <p>Definitely give Stagit a try if you're interested. You may want to read through the documentation's <a href="https://codemadness.org/stagit.html">list of pros and cons</a> to make sure it fits your needs.</p>
 
 </div>
-<nav>
-  <div class="np">
-    <a href="https://jeskin.net" title="Home">Home</a>
-    <a href="https://github.com/jpe90" title="Github">Github</a>
-    <a href="mailto:eskinjp@gmail.com">Contact</a>
-    <a href="/atom.xml" title="RSS Feed">RSS</a>
-  </div>
-</nav>
 
     </div>
   </section>
 </body>
-
 </html>

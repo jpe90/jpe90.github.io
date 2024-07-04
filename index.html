@@ -6,30 +6,64 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>.pd{width:6em;flex-shrink:0;padding-bottom:.9em}.par div{display:flex}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 .container {
-    max-width: 800px;
-    margin: auto;
     padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -119,5 +153,4 @@ a {
     </div>
   </section>
 </body>
-
 </html>

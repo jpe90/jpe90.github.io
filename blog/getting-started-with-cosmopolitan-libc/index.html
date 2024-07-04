@@ -6,47 +6,73 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>
 img { max-width: 100%; height: auto; }
 pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
-.np {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-bottom: .5em;
-  font-style: italic;
-  max-width: 100%; /* Set maximum width to 100% */
-  margin: auto; /* Center the element horizontally */
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 code {
     font-size: 12px;
 }
 .container {
-    max-width: 800px;
-    margin: auto;
-    /* padding: 20px; */
-    padding-top: 1px;
+
     padding-left: 20px;
     padding-right: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -95,7 +121,7 @@ figcaption {
 <p>Now let's take a look at how we can use Cosmopolitan to build programs.</p>
 <h3 id="building-programs-with-the-prebuilt-amalgamation">Building Programs with the Prebuilt Amalgamation</h3>
 <p>The simplest way to build APE programs is to use GCC and link the <a href="https://justine.lol/cosmopolitan/cosmopolitan.zip">prebuilt library</a>.</p>
-<p>An example of this approach can be seen in <a href="https://github.com/jpe90/hello-cosmo">this makefile project</a> consisting of a &quot;hello world source file&quot;:</p>
+<p>An example of this approach can be seen in <a href="https://github.com/jpe90/hello-cosmo">this makefile project</a> consisting of a "hello world source file":</p>
 <pre data-lang="c" style="background-color:#ffffff;color:#010101;" class="language-c "><code class="language-c" data-lang="c"><span style="color:#877611;">int </span><span style="color:#a15001;">main</span><span>() {
 </span><span>    </span><span style="color:#7a7025;">printf</span><span>(</span><span style="color:#009f78;">&quot;hello world</span><span style="color:#00ff00;">\n</span><span style="color:#009f78;">&quot;</span><span>);
 </span><span>}
@@ -230,7 +256,7 @@ figcaption {
 <pre data-lang="bash" style="background-color:#ffffff;color:#010101;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#696989;">./o/third_party/zip/zip.com -r</span><span> lua.com .lua/
 </span><span style="color:#696989;">./o/third_party/zip/zip.com -r</span><span> lua.com .args
 </span></code></pre>
-<p>Now if you run <code>lua.com</code>, the program will run the lua file and print &quot;Hello World!&quot; as if you had run it with <code>lua.com -l mymodule -e 'require&quot;mymodule&quot;.hello()'</code>.</p>
+<p>Now if you run <code>lua.com</code>, the program will run the lua file and print "Hello World!" as if you had run it with <code>lua.com -l mymodule -e 'require"mymodule".hello()'</code>.</p>
 <p>You can read more about these in the <code>/.args</code> and the <code>/.lua/...</code> sections of <a href="https://redbean.dev/#specials">redbean's documenation</a>; just be aware that not all of redbean's functionality is available to the Lua interpreter out of the box.</p>
 <hr />
 <p>That covers most of what I figured out on my own while playing around with Cosmopolitan.</p>
@@ -238,17 +264,8 @@ figcaption {
 <p><em>Thanks to Justine Tunney for guidance on porting to Cosmo!</em></p>
 
 </div>
-<nav>
-  <div class="np">
-    <a href="https://jeskin.net" title="Home">Home</a>
-    <a href="https://github.com/jpe90" title="Github">Github</a>
-    <a href="mailto:eskinjp@gmail.com">Contact</a>
-    <a href="/atom.xml" title="RSS Feed">RSS</a>
-  </div>
-</nav>
 
     </div>
   </section>
 </body>
-
 </html>

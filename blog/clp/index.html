@@ -6,47 +6,73 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>
 img { max-width: 100%; height: auto; }
 pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
-.np {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-bottom: .5em;
-  font-style: italic;
-  max-width: 100%; /* Set maximum width to 100% */
-  margin: auto; /* Center the element horizontally */
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 code {
     font-size: 12px;
 }
 .container {
-    max-width: 800px;
-    margin: auto;
-    /* padding: 20px; */
-    padding-top: 1px;
+
     padding-left: 20px;
     padding-right: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -147,7 +173,7 @@ figcaption {
 </span></code></pre>
 <p>The table keys on the left correspond to lexical tokens picked up by the lexer, and the right specifies the color assigned to that token when the text is written to stdout.</p>
 <p>When the right hand value is a Lua object like above, <code>clp</code> will use 16 color ANSI codes to highlight the token.</p>
-<p>To use truecolor, the right hand value should be a string in the form <code>&quot;#RRGGBB&quot;</code> using hex values, like here:</p>
+<p>To use truecolor, the right hand value should be a string in the form <code>"#RRGGBB"</code> using hex values, like here:</p>
 <pre data-lang="lua" style="background-color:#ffffff;color:#010101;" class="language-lua "><code class="language-lua" data-lang="lua"><span>[</span><span style="color:#009f78;">&#39;comment&#39;</span><span>] </span><span style="color:#016692;">= </span><span style="color:#009f78;">&quot;#6a9955&quot;</span><span>,
 </span></code></pre>
 <p>This will cause <code>clp</code> to emit 24 bit color codes upon encountering the token. This means it will only render if the terminal being used <a href="https://github.com/termstandard/colors#fully-supporting">supports truecolor.</a></p>
@@ -155,17 +181,8 @@ figcaption {
 <p><em>Thanks to Ian Nomar and Christopher Wellons for their help with this program!</em></p>
 
 </div>
-<nav>
-  <div class="np">
-    <a href="https://jeskin.net" title="Home">Home</a>
-    <a href="https://github.com/jpe90" title="Github">Github</a>
-    <a href="mailto:eskinjp@gmail.com">Contact</a>
-    <a href="/atom.xml" title="RSS Feed">RSS</a>
-  </div>
-</nav>
 
     </div>
   </section>
 </body>
-
 </html>

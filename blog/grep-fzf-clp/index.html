@@ -6,47 +6,73 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>
 img { max-width: 100%; height: auto; }
 pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
-.np {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-bottom: .5em;
-  font-style: italic;
-  max-width: 100%; /* Set maximum width to 100% */
-  margin: auto; /* Center the element horizontally */
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 code {
     font-size: 12px;
 }
 .container {
-    max-width: 800px;
-    margin: auto;
-    /* padding: 20px; */
-    padding-top: 1px;
+
     padding-left: 20px;
     padding-right: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -77,9 +103,9 @@ figcaption {
 <p>fzf is an interactive Unix filter. You can feed it anything from stdin (files, previously entered commands, etc) and it displays the results on the screen along with a prompt. When you type into the prompt, fzf filters the list.</p>
 <p>When combined, they can substantially speed up a CLI workflow.</p>
 <h3 id="fzf-overview">fzf overview</h3>
-<p>The command &quot;fzf&quot; on its own populates the list with all files in the current directory and its subfolders.</p>
+<p>The command "fzf" on its own populates the list with all files in the current directory and its subfolders.</p>
 <p>If you've installed fzf from a distribution package manager, pressing <a href="https://wiki.archlinux.org/title/fzf#Shells">Ctrl+r</a> at a shell prompt populates the list with show your command history.</p>
-<p>As you type into the prompt, fzf narrows the results by fuzzy matching (e.g. typing &quot;vcaa&quot; matches <span style="color:red;">v</span>im ~/.<span style="color:red;">c</span>onfig/<span style="color:red;">a</span>erc/<span style="color:red;">a</span>erc.conf). I find this very useful for digging up infrequently used commands involving git, ssh, or the system clipboard.</p>
+<p>As you type into the prompt, fzf narrows the results by fuzzy matching (e.g. typing "vcaa" matches <span style="color:red;">v</span>im ~/.<span style="color:red;">c</span>onfig/<span style="color:red;">a</span>erc/<span style="color:red;">a</span>erc.conf). I find this very useful for digging up infrequently used commands involving git, ssh, or the system clipboard.</p>
 <p>The --preview option will kick off a program in a subprocess and display its output <a href="https://github.com/junegunn/fzf#preview-window">in a tiled window</a>.</p>
 <p>The following command uses <a href="https://jeskin.net/blog/clp/">clp</a> to fill the preview window. clp takes a file and writes it to stdout with syntax highlighting. fzf will provide the filename for each result, feed it to clp, and display the output in the righthand pane.</p>
 <pre data-lang="bash" style="background-color:#ffffff;color:#010101;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#696989;">fzf --preview </span><span style="color:#009f78;">&#39;clp {}&#39;
@@ -88,7 +114,7 @@ figcaption {
 <p>You can scroll the preview window by holding shift pressing up/down, or by using your mouse wheel.</p>
 <h3 id="combination">Combination</h3>
 <p>You can combine fzf and grep tool such as grep with fzf with a Unix pipe. Let's see how that works.</p>
-<p>We'll start by grepping for the the word &quot;time&quot;, chosen for just for demonstrative purposes:</p>
+<p>We'll start by grepping for the the word "time", chosen for just for demonstrative purposes:</p>
 <pre data-lang="bash" style="background-color:#ffffff;color:#010101;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#696989;">grep --recursive --line-number --binary-files</span><span style="color:#016692;">=</span><span>without-match </span><span style="color:#009f78;">&quot;time&quot;</span><span> .
 </span></code></pre>
 <p>Here's grep's output, run in the <a href="https://harelang.org">Hare programming language's</a> source directory:</p>
@@ -112,17 +138,8 @@ figcaption {
 <p>In conclusion, we've seen that this approach provides editor agnostic searching and file previewing. Having grep at your fingertips allows you to effortlessly make elaborate searches without the constraints of editor plugins.</p>
 
 </div>
-<nav>
-  <div class="np">
-    <a href="https://jeskin.net" title="Home">Home</a>
-    <a href="https://github.com/jpe90" title="Github">Github</a>
-    <a href="mailto:eskinjp@gmail.com">Contact</a>
-    <a href="/atom.xml" title="RSS Feed">RSS</a>
-  </div>
-</nav>
 
     </div>
   </section>
 </body>
-
 </html>

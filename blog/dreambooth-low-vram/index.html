@@ -6,47 +6,73 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>
 img { max-width: 100%; height: auto; }
 pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
-.np {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-bottom: .5em;
-  font-style: italic;
-  max-width: 100%; /* Set maximum width to 100% */
-  margin: auto; /* Center the element horizontally */
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 code {
     font-size: 12px;
 }
 .container {
-    max-width: 800px;
-    margin: auto;
-    /* padding: 20px; */
-    padding-top: 1px;
+
     padding-left: 20px;
     padding-right: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -122,7 +148,7 @@ figcaption {
 <p>Setting <code>Save model frequency</code>, <code>Save preview frequency</code>, and <code>Generate Classification Images Using txt2img</code> gives you preview images at epoch checkpoints that you can view to check for overtraining.</p>
 <p>Unfortunately the preview images seem to use GPU memory and cause my trainings to fail.</p>
 <p>As a result, I end up only setting <code>Save model frequency</code>. When training completes, I bisect the completed checkpoints and check for overtraining.</p>
-<p>For example, if I generate 12 checkpoints, I'll open up checkpoint 12 and run a few images that include my trained subject in a new context. If the images are incapable of including the new context, e.g. the image above showed Gillian Anderson's face but didn't respond to the &quot;starfleet officer&quot; prompt, that means the model has been overtrained.</p>
+<p>For example, if I generate 12 checkpoints, I'll open up checkpoint 12 and run a few images that include my trained subject in a new context. If the images are incapable of including the new context, e.g. the image above showed Gillian Anderson's face but didn't respond to the "starfleet officer" prompt, that means the model has been overtrained.</p>
 <p>So I would open checkpoint 6, and if that worked, I would try checkpoint 9, and so on.</p>
 <h2 id="encountered-issues">Encountered Issues</h2>
 <p>Below are a hodgepodge of problems I ran into along the way, along with how I overcame them.</p>
@@ -130,27 +156,18 @@ figcaption {
 <p>I got this when I did not properly follow <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers">xformers installation steps</a>.</p>
 <h3 id="name-str2optimizer8bit-blockwise-is-not-defined">Name 'str2optimizer8bit_blockwise' is not defined</h3>
 <p>This was caused by python being unable to find a CUDA shared library on my system. To fix it, you'll need to make sure the folders where CUDA's libraries are located are set on your system's path.</p>
-<p>On arch linux, I did that by setting environment variable <code>LD_LIBRARY_PATH=&quot;/opt/cuda/targets/x86_64-linux/lib:$LD_LIBRARY_PATH&quot;</code>.</p>
+<p>On arch linux, I did that by setting environment variable <code>LD_LIBRARY_PATH="/opt/cuda/targets/x86_64-linux/lib:$LD_LIBRARY_PATH"</code>.</p>
 <h3 id="img-should-be-pil-image">Img should be PIL image</h3>
-<p>A number of posts online were saying to check &quot;Apply Horizontal Flip&quot; in the dreambooth settings, but doing so was giving me this error.</p>
+<p>A number of posts online were saying to check "Apply Horizontal Flip" in the dreambooth settings, but doing so was giving me this error.</p>
 <p>I didn't really look much into it, I just unchecked it and the error no longer occurred.</p>
 <h3 id="zipfile-badzipfile-file-is-not-a-zip-file">zipfile.BadZipFile: File is not a zip file</h3>
 <p>After I initially got dreambooth to train successfully, I exported the result as a .ckpt file. When I tried to load the checkpoint to produce the image, the model wouldn't load, and I could see<code>zipfile.BadZipFile: File is not a zip file</code> in the server's output.</p>
 <p>I looked at the .ckpt file that was being created and compared it to a valid one from a different model. The valid one looked like a zip archive, but the erronous one I was generating was just a yaml file with a .ckpt filename.</p>
-<p>I discovered that setting a custom model name in the &quot;Saving&quot; tab in dreambooth settings caused both a yaml and ckpt to be correctly created, and I could load and use the ckpt file.</p>
+<p>I discovered that setting a custom model name in the "Saving" tab in dreambooth settings caused both a yaml and ckpt to be correctly created, and I could load and use the ckpt file.</p>
 
 </div>
-<nav>
-  <div class="np">
-    <a href="https://jeskin.net" title="Home">Home</a>
-    <a href="https://github.com/jpe90" title="Github">Github</a>
-    <a href="mailto:eskinjp@gmail.com">Contact</a>
-    <a href="/atom.xml" title="RSS Feed">RSS</a>
-  </div>
-</nav>
 
     </div>
   </section>
 </body>
-
 </html>

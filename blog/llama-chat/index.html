@@ -6,47 +6,73 @@
   
   <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/rss.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about.html">About</a>
+      <a href="https://jeskin.net/projects.html">Projects</a>
+    </div>
+  </header>
   <section class="section">
     <div class="container">
       
 <style>
 img { max-width: 100%; height: auto; }
 pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
-.np {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-bottom: .5em;
-  font-style: italic;
-  max-width: 100%; /* Set maximum width to 100% */
-  margin: auto; /* Center the element horizontally */
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
 code {
     font-size: 12px;
 }
 .container {
-    max-width: 800px;
-    margin: auto;
-    /* padding: 20px; */
-    padding-top: 1px;
+
     padding-left: 20px;
     padding-right: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.section {
-    padding: 20px 0;
 }
 header, footer {
     text-align: center;
@@ -139,14 +165,14 @@ figcaption {
 </span><span>	})
 </span><span>}
 </span></code></pre>
-<p><code>application/x-ndjson</code> means &quot;Newline delimited JSON&quot;. This detail makes it easier to delineate between messages. Since you know they are broken on newlines, you know you can use line-reading functionality that's present in many languages to process them.</p>
+<p><code>application/x-ndjson</code> means "Newline delimited JSON". This detail makes it easier to delineate between messages. Since you know they are broken on newlines, you know you can use line-reading functionality that's present in many languages to process them.</p>
 <h1 id="a-simple-chatgpt-clone">A Simple ChatGPT Clone</h1>
 <p>For fun, we can build a simple ChatGPT-style web application on top of this API with a few components:</p>
 <ul>
 <li>an HTML page that presents a form to collect a prompt with a button for submission, and javascript to send the prompt, listens for a response, and writes the responses to the page as they stream in</li>
-<li>a server with two endpoints: 
+<li>a server with two endpoints:
 <ul>
-<li>one rendering the page above, </li>
+<li>one rendering the page above,</li>
 <li>one handling receiving a prompt, marshalling it to ollama, and streaming the response to the client.</li>
 </ul>
 </li>
@@ -241,7 +267,7 @@ figcaption {
 <p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you're looking for is all it really takes to get up and running in the language. The fact that I can do that when I'm not very experienced in the language is a testament to the skill of its design.</p>
 <p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
 <h1 id="clojure-http-kit-implementation">Clojure - HTTP kit Implementation</h1>
-<p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library. </p>
+<p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library.</p>
 <p>I used <a href="https://http-kit.github.io">http-kit</a> for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
 <p>In Clojure, Ring-compliant HTTP server's use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
 <pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#014a69;">defn </span><span style="color:#a15001;">read-html-template </span><span>[]
@@ -287,7 +313,7 @@ figcaption {
 </span><span>      (</span><span style="color:#696989;">and </span><span>(</span><span style="color:#696989;">=</span><span> uri </span><span style="color:#009f78;">&quot;/api/generate&quot;</span><span>) (</span><span style="color:#696989;">=</span><span> method </span><span style="color:#333366;">:post</span><span>)) (</span><span style="color:#696989;">my-async-handler</span><span> req)
 </span><span>      </span><span style="color:#333366;">:else </span><span>(</span><span style="color:#696989;">not-found-handler</span><span> req))))
 </span></code></pre>
-<p>When I evaluate these forms, switch back to my browser, and hit the &quot;Submit&quot; buttton, I see the print statements fire. When I evaliate <code>clients_</code>, I see it now has a new client.</p>
+<p>When I evaluate these forms, switch back to my browser, and hit the "Submit" buttton, I see the print statements fire. When I evaliate <code>clients_</code>, I see it now has a new client.</p>
 <p>To get the actual messages, we can start writing a function to send a POST request to the ollama server. After that, we want to find a way to access messages as they stream in and send them to the client.</p>
 <p>In typical asynchronous programming, this kind of message passage is done with callbacks. http-kit has its own concept of channels that is separate from core.async with its own semantics. When we get a message, we will want to send it to the client like this:</p>
 <pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#696989;">http/send!</span><span> ch {</span><span style="color:#333366;">:status </span><span style="color:#8c008a;">200
@@ -362,7 +388,7 @@ figcaption {
 </span><span>    }
 </span><span>...
 </span></code></pre>
-<p>Since this class subclasses InputStream, it can be read by an <a href="https://docs.oracle.com/javase%2F8%2Fdocs%2Fapi%2F%2F/java/io/InputStreamReader.html">InputStreamReader</a>. </p>
+<p>Since this class subclasses InputStream, it can be read by an <a href="https://docs.oracle.com/javase%2F8%2Fdocs%2Fapi%2F%2F/java/io/InputStreamReader.html">InputStreamReader</a>.</p>
 <p>The docs for InputStreamReader recommend wrapping with a BufferedReader, so let's do that. We want to take inputs line by line</p>
 <pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#014a69;">defn </span><span style="color:#a15001;">send-prompt-to-ollama </span><span>[ch prompt]
 </span><span>  (</span><span style="color:#696989;">let </span><span>[url </span><span style="color:#009f78;">&quot;http://localhost:11434/api/generate&quot;</span><span>]
@@ -514,7 +540,7 @@ figcaption {
 </span></code></pre>
 <h1 id="clojure-pedestal-implementation">Clojure - Pedestal Implementation</h1>
 <p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
-<p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it. </p>
+<p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it.</p>
 <p>In this version, my request function sends a request with the user's prompt and returns a channel that has the messages queued.</p>
 <pre data-lang="Clojure" style="background-color:#ffffff;color:#010101;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#014a69;">defn </span><span style="color:#a15001;">handle-response </span><span>[response-ch </span><span style="color:#016692;">^</span><span>HttpResponse response]
 </span><span>  (</span><span style="color:#696989;">let </span><span>[reader (</span><span style="color:#696989;">BufferedReader. </span><span>(</span><span style="color:#696989;">InputStreamReader. </span><span>(</span><span style="color:#696989;">.body</span><span> response) StandardCharsets/UTF_8))]
@@ -575,17 +601,8 @@ figcaption {
 <p>I do still reach for Clojure from time to time, both because I enjoy the development process of building projects in small pieces without ceremony - i.e., you don't have to create mini-projects or something similar to experiment with new ideas, you just immediately try them out from whatever file you're currently working in. I also find it much easier to maintain a bird's eye view of your codebase I'm working on. Clojure code tends to be much higher level and I find it easier to reason about when I'm focused, provided I've kept everything logically organized and somewhat tidy.</p>
 
 </div>
-<nav>
-  <div class="np">
-    <a href="https://jeskin.net" title="Home">Home</a>
-    <a href="https://github.com/jpe90" title="Github">Github</a>
-    <a href="mailto:eskinjp@gmail.com">Contact</a>
-    <a href="/atom.xml" title="RSS Feed">RSS</a>
-  </div>
-</nav>
 
     </div>
   </section>
 </body>
-
 </html>
