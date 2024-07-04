@@ -1,43 +1,77 @@
-<html>
-    <head>
-        <title>Zola</title>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Welcome to Zola!</h1>
-            <p>
-                You're seeing this page because we couldn't find a template to render.
-            </p>
-            <p>
-                To modify this page, create a <b>page.html</b> file in the templates directory or
-                <a href="https://www.getzola.org/documentation/themes/installing-and-using-themes/" target="_blank">install a theme</a>.
-                <br>
-                You can find what variables are available in this template in the <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;#page-variables" target="_blank">documentation</a>.
-            </p>
-        </div>
-        <footer>
-            <a href="https://www.getzola.org/documentation/getting-started/cli-usage/" target="_blank">Get started with Zola</a>
-        </footer>
-        <style>
-            html {
-                line-height: 1.5;
-            }
-            h1 {
-                margin-bottom: 2rem;
-            }
-            .container {
-                font-family: "sans-serif";
-                text-align: center;
-                margin-top: 20vh;
-                padding: 2rem;
-                background: #e9e9e9;
-            }
-            footer {
-                position: fixed;
-                width: 100%;
-                bottom: 1rem;
-                text-align: center;
-            }
-        </style>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jon Eskin's Blog</title>
+  
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      background-color: #333;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/atom.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about">About</a>
+      <a href="https://github.com/jpe90">Projects</a>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      
+<h1>About Me</h1>
+<div>
+  <p>I do a lot of exploratory programming and take a lot of notes about what I work on. Otherwise I'll forget everything!</p>
+<p>In 2022, I started converting some of those notes into blog posts. My goal in doing so is to share information that is extremely useful for people who are interested in very specific topics that are not necessarily widely discussed online.</p>
+<p>Posts are written in my free time and never reflect the views of my employer.</p>
+<p>Feel free to <a href="https://jeskin.net/about/%22mailto:eskinjp@gmail.com%22">contact me</a> with questions or comments.</p>
+
+</div>
+
+    </div>
+  </section>
+</body>
 </html>
