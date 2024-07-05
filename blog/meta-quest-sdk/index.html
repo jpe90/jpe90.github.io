@@ -152,60 +152,60 @@ figcaption {
 <p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.</p>
 <p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
 <p>A benefit of this readability is that you end up build a lot of intuition on "how VR works" by making superficial observations. Take for example the following code from the main render loop of one of the samples.</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#877611;">typedef struct</span><span> XrPosef {
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#0000ff;">typedef struct</span><span> XrPosef {
 </span><span>    XrQuaternionf    orientation;
 </span><span>    XrVector3f       position;
-</span><span>} </span><span style="text-decoration:underline;color:#646409;">XrPosef</span><span>;
+</span><span>} XrPosef;
 </span><span>
-</span><span style="color:#898989;">// ...
+</span><span style="color:#008000;">// ...
 </span><span>
 </span><span>XrPosef xfLocalFromEye[NUM_EYES];
 </span><span>
-</span><span style="color:#016692;">for </span><span>(</span><span style="color:#877611;">int</span><span> eye </span><span style="color:#016692;">= </span><span style="color:#8c008a;">0</span><span>; eye </span><span style="color:#016692;">&lt;</span><span> NUM_EYES; eye</span><span style="color:#016692;">++</span><span>) {
-</span><span>    </span><span style="color:#898989;">// LOG_POSE( &quot;viewTransform&quot;, &amp;projectionInfo.projections[eye].viewTransform );
-</span><span>    XrPosef xfHeadFromEye </span><span style="color:#016692;">=</span><span> projections[eye].</span><span style="color:#696989;">pose</span><span>;
-</span><span>    </span><span style="color:#696989;">XrPosef_Multiply</span><span>(</span><span style="color:#016692;">&amp;</span><span>xfLocalFromEye[eye], </span><span style="color:#016692;">&amp;</span><span>xfLocalFromHead, </span><span style="color:#016692;">&amp;</span><span>xfHeadFromEye);
+</span><span style="color:#0000ff;">for </span><span>(</span><span style="color:#0000ff;">int</span><span> eye </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">0</span><span>; eye </span><span style="color:#0000ff;">&lt;</span><span> NUM_EYES; eye</span><span style="color:#0000ff;">++</span><span>) {
+</span><span>    </span><span style="color:#008000;">// LOG_POSE( &quot;viewTransform&quot;, &amp;projectionInfo.projections[eye].viewTransform );
+</span><span>    XrPosef xfHeadFromEye </span><span style="color:#0000ff;">=</span><span> projections[eye].pose;
+</span><span>    XrPosef_Multiply(</span><span style="color:#0000ff;">&amp;</span><span>xfLocalFromEye[eye], </span><span style="color:#0000ff;">&amp;</span><span>xfLocalFromHead, </span><span style="color:#0000ff;">&amp;</span><span>xfHeadFromEye);
 </span><span>
-</span><span>    XrPosef xfEyeFromLocal </span><span style="color:#016692;">= </span><span style="color:#696989;">XrPosef_Inverse</span><span>(xfLocalFromEye[eye]);
+</span><span>    XrPosef xfEyeFromLocal </span><span style="color:#0000ff;">= </span><span>XrPosef_Inverse(xfLocalFromEye[eye]);
 </span><span>
-</span><span>    XrMatrix4x4f </span><span style="color:#696989;">viewMat</span><span>{};
-</span><span>    </span><span style="color:#696989;">XrMatrix4x4f_CreateFromRigidTransform</span><span>(</span><span style="color:#016692;">&amp;</span><span>viewMat, </span><span style="color:#016692;">&amp;</span><span>xfEyeFromLocal);
+</span><span>    XrMatrix4x4f viewMat{};
+</span><span>    XrMatrix4x4f_CreateFromRigidTransform(</span><span style="color:#0000ff;">&amp;</span><span>viewMat, </span><span style="color:#0000ff;">&amp;</span><span>xfEyeFromLocal);
 </span><span>
-</span><span>    </span><span style="color:#014a69;">const</span><span> XrFovf fov </span><span style="color:#016692;">=</span><span> projections[eye].</span><span style="color:#696989;">fov</span><span>;
+</span><span>    </span><span style="color:#0000ff;">const</span><span> XrFovf fov </span><span style="color:#0000ff;">=</span><span> projections[eye].fov;
 </span><span>    XrMatrix4x4f projMat;
-</span><span>    </span><span style="color:#696989;">XrMatrix4x4f_CreateProjectionFov</span><span>(</span><span style="color:#016692;">&amp;</span><span>projMat, GRAPHICS_OPENGL_ES, fov, </span><span style="color:#8c008a;">0.1</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>);
+</span><span>    XrMatrix4x4f_CreateProjectionFov(</span><span style="color:#0000ff;">&amp;</span><span>projMat, GRAPHICS_OPENGL_ES, fov, </span><span style="color:#a31515;">0.1</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>);
 </span><span>
-</span><span>    frameIn.</span><span style="color:#696989;">View</span><span>[eye] </span><span style="color:#016692;">= </span><span style="color:#696989;">OvrFromXr</span><span>(viewMat);
-</span><span>    frameIn.</span><span style="color:#696989;">Proj</span><span>[eye] </span><span style="color:#016692;">= </span><span style="color:#696989;">OvrFromXr</span><span>(projMat);
+</span><span>    frameIn.View[eye] </span><span style="color:#0000ff;">= </span><span>OvrFromXr(viewMat);
+</span><span>    frameIn.Proj[eye] </span><span style="color:#0000ff;">= </span><span>OvrFromXr(projMat);
 </span><span>}
 </span></code></pre>
 <p>It becomes immediately clear when reading the above that the position for each eye is independently tracked, and as you might guess, independent frames are rendered for each eye.</p>
 <p>You can verify this by looking at that project's vertex shader (seen below) and note that each eye gets its own matrix transforms:</p>
-<pre data-lang="GLSL" style="background-color:#ffffff;color:#010101;" class="language-GLSL "><code class="language-GLSL" data-lang="GLSL"><span style="color:#016692;">#define </span><span style="color:#a15001;">NUM_VIEWS </span><span style="color:#8c008a;">2
-</span><span style="color:#016692;">#define </span><span style="color:#a15001;">VIEW_ID</span><span> gl_ViewID_OVR
-</span><span style="color:#016692;">#extension </span><span style="color:#009f78;">GL_OVR_multiview2 </span><span>: </span><span style="color:#696989;">require
-</span><span style="color:#014a69;">layout</span><span>(num_views</span><span style="color:#016692;">=</span><span>NUM_VIEWS) </span><span style="color:#014a69;">in</span><span>;
-</span><span style="color:#014a69;">in </span><span style="color:#877611;">vec3</span><span> vertexPosition;
-</span><span style="color:#014a69;">in </span><span style="color:#877611;">vec4</span><span> vertexColor;
-</span><span style="color:#014a69;">uniform </span><span style="color:#877611;">mat4</span><span> ModelMatrix;
-</span><span style="color:#014a69;">uniform </span><span style="color:#877611;">vec4</span><span> ColorScale;
-</span><span style="color:#014a69;">uniform </span><span style="color:#877611;">vec4</span><span> ColorBias;
-</span><span style="color:#014a69;">uniform</span><span> SceneMatrices
+<pre data-lang="GLSL" style="background-color:#ffffff;color:#000000;" class="language-GLSL "><code class="language-GLSL" data-lang="GLSL"><span style="color:#0000ff;">#define NUM_VIEWS </span><span style="color:#a31515;">2
+</span><span style="color:#0000ff;">#define VIEW_ID gl_ViewID_OVR
+</span><span style="color:#0000ff;">#extension </span><span style="color:#a31515;">GL_OVR_multiview2 </span><span style="color:#0000ff;">: </span><span>require
+</span><span style="color:#0000ff;">layout</span><span>(num_views</span><span style="color:#0000ff;">=</span><span>NUM_VIEWS) </span><span style="color:#0000ff;">in</span><span>;
+</span><span style="color:#0000ff;">in vec3</span><span> vertexPosition;
+</span><span style="color:#0000ff;">in vec4</span><span> vertexColor;
+</span><span style="color:#0000ff;">uniform mat4</span><span> ModelMatrix;
+</span><span style="color:#0000ff;">uniform vec4</span><span> ColorScale;
+</span><span style="color:#0000ff;">uniform vec4</span><span> ColorBias;
+</span><span style="color:#0000ff;">uniform</span><span> SceneMatrices
 </span><span>{
-</span><span>    </span><span style="color:#014a69;">uniform </span><span style="color:#877611;">mat4</span><span> ViewMatrix[NUM_VIEWS];
-</span><span>    </span><span style="color:#014a69;">uniform </span><span style="color:#877611;">mat4</span><span> ProjectionMatrix[NUM_VIEWS];
+</span><span>    </span><span style="color:#0000ff;">uniform mat4</span><span> ViewMatrix[NUM_VIEWS];
+</span><span>    </span><span style="color:#0000ff;">uniform mat4</span><span> ProjectionMatrix[NUM_VIEWS];
 </span><span>} sm;
-</span><span style="color:#014a69;">out </span><span style="color:#877611;">vec4</span><span> fragmentColor;
-</span><span style="color:#877611;">void </span><span style="color:#a15001;">main</span><span>()
+</span><span style="color:#0000ff;">out vec4</span><span> fragmentColor;
+</span><span style="color:#0000ff;">void </span><span>main()
 </span><span>{
-</span><span>    </span><span style="color:#696989;">gl_Position </span><span style="color:#016692;">=</span><span> sm.</span><span style="color:#696989;">ProjectionMatrix</span><span>[VIEW_ID] </span><span style="color:#016692;">* </span><span>( sm.</span><span style="color:#696989;">ViewMatrix</span><span>[VIEW_ID] </span><span style="color:#016692;">* </span><span>( ModelMatrix </span><span style="color:#016692;">* </span><span style="color:#877611;">vec4</span><span>( vertexPosition, </span><span style="color:#8c008a;">1.0 </span><span>) ) );
-</span><span>    fragmentColor </span><span style="color:#016692;">=</span><span> vertexColor </span><span style="color:#016692;">*</span><span> ColorScale </span><span style="color:#016692;">+</span><span> ColorBias;
+</span><span>    gl_Position </span><span style="color:#0000ff;">=</span><span> sm.ProjectionMatrix[VIEW_ID] </span><span style="color:#0000ff;">* </span><span>( sm.ViewMatrix[VIEW_ID] </span><span style="color:#0000ff;">* </span><span>( ModelMatrix </span><span style="color:#0000ff;">* vec4</span><span>( vertexPosition, </span><span style="color:#a31515;">1.0 </span><span>) ) );
+</span><span>    fragmentColor </span><span style="color:#0000ff;">=</span><span> vertexColor </span><span style="color:#0000ff;">*</span><span> ColorScale </span><span style="color:#0000ff;">+</span><span> ColorBias;
 </span><span>}
 </span></code></pre>
 <p>In hindsight, it should be obvious that this is something you do for VR, but I hadn't really thought about it. I find that the code conveys the concept more clearly and completely than words.</p>
 <h2 id="structure-of-sample-projects">Structure of Sample Projects</h2>
 <p>Below is an overview of some representative files of a sample project. To build one of the same projects, you can grab a copy of Android Studio Bumblebee (2021.1.1) or earlier, and open settings.gradle. I ran projects in that IDE and worked on them in a separate text editor.</p>
-<pre style="background-color:#ffffff;color:#010101;"><code><span>XrVirtualKeyboard
+<pre style="background-color:#ffffff;color:#000000;"><code><span>XrVirtualKeyboard
 </span><span>├── Projects
 </span><span>│   └── Android
 </span><span>│       ├── AndroidManifest.xml
@@ -237,7 +237,7 @@ figcaption {
 </span><span>        └── strings.xml
 </span></code></pre>
 <p>Android.mk contains the Makefile that you'll be the most interested in. When you add source code or libraries, you'll be changing this file. They generally look like this:</p>
-<pre style="background-color:#ffffff;color:#010101;"><code><span>LOCAL_PATH := $(call my-dir)
+<pre style="background-color:#ffffff;color:#000000;"><code><span>LOCAL_PATH := $(call my-dir)
 </span><span>include $(CLEAR_VARS)
 </span><span>
 </span><span>LOCAL_MODULE := xrvirtualkeyboard
@@ -271,11 +271,11 @@ figcaption {
 </span></code></pre>
 <p>The entry point of each project contains OpenGL and OXR initialization before entering the event loop.</p>
 <p>Graphics initialization is done with EGL in the same manner as on other embedded systems (or the desktop):</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#877611;">struct </span><span style="color:#a15001;">ovrEgl </span><span>{
-</span><span>    </span><span style="color:#877611;">void </span><span style="color:#a15001;">Clear</span><span>();
-</span><span>    </span><span style="color:#877611;">void </span><span style="color:#a15001;">CreateContext</span><span>(</span><span style="color:#014a69;">const</span><span> ovrEgl</span><span style="color:#016692;">* </span><span style="color:#696989;">shareEgl</span><span>);
-</span><span>    </span><span style="color:#877611;">void </span><span style="color:#a15001;">DestroyContext</span><span>();
-</span><span style="color:#016692;">#if defined</span><span>(XR_USE_GRAPHICS_API_OPENGL_ES)
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#0000ff;">struct </span><span>ovrEgl {
+</span><span>    </span><span style="color:#0000ff;">void </span><span>Clear();
+</span><span>    </span><span style="color:#0000ff;">void </span><span>CreateContext(</span><span style="color:#0000ff;">const</span><span> ovrEgl</span><span style="color:#0000ff;">* </span><span>shareEgl);
+</span><span>    </span><span style="color:#0000ff;">void </span><span>DestroyContext();
+</span><span style="color:#0000ff;">#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
 </span><span>    EGLint MajorVersion;
 </span><span>    EGLint MinorVersion;
 </span><span>    EGLDisplay Display;
@@ -283,50 +283,50 @@ figcaption {
 </span><span>    EGLSurface TinySurface;
 </span><span>    EGLSurface MainSurface;
 </span><span>    EGLContext Context;
-</span><span style="color:#016692;">#elif defined</span><span>(XR_USE_GRAPHICS_API_OPENGL)
+</span><span style="color:#0000ff;">#elif defined(XR_USE_GRAPHICS_API_OPENGL)
 </span><span>    HDC hDC;
 </span><span>    HGLRC hGLRC;
-</span><span style="color:#016692;">#endif </span><span style="color:#898989;">//
+</span><span style="color:#0000ff;">#endif </span><span style="color:#008000;">//
 </span><span>};
 </span><span>
-</span><span style="color:#898989;">// ...
+</span><span style="color:#008000;">// ...
 </span><span>
-</span><span style="color:#016692;">#if defined</span><span>(XR_USE_GRAPHICS_API_OPENGL_ES)
-</span><span style="color:#877611;">void </span><span>ovrEgl::</span><span style="color:#a15001;">CreateContext</span><span>(</span><span style="color:#014a69;">const</span><span> ovrEgl</span><span style="color:#016692;">* </span><span style="color:#696989;">shareEgl</span><span>) {
-</span><span>    </span><span style="color:#016692;">if </span><span>(Display </span><span style="color:#016692;">!= </span><span style="color:#8c008a;">0</span><span>) {
-</span><span>        </span><span style="color:#016692;">return</span><span>;
+</span><span style="color:#0000ff;">#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+</span><span style="color:#0000ff;">void </span><span>ovrEgl::CreateContext(</span><span style="color:#0000ff;">const</span><span> ovrEgl</span><span style="color:#0000ff;">* </span><span>shareEgl) {
+</span><span>    </span><span style="color:#0000ff;">if </span><span>(Display </span><span style="color:#0000ff;">!= </span><span style="color:#a31515;">0</span><span>) {
+</span><span>        </span><span style="color:#0000ff;">return</span><span>;
 </span><span>    }
 </span><span>
-</span><span>    Display </span><span style="color:#016692;">= </span><span style="color:#696989;">eglGetDisplay</span><span>(EGL_DEFAULT_DISPLAY);
-</span><span>    </span><span style="color:#696989;">ALOGV</span><span>(</span><span style="color:#009f78;">&quot;        eglInitialize( Display, &amp;MajorVersion, &amp;MinorVersion )&quot;</span><span>);
-</span><span>    </span><span style="color:#696989;">eglInitialize</span><span>(Display, </span><span style="color:#016692;">&amp;</span><span>MajorVersion, </span><span style="color:#016692;">&amp;</span><span>MinorVersion);
-</span><span>    </span><span style="color:#898989;">// Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
-</span><span>    </span><span style="color:#898989;">// flags in eglChooseConfig if the user has selected the &quot;force 4x MSAA&quot; option in
-</span><span>    </span><span style="color:#898989;">// settings, and that is completely wasted for our warp target.
-</span><span>    </span><span style="color:#014a69;">const </span><span style="color:#877611;">int</span><span> MAX_CONFIGS </span><span style="color:#016692;">= </span><span style="color:#8c008a;">1024</span><span>;
+</span><span>    Display </span><span style="color:#0000ff;">= </span><span>eglGetDisplay(EGL_DEFAULT_DISPLAY);
+</span><span>    ALOGV(</span><span style="color:#a31515;">&quot;        eglInitialize( Display, &amp;MajorVersion, &amp;MinorVersion )&quot;</span><span>);
+</span><span>    eglInitialize(Display, </span><span style="color:#0000ff;">&amp;</span><span>MajorVersion, </span><span style="color:#0000ff;">&amp;</span><span>MinorVersion);
+</span><span>    </span><span style="color:#008000;">// Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
+</span><span>    </span><span style="color:#008000;">// flags in eglChooseConfig if the user has selected the &quot;force 4x MSAA&quot; option in
+</span><span>    </span><span style="color:#008000;">// settings, and that is completely wasted for our warp target.
+</span><span>    </span><span style="color:#0000ff;">const int</span><span> MAX_CONFIGS </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">1024</span><span>;
 </span><span>    EGLConfig configs[MAX_CONFIGS];
-</span><span>    EGLint numConfigs </span><span style="color:#016692;">= </span><span style="color:#8c008a;">0</span><span>;
-</span><span>    </span><span style="color:#016692;">if </span><span>(</span><span style="color:#696989;">eglGetConfigs</span><span>(Display, configs, MAX_CONFIGS, </span><span style="color:#016692;">&amp;</span><span>numConfigs) </span><span style="color:#016692;">==</span><span> EGL_FALSE) {
-</span><span>        </span><span style="color:#696989;">ALOGE</span><span>(</span><span style="color:#009f78;">&quot;        eglGetConfigs() failed: </span><span style="color:#00ff00;">%s</span><span style="color:#009f78;">&quot;</span><span>, </span><span style="color:#696989;">EglErrorString</span><span>(</span><span style="color:#696989;">eglGetError</span><span>()));
-</span><span>        </span><span style="color:#016692;">return</span><span>;
+</span><span>    EGLint numConfigs </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">0</span><span>;
+</span><span>    </span><span style="color:#0000ff;">if </span><span>(eglGetConfigs(Display, configs, MAX_CONFIGS, </span><span style="color:#0000ff;">&amp;</span><span>numConfigs) </span><span style="color:#0000ff;">==</span><span> EGL_FALSE) {
+</span><span>        ALOGE(</span><span style="color:#a31515;">&quot;        eglGetConfigs() failed: </span><span>%s</span><span style="color:#a31515;">&quot;</span><span>, EglErrorString(eglGetError()));
+</span><span>        </span><span style="color:#0000ff;">return</span><span>;
 </span><span>    }
-</span><span>    </span><span style="color:#898989;">// blah blah
+</span><span>    </span><span style="color:#008000;">// blah blah
 </span></code></pre>
 <p>Logging is done with a macro that delegates to NDK's provided logging facilities when the code is running on Android, otherwise it just falls back on printf.</p>
-<pre style="background-color:#ffffff;color:#010101;"><code><span>ALOGV(&quot;Creating passthrough layer&quot;);
+<pre style="background-color:#ffffff;color:#000000;"><code><span>ALOGV(&quot;Creating passthrough layer&quot;);
 </span></code></pre>
 <p>And OpenGL function calls use the common idiom of being wrapped in a macro that executes the OpenGL function, checks the global error message after execution, and prints an error message if an error flag is set after the line executes.</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ARRAY_BUFFER, VertexBuffer));
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
 </span></code></pre>
 <p>Code that calls into OXR functionality work similar to OpenGL in a few ways.</p>
 <p><code>OXR</code> is an error checking macro that behaves in the same manner as <code>GL</code>.</p>
 <p>And like with OpenGL, functions from the OpenXR specification are are dynamically linked to at runtime. This means you won't find their implementation in the SDK; they are running in their own address space outside of the program and are available to all applications on the device.</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#696989;">OXR</span><span>(</span><span style="color:#696989;">xrLocateViews</span><span>(
-</span><span>    app.</span><span style="color:#696989;">Session</span><span>,
-</span><span>    </span><span style="color:#016692;">&amp;</span><span>projectionInfo,
-</span><span>    </span><span style="color:#016692;">&amp;</span><span>viewState,
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>OXR(xrLocateViews(
+</span><span>    app.Session,
+</span><span>    </span><span style="color:#0000ff;">&amp;</span><span>projectionInfo,
+</span><span>    </span><span style="color:#0000ff;">&amp;</span><span>viewState,
 </span><span>    projectionCapacityInput,
-</span><span>    </span><span style="color:#016692;">&amp;</span><span>projectionCountOutput,
+</span><span>    </span><span style="color:#0000ff;">&amp;</span><span>projectionCountOutput,
 </span><span>    projections));
 </span></code></pre>
 <h2 id="making-modifications-to-sample-projects">Making Modifications to Sample Projects</h2>
@@ -343,250 +343,250 @@ figcaption {
 </center>
 <p>Here are what the changes to make this work look like:</p>
 <p>The dimensions and colors were single line changes in the event loop.</p>
-<pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#420e09;color:#ffffff;">- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
-</span><span style="background-color:#253b22;color:#ffffff;">+ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);
+<pre data-lang="diff" style="background-color:#ffffff;color:#000000;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#c86a44;color:#fff3ee;">- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);
+</span><span style="background-color:#2f8963;color:#eefff8;">+ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);
 </span></code></pre>
-<pre data-lang="diff" style="background-color:#ffffff;color:#010101;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#420e09;color:#ffffff;">- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); // Orange
-</span><span style="background-color:#253b22;color:#ffffff;">+ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); // Brown
+<pre data-lang="diff" style="background-color:#ffffff;color:#000000;" class="language-diff "><code class="language-diff" data-lang="diff"><span style="background-color:#c86a44;color:#fff3ee;">- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); // Orange
+</span><span style="background-color:#2f8963;color:#eefff8;">+ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); // Brown
 </span></code></pre>
 <p>I dropped stb_image.h into the project and added some code that loads textures from images on the device and maintains a pool of the loaded textures which is cycled through during rendering.</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#016692;">#include </span><span style="color:#009f78;">&quot;TexturePool.h&quot;
-</span><span style="color:#016692;">#include </span><span style="color:#009f78;">&lt;android/log.h&gt;
-</span><span style="color:#016692;">#define </span><span style="color:#a15001;">STB_IMAGE_IMPLEMENTATION
-</span><span style="color:#016692;">#include </span><span style="color:#009f78;">&quot;stb_image.h&quot;
-</span><span style="color:#016692;">#include </span><span style="color:#009f78;">&lt;android/asset_manager_jni.h&gt;
-</span><span style="color:#016692;">#include </span><span style="color:#009f78;">&lt;android/asset_manager.h&gt;
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#0000ff;">#include </span><span style="color:#a31515;">&quot;TexturePool.h&quot;
+</span><span style="color:#0000ff;">#include </span><span style="color:#a31515;">&lt;android/log.h&gt;
+</span><span style="color:#0000ff;">#define STB_IMAGE_IMPLEMENTATION
+</span><span style="color:#0000ff;">#include </span><span style="color:#a31515;">&quot;stb_image.h&quot;
+</span><span style="color:#0000ff;">#include </span><span style="color:#a31515;">&lt;android/asset_manager_jni.h&gt;
+</span><span style="color:#0000ff;">#include </span><span style="color:#a31515;">&lt;android/asset_manager.h&gt;
 </span><span>
-</span><span>std::vector&lt;std::string&gt; texture_filenames </span><span style="color:#016692;">= </span><span>{</span><span style="color:#009f78;">&quot;NASA1.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA2.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA3.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA4.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA5.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA6.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA7.jpg&quot;</span><span>, </span><span style="color:#009f78;">&quot;NASA8.jpg&quot;  </span><span>};
+</span><span>std::vector&lt;std::string&gt; texture_filenames </span><span style="color:#0000ff;">= </span><span>{</span><span style="color:#a31515;">&quot;NASA1.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA2.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA3.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA4.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA5.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA6.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA7.jpg&quot;</span><span>, </span><span style="color:#a31515;">&quot;NASA8.jpg&quot;  </span><span>};
 </span><span>
-</span><span style="color:#646409;">size_t</span><span> texture_pointer </span><span style="color:#016692;">= </span><span style="color:#8c008a;">0</span><span>;
+</span><span>size_t texture_pointer </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">0</span><span>;
 </span><span>
 </span><span>std::vector&lt;GLuint&gt; texture_ids;
 </span><span>
-</span><span style="color:#877611;">void </span><span style="color:#a15001;">texture_pool_init</span><span>(std::vector&lt;std::string&gt; </span><span style="color:#696989;">filenames</span><span>, AAssetManager </span><span style="color:#016692;">*</span><span style="color:#696989;">amgr</span><span>) {
-</span><span>	</span><span style="color:#016692;">for </span><span>(std::string filename </span><span style="color:#016692;">:</span><span> filenames) {
+</span><span style="color:#0000ff;">void </span><span>texture_pool_init(std::vector&lt;std::string&gt; filenames, AAssetManager </span><span style="color:#0000ff;">*</span><span>amgr) {
+</span><span>	</span><span style="color:#0000ff;">for </span><span>(std::string filename </span><span style="color:#0000ff;">:</span><span> filenames) {
 </span><span>        GLuint texture_id;
 </span><span>
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glGenTextures</span><span>(</span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#016692;">&amp;</span><span>texture_id));
-</span><span>        texture_ids.</span><span style="color:#696989;">push_back</span><span>(texture_id);
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindTexture</span><span>(GL_TEXTURE_2D, texture_id));
+</span><span>        GL(glGenTextures(</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#0000ff;">&amp;</span><span>texture_id));
+</span><span>        texture_ids.push_back(texture_id);
+</span><span>        GL(glBindTexture(GL_TEXTURE_2D, texture_id));
 </span><span>
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glTexParameteri</span><span>(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 </span><span>                           GL_LINEAR_MIPMAP_LINEAR));
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glTexParameteri</span><span>(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glTexParameteri</span><span>(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glTexParameteri</span><span>(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+</span><span>        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 </span><span>        GLenum format;
 </span><span>
-</span><span>		AAsset</span><span style="color:#016692;">*</span><span> asset </span><span style="color:#016692;">= </span><span style="color:#696989;">AAssetManager_open</span><span>(amgr, filename.</span><span style="color:#696989;">c_str</span><span>(), AASSET_MODE_BUFFER);
-</span><span>		</span><span style="color:#016692;">if </span><span>(asset </span><span style="color:#016692;">== </span><span style="color:#333366;">NULL</span><span>) {
-</span><span>			</span><span style="color:#696989;">ALOGE</span><span>(</span><span style="color:#009f78;">&quot;Failed to open </span><span style="color:#00ff00;">%s</span><span style="color:#009f78;">&quot;</span><span>, filename.</span><span style="color:#696989;">c_str</span><span>());
-</span><span>		} </span><span style="color:#016692;">else </span><span>{
-</span><span>			</span><span style="color:#696989;">ALOGV</span><span>(</span><span style="color:#009f78;">&quot;opened file </span><span style="color:#00ff00;">%s</span><span style="color:#009f78;">&quot;</span><span>, filename.</span><span style="color:#696989;">c_str</span><span>());
+</span><span>		AAsset</span><span style="color:#0000ff;">*</span><span> asset </span><span style="color:#0000ff;">= </span><span>AAssetManager_open(amgr, filename.c_str(), AASSET_MODE_BUFFER);
+</span><span>		</span><span style="color:#0000ff;">if </span><span>(asset </span><span style="color:#0000ff;">== </span><span>NULL) {
+</span><span>			ALOGE(</span><span style="color:#a31515;">&quot;Failed to open </span><span>%s</span><span style="color:#a31515;">&quot;</span><span>, filename.c_str());
+</span><span>		} </span><span style="color:#0000ff;">else </span><span>{
+</span><span>			ALOGV(</span><span style="color:#a31515;">&quot;opened file </span><span>%s</span><span style="color:#a31515;">&quot;</span><span>, filename.c_str());
 </span><span>		}
 </span><span>
-</span><span>		</span><span style="color:#877611;">int</span><span> width, height, channels;
-</span><span>        </span><span style="color:#696989;">stbi_set_flip_vertically_on_load</span><span>(</span><span style="color:#333366;">true</span><span>);
-</span><span>		</span><span style="color:#877611;">void </span><span style="color:#016692;">*</span><span>data </span><span style="color:#016692;">= </span><span style="color:#696989;">stbi_load_from_memory</span><span>((</span><span style="color:#877611;">unsigned char</span><span style="color:#016692;">*</span><span>)</span><span style="color:#696989;">AAsset_getBuffer</span><span>(asset), </span><span style="color:#696989;">AAsset_getLength</span><span>(asset), </span><span style="color:#016692;">&amp;</span><span>width, </span><span style="color:#016692;">&amp;</span><span>height, </span><span style="color:#016692;">&amp;</span><span>channels, </span><span style="color:#8c008a;">0</span><span>);
-</span><span>		</span><span style="color:#016692;">if </span><span>(data </span><span style="color:#016692;">== </span><span style="color:#333366;">NULL</span><span>) {
-</span><span>			</span><span style="color:#696989;">ALOGE</span><span>(</span><span style="color:#009f78;">&quot;Failed to load </span><span style="color:#00ff00;">%s</span><span style="color:#009f78;">&quot;</span><span>, filename.</span><span style="color:#696989;">c_str</span><span>());
-</span><span>		} </span><span style="color:#016692;">else </span><span>{
-</span><span>			</span><span style="color:#696989;">ALOGV</span><span>(</span><span style="color:#009f78;">&quot;loaded file </span><span style="color:#00ff00;">%s</span><span style="color:#009f78;">&quot;</span><span>, filename.</span><span style="color:#696989;">c_str</span><span>());
+</span><span>		</span><span style="color:#0000ff;">int</span><span> width, height, channels;
+</span><span>        stbi_set_flip_vertically_on_load(true);
+</span><span>		</span><span style="color:#0000ff;">void *</span><span>data </span><span style="color:#0000ff;">= </span><span>stbi_load_from_memory((</span><span style="color:#0000ff;">unsigned char*</span><span>)AAsset_getBuffer(asset), AAsset_getLength(asset), </span><span style="color:#0000ff;">&amp;</span><span>width, </span><span style="color:#0000ff;">&amp;</span><span>height, </span><span style="color:#0000ff;">&amp;</span><span>channels, </span><span style="color:#a31515;">0</span><span>);
+</span><span>		</span><span style="color:#0000ff;">if </span><span>(data </span><span style="color:#0000ff;">== </span><span>NULL) {
+</span><span>			ALOGE(</span><span style="color:#a31515;">&quot;Failed to load </span><span>%s</span><span style="color:#a31515;">&quot;</span><span>, filename.c_str());
+</span><span>		} </span><span style="color:#0000ff;">else </span><span>{
+</span><span>			ALOGV(</span><span style="color:#a31515;">&quot;loaded file </span><span>%s</span><span style="color:#a31515;">&quot;</span><span>, filename.c_str());
 </span><span>		}
 </span><span>
-</span><span>        </span><span style="color:#016692;">if </span><span>(channels </span><span style="color:#016692;">== </span><span style="color:#8c008a;">3</span><span>) {
-</span><span>            format </span><span style="color:#016692;">=</span><span> GL_RGB;
-</span><span>        } </span><span style="color:#016692;">else if </span><span>(channels </span><span style="color:#016692;">== </span><span style="color:#8c008a;">4</span><span>) {
-</span><span>            format </span><span style="color:#016692;">=</span><span> GL_RGBA;
-</span><span>        } </span><span style="color:#016692;">else </span><span>{
-</span><span>            </span><span style="color:#7a7025;">fprintf</span><span>(stderr, </span><span style="color:#009f78;">&quot;Unsupported number of channels: </span><span style="color:#00ff00;">%d\n</span><span style="color:#009f78;">&quot;</span><span>, channels);
-</span><span>            </span><span style="color:#7a7025;">exit</span><span>(EXIT_FAILURE);
+</span><span>        </span><span style="color:#0000ff;">if </span><span>(channels </span><span style="color:#0000ff;">== </span><span style="color:#a31515;">3</span><span>) {
+</span><span>            format </span><span style="color:#0000ff;">=</span><span> GL_RGB;
+</span><span>        } </span><span style="color:#0000ff;">else if </span><span>(channels </span><span style="color:#0000ff;">== </span><span style="color:#a31515;">4</span><span>) {
+</span><span>            format </span><span style="color:#0000ff;">=</span><span> GL_RGBA;
+</span><span>        } </span><span style="color:#0000ff;">else </span><span>{
+</span><span>            fprintf(stderr, </span><span style="color:#a31515;">&quot;Unsupported number of channels: </span><span>%d</span><span style="color:#26b31a;">\n</span><span style="color:#a31515;">&quot;</span><span>, channels);
+</span><span>            exit(EXIT_FAILURE);
 </span><span>        }
 </span><span>
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glTexImage2D</span><span>(GL_TEXTURE_2D, </span><span style="color:#8c008a;">0</span><span>, GL_RGB, width, height, </span><span style="color:#8c008a;">0</span><span>, format, GL_UNSIGNED_BYTE,
+</span><span>        GL(glTexImage2D(GL_TEXTURE_2D, </span><span style="color:#a31515;">0</span><span>, GL_RGB, width, height, </span><span style="color:#a31515;">0</span><span>, format, GL_UNSIGNED_BYTE,
 </span><span>                        data));
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glGenerateMipmap</span><span>(GL_TEXTURE_2D));
+</span><span>        GL(glGenerateMipmap(GL_TEXTURE_2D));
 </span><span>
-</span><span>        </span><span style="color:#696989;">stbi_image_free</span><span>(data);
+</span><span>        stbi_image_free(data);
 </span><span>	}
 </span><span>}
 </span><span>
-</span><span style="color:#898989;">// reset at the start of each frame to keep the same rendering order
-</span><span style="color:#877611;">void </span><span style="color:#a15001;">reset_texture_pointer</span><span>() {
-</span><span>    </span><span style="color:#696989;">ALOGV</span><span>(</span><span style="color:#009f78;">&quot;resetting texture from </span><span style="color:#00ff00;">%u</span><span style="color:#009f78;"> to 0&quot;</span><span>,texture_pointer);
-</span><span>    texture_pointer </span><span style="color:#016692;">= </span><span style="color:#8c008a;">0</span><span>;
+</span><span style="color:#008000;">// reset at the start of each frame to keep the same rendering order
+</span><span style="color:#0000ff;">void </span><span>reset_texture_pointer() {
+</span><span>    ALOGV(</span><span style="color:#a31515;">&quot;resetting texture from </span><span>%u</span><span style="color:#a31515;"> to 0&quot;</span><span>,texture_pointer);
+</span><span>    texture_pointer </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">0</span><span>;
 </span><span>}
 </span><span>
-</span><span style="color:#898989;">// if more textures are requested than are available, wrap around
-</span><span>GLuint </span><span style="color:#a15001;">next_texture</span><span>() {
-</span><span>    </span><span style="color:#646409;">size_t</span><span> last_texture_idx </span><span style="color:#016692;">=</span><span> texture_pointer;
-</span><span>    </span><span style="color:#646409;">size_t</span><span> next_texture_idx </span><span style="color:#016692;">= </span><span>(texture_pointer </span><span style="color:#016692;">+ </span><span style="color:#8c008a;">1</span><span>) </span><span style="color:#016692;">%</span><span> texture_ids.</span><span style="color:#696989;">size</span><span>();
-</span><span>    texture_pointer </span><span style="color:#016692;">=</span><span> next_texture_idx;
-</span><span>    </span><span style="color:#016692;">return</span><span> texture_ids[last_texture_idx];
+</span><span style="color:#008000;">// if more textures are requested than are available, wrap around
+</span><span>GLuint next_texture() {
+</span><span>    size_t last_texture_idx </span><span style="color:#0000ff;">=</span><span> texture_pointer;
+</span><span>    size_t next_texture_idx </span><span style="color:#0000ff;">= </span><span>(texture_pointer </span><span style="color:#0000ff;">+ </span><span style="color:#a31515;">1</span><span>) </span><span style="color:#0000ff;">%</span><span> texture_ids.size();
+</span><span>    texture_pointer </span><span style="color:#0000ff;">=</span><span> next_texture_idx;
+</span><span>    </span><span style="color:#0000ff;">return</span><span> texture_ids[last_texture_idx];
 </span><span>}
 </span></code></pre>
 <p>I added UVs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>
-</span><span style="color:#877611;">void </span><span>ovrGeometry::</span><span style="color:#a15001;">CreateCube</span><span>()
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>
+</span><span style="color:#0000ff;">void </span><span>ovrGeometry::CreateCube()
 </span><span>{
-</span><span>    </span><span style="color:#877611;">struct </span><span style="color:#a15001;">ovrCubeVertices
+</span><span>    </span><span style="color:#0000ff;">struct </span><span>ovrCubeVertices
 </span><span>    {
-</span><span>        </span><span style="color:#877611;">signed char</span><span> positions[</span><span style="color:#8c008a;">8</span><span>][</span><span style="color:#8c008a;">4</span><span>];
-</span><span>        </span><span style="color:#877611;">unsigned char</span><span> colors[</span><span style="color:#8c008a;">8</span><span>][</span><span style="color:#8c008a;">4</span><span>];
-</span><span>        </span><span style="color:#877611;">float</span><span> uvs[</span><span style="color:#8c008a;">8</span><span>][</span><span style="color:#8c008a;">2</span><span>];
+</span><span>        </span><span style="color:#0000ff;">signed char</span><span> positions[</span><span style="color:#a31515;">8</span><span>][</span><span style="color:#a31515;">4</span><span>];
+</span><span>        </span><span style="color:#0000ff;">unsigned char</span><span> colors[</span><span style="color:#a31515;">8</span><span>][</span><span style="color:#a31515;">4</span><span>];
+</span><span>        </span><span style="color:#0000ff;">float</span><span> uvs[</span><span style="color:#a31515;">8</span><span>][</span><span style="color:#a31515;">2</span><span>];
 </span><span>    };
 </span><span>
-</span><span>    </span><span style="color:#014a69;">static const</span><span> ovrCubeVertices cubeVertices </span><span style="color:#016692;">= </span><span>{
-</span><span>        </span><span style="color:#898989;">// positions
+</span><span>    </span><span style="color:#0000ff;">static const</span><span> ovrCubeVertices cubeVertices </span><span style="color:#0000ff;">= </span><span>{
+</span><span>        </span><span style="color:#008000;">// positions
 </span><span>        {
-</span><span>            {</span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">-</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>},
-</span><span>            {</span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>, </span><span style="color:#016692;">+</span><span style="color:#8c008a;">127</span><span>}},
-</span><span>        </span><span style="color:#898989;">// colors
+</span><span>            {</span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">-</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>},
+</span><span>            {</span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>, </span><span style="color:#0000ff;">+</span><span style="color:#a31515;">127</span><span>}},
+</span><span>        </span><span style="color:#008000;">// colors
 </span><span>        {
-</span><span>            {</span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0x00</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>},
-</span><span>            {</span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>, </span><span style="color:#8c008a;">0xff</span><span>}},
-</span><span>        </span><span style="color:#898989;">// uvs
+</span><span>            {</span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0x00</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>},
+</span><span>            {</span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>, </span><span style="color:#a31515;">0xff</span><span>}},
+</span><span>        </span><span style="color:#008000;">// uvs
 </span><span>        {
-</span><span>            {</span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Bottom back left corner
-</span><span>            {</span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Bottom back right corner
-</span><span>            {</span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Top back left corner
-</span><span>            {</span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Top back right corner
-</span><span>            {</span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Bottom front left corner
-</span><span>            {</span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Bottom front right corner
-</span><span>            {</span><span style="color:#8c008a;">0.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Top front left corner
-</span><span>            {</span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>, </span><span style="color:#8c008a;">1.0</span><span style="color:#877611;">f</span><span>}, </span><span style="color:#898989;">// Top front right corner
+</span><span>            {</span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Bottom back left corner
+</span><span>            {</span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Bottom back right corner
+</span><span>            {</span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Top back left corner
+</span><span>            {</span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Top back right corner
+</span><span>            {</span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Bottom front left corner
+</span><span>            {</span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Bottom front right corner
+</span><span>            {</span><span style="color:#a31515;">0.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Top front left corner
+</span><span>            {</span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>, </span><span style="color:#a31515;">1.0</span><span style="color:#0000ff;">f</span><span>}, </span><span style="color:#008000;">// Top front right corner
 </span><span>        }
 </span><span>    };
 </span><span>
-</span><span>    </span><span style="color:#014a69;">static const </span><span style="color:#877611;">unsigned short</span><span> cube_indices[</span><span style="color:#8c008a;">30</span><span>] </span><span style="color:#016692;">= </span><span>{
-</span><span>        </span><span style="color:#8c008a;">0</span><span>, </span><span style="color:#8c008a;">2</span><span>, </span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#8c008a;">2</span><span>, </span><span style="color:#8c008a;">3</span><span>, </span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#898989;">// back
-</span><span>        </span><span style="color:#8c008a;">6</span><span>, </span><span style="color:#8c008a;">7</span><span>, </span><span style="color:#8c008a;">2</span><span>, </span><span style="color:#8c008a;">2</span><span>, </span><span style="color:#8c008a;">7</span><span>, </span><span style="color:#8c008a;">3</span><span>, </span><span style="color:#898989;">// top
-</span><span>        </span><span style="color:#8c008a;">4</span><span>, </span><span style="color:#8c008a;">0</span><span>, </span><span style="color:#8c008a;">5</span><span>, </span><span style="color:#8c008a;">5</span><span>, </span><span style="color:#8c008a;">0</span><span>, </span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#898989;">// bottom
-</span><span>        </span><span style="color:#8c008a;">0</span><span>, </span><span style="color:#8c008a;">4</span><span>, </span><span style="color:#8c008a;">2</span><span>, </span><span style="color:#8c008a;">2</span><span>, </span><span style="color:#8c008a;">4</span><span>, </span><span style="color:#8c008a;">6</span><span>, </span><span style="color:#898989;">// left
-</span><span>        </span><span style="color:#8c008a;">5</span><span>, </span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#8c008a;">7</span><span>, </span><span style="color:#8c008a;">7</span><span>, </span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#8c008a;">3  </span><span style="color:#898989;">// right
+</span><span>    </span><span style="color:#0000ff;">static const unsigned short</span><span> cube_indices[</span><span style="color:#a31515;">30</span><span>] </span><span style="color:#0000ff;">= </span><span>{
+</span><span>        </span><span style="color:#a31515;">0</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">3</span><span>, </span><span style="color:#a31515;">1</span><span>, </span><span style="color:#008000;">// back
+</span><span>        </span><span style="color:#a31515;">6</span><span>, </span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">3</span><span>, </span><span style="color:#008000;">// top
+</span><span>        </span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">0</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">0</span><span>, </span><span style="color:#a31515;">1</span><span>, </span><span style="color:#008000;">// bottom
+</span><span>        </span><span style="color:#a31515;">0</span><span>, </span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">6</span><span>, </span><span style="color:#008000;">// left
+</span><span>        </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">3  </span><span style="color:#008000;">// right
 </span><span>    };
 </span><span>
-</span><span>    </span><span style="color:#014a69;">static const </span><span style="color:#877611;">unsigned short</span><span> tex_indices[</span><span style="color:#8c008a;">6</span><span>] </span><span style="color:#016692;">= </span><span>{
-</span><span>        </span><span style="color:#8c008a;">4</span><span>, </span><span style="color:#8c008a;">5</span><span>, </span><span style="color:#8c008a;">6</span><span>, </span><span style="color:#8c008a;">6</span><span>, </span><span style="color:#8c008a;">5</span><span>, </span><span style="color:#8c008a;">7</span><span>, </span><span style="color:#898989;">// front
+</span><span>    </span><span style="color:#0000ff;">static const unsigned short</span><span> tex_indices[</span><span style="color:#a31515;">6</span><span>] </span><span style="color:#0000ff;">= </span><span>{
+</span><span>        </span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">6</span><span>, </span><span style="color:#a31515;">6</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">7</span><span>, </span><span style="color:#008000;">// front
 </span><span>    };
 </span><span>
-</span><span>    VertexCount </span><span style="color:#016692;">= </span><span style="color:#8c008a;">8</span><span>;
-</span><span>    ColorIndexCount </span><span style="color:#016692;">= </span><span style="color:#8c008a;">30</span><span>;
-</span><span>    TextureIndexCount </span><span style="color:#016692;">= </span><span style="color:#8c008a;">6</span><span>;
-</span><span>    IndexCount </span><span style="color:#016692;">= </span><span style="color:#8c008a;">0</span><span>;
+</span><span>    VertexCount </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">8</span><span>;
+</span><span>    ColorIndexCount </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">30</span><span>;
+</span><span>    TextureIndexCount </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">6</span><span>;
+</span><span>    IndexCount </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">0</span><span>;
 </span><span>
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">0</span><span>].</span><span style="color:#696989;">Index </span><span style="color:#016692;">=</span><span> VERTEX_ATTRIBUTE_LOCATION_POSITION;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">0</span><span>].</span><span style="color:#696989;">Size </span><span style="color:#016692;">= </span><span style="color:#8c008a;">4</span><span>;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">0</span><span>].</span><span style="color:#696989;">Type </span><span style="color:#016692;">=</span><span> GL_BYTE;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">0</span><span>].</span><span style="color:#696989;">Normalized </span><span style="color:#016692;">= </span><span style="color:#333366;">true</span><span>;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">0</span><span>].</span><span style="color:#696989;">Stride </span><span style="color:#016692;">= sizeof</span><span>(cubeVertices.</span><span style="color:#696989;">positions</span><span>[</span><span style="color:#8c008a;">0</span><span>]);
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">0</span><span>].</span><span style="color:#696989;">Pointer </span><span style="color:#016692;">= </span><span>(</span><span style="color:#014a69;">const</span><span> GLvoid </span><span style="color:#016692;">*</span><span>)</span><span style="color:#696989;">offsetof</span><span>(ovrCubeVertices, positions);
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">0</span><span>].Index </span><span style="color:#0000ff;">=</span><span> VERTEX_ATTRIBUTE_LOCATION_POSITION;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">0</span><span>].Size </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">4</span><span>;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">0</span><span>].Type </span><span style="color:#0000ff;">=</span><span> GL_BYTE;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">0</span><span>].Normalized </span><span style="color:#0000ff;">= </span><span>true;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">0</span><span>].Stride </span><span style="color:#0000ff;">= sizeof</span><span>(cubeVertices.positions[</span><span style="color:#a31515;">0</span><span>]);
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">0</span><span>].Pointer </span><span style="color:#0000ff;">= </span><span>(</span><span style="color:#0000ff;">const</span><span> GLvoid </span><span style="color:#0000ff;">*</span><span>)offsetof(ovrCubeVertices, positions);
 </span><span>
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">1</span><span>].</span><span style="color:#696989;">Index </span><span style="color:#016692;">=</span><span> VERTEX_ATTRIBUTE_LOCATION_COLOR;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">1</span><span>].</span><span style="color:#696989;">Size </span><span style="color:#016692;">= </span><span style="color:#8c008a;">4</span><span>;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">1</span><span>].</span><span style="color:#696989;">Type </span><span style="color:#016692;">=</span><span> GL_UNSIGNED_BYTE;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">1</span><span>].</span><span style="color:#696989;">Normalized </span><span style="color:#016692;">= </span><span style="color:#333366;">true</span><span>;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">1</span><span>].</span><span style="color:#696989;">Stride </span><span style="color:#016692;">= sizeof</span><span>(cubeVertices.</span><span style="color:#696989;">colors</span><span>[</span><span style="color:#8c008a;">0</span><span>]);
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">1</span><span>].</span><span style="color:#696989;">Pointer </span><span style="color:#016692;">= </span><span>(</span><span style="color:#014a69;">const</span><span> GLvoid </span><span style="color:#016692;">*</span><span>)</span><span style="color:#696989;">offsetof</span><span>(ovrCubeVertices, colors);
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">1</span><span>].Index </span><span style="color:#0000ff;">=</span><span> VERTEX_ATTRIBUTE_LOCATION_COLOR;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">1</span><span>].Size </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">4</span><span>;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">1</span><span>].Type </span><span style="color:#0000ff;">=</span><span> GL_UNSIGNED_BYTE;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">1</span><span>].Normalized </span><span style="color:#0000ff;">= </span><span>true;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">1</span><span>].Stride </span><span style="color:#0000ff;">= sizeof</span><span>(cubeVertices.colors[</span><span style="color:#a31515;">0</span><span>]);
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">1</span><span>].Pointer </span><span style="color:#0000ff;">= </span><span>(</span><span style="color:#0000ff;">const</span><span> GLvoid </span><span style="color:#0000ff;">*</span><span>)offsetof(ovrCubeVertices, colors);
 </span><span>
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">2</span><span>].</span><span style="color:#696989;">Index </span><span style="color:#016692;">=</span><span> VERTEX_ATTRIBUTE_LOCATION_UV; </span><span style="color:#898989;">// UV attribute
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">2</span><span>].</span><span style="color:#696989;">Size </span><span style="color:#016692;">= </span><span style="color:#8c008a;">2</span><span>;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">2</span><span>].</span><span style="color:#696989;">Type </span><span style="color:#016692;">=</span><span> GL_FLOAT;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">2</span><span>].</span><span style="color:#696989;">Normalized </span><span style="color:#016692;">= </span><span style="color:#333366;">false</span><span>;
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">2</span><span>].</span><span style="color:#696989;">Stride </span><span style="color:#016692;">= sizeof</span><span>(cubeVertices.</span><span style="color:#696989;">uvs</span><span>[</span><span style="color:#8c008a;">0</span><span>]);
-</span><span>    VertexAttribs[</span><span style="color:#8c008a;">2</span><span>].</span><span style="color:#696989;">Pointer </span><span style="color:#016692;">= </span><span>(</span><span style="color:#014a69;">const</span><span> GLvoid </span><span style="color:#016692;">*</span><span>)</span><span style="color:#696989;">offsetof</span><span>(ovrCubeVertices, uvs);
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">2</span><span>].Index </span><span style="color:#0000ff;">=</span><span> VERTEX_ATTRIBUTE_LOCATION_UV; </span><span style="color:#008000;">// UV attribute
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">2</span><span>].Size </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">2</span><span>;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">2</span><span>].Type </span><span style="color:#0000ff;">=</span><span> GL_FLOAT;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">2</span><span>].Normalized </span><span style="color:#0000ff;">= </span><span>false;
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">2</span><span>].Stride </span><span style="color:#0000ff;">= sizeof</span><span>(cubeVertices.uvs[</span><span style="color:#a31515;">0</span><span>]);
+</span><span>    VertexAttribs[</span><span style="color:#a31515;">2</span><span>].Pointer </span><span style="color:#0000ff;">= </span><span>(</span><span style="color:#0000ff;">const</span><span> GLvoid </span><span style="color:#0000ff;">*</span><span>)offsetof(ovrCubeVertices, uvs);
 </span><span>
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glGenBuffers</span><span>(</span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#016692;">&amp;</span><span>VertexBuffer));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ARRAY_BUFFER, VertexBuffer));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBufferData</span><span>(GL_ARRAY_BUFFER, </span><span style="color:#016692;">sizeof</span><span>(cubeVertices), </span><span style="color:#016692;">&amp;</span><span>cubeVertices, GL_STATIC_DRAW));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ARRAY_BUFFER, </span><span style="color:#8c008a;">0</span><span>));
+</span><span>    GL(glGenBuffers(</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#0000ff;">&amp;</span><span>VertexBuffer));
+</span><span>    GL(glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer));
+</span><span>    GL(glBufferData(GL_ARRAY_BUFFER, </span><span style="color:#0000ff;">sizeof</span><span>(cubeVertices), </span><span style="color:#0000ff;">&amp;</span><span>cubeVertices, GL_STATIC_DRAW));
+</span><span>    GL(glBindBuffer(GL_ARRAY_BUFFER, </span><span style="color:#a31515;">0</span><span>));
 </span><span>
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glGenBuffers</span><span>(</span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#016692;">&amp;</span><span>ColorIndexBuffer));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ELEMENT_ARRAY_BUFFER, ColorIndexBuffer));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBufferData</span><span>(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#016692;">sizeof</span><span>(cube_indices), cube_indices, GL_STATIC_DRAW));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#8c008a;">0</span><span>));
+</span><span>    GL(glGenBuffers(</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#0000ff;">&amp;</span><span>ColorIndexBuffer));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ColorIndexBuffer));
+</span><span>    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#0000ff;">sizeof</span><span>(cube_indices), cube_indices, GL_STATIC_DRAW));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#a31515;">0</span><span>));
 </span><span>
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glGenBuffers</span><span>(</span><span style="color:#8c008a;">1</span><span>, </span><span style="color:#016692;">&amp;</span><span>TextureIndexBuffer));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ELEMENT_ARRAY_BUFFER, TextureIndexBuffer));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBufferData</span><span>(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#016692;">sizeof</span><span>(tex_indices), tex_indices, GL_STATIC_DRAW));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#8c008a;">0</span><span>));
+</span><span>    GL(glGenBuffers(</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#0000ff;">&amp;</span><span>TextureIndexBuffer));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextureIndexBuffer));
+</span><span>    GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#0000ff;">sizeof</span><span>(tex_indices), tex_indices, GL_STATIC_DRAW));
+</span><span>    GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, </span><span style="color:#a31515;">0</span><span>));
 </span><span>}
 </span></code></pre>
 <p>I re-used the existing color shaders and added new ones for the texture face:</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#014a69;">static const </span><span style="color:#877611;">char</span><span> CUBE_TEX_VERTEX_SHADER[] </span><span style="color:#016692;">=
-</span><span>    </span><span style="color:#877611;">R</span><span style="color:#009f78;">&quot;GLSL(
-</span><span style="color:#009f78;">        #define NUM_VIEWS 2
-</span><span style="color:#009f78;">        #define VIEW_ID gl_ViewID_OVR
-</span><span style="color:#009f78;">        #extension GL_OVR_multiview2 : require
-</span><span style="color:#009f78;">        layout(num_views=NUM_VIEWS) in;
-</span><span style="color:#009f78;">        in vec3 vertexPosition;
-</span><span style="color:#009f78;">        in vec2 vertexUv;
-</span><span style="color:#009f78;">        uniform mat4 ModelMatrix;
-</span><span style="color:#009f78;">        uniform SceneMatrices
-</span><span style="color:#009f78;">        {
-</span><span style="color:#009f78;">            uniform mat4 ViewMatrix[NUM_VIEWS];
-</span><span style="color:#009f78;">            uniform mat4 ProjectionMatrix[NUM_VIEWS];
-</span><span style="color:#009f78;">        } sm;
-</span><span style="color:#009f78;">        out vec2 UV;
-</span><span style="color:#009f78;">        void main()
-</span><span style="color:#009f78;">        {
-</span><span style="color:#009f78;">            gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
-</span><span style="color:#009f78;">            UV = vertexUv;
-</span><span style="color:#009f78;">        }
-</span><span style="color:#009f78;">    )GLSL&quot;</span><span>;
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span style="color:#0000ff;">static const char</span><span> CUBE_TEX_VERTEX_SHADER[] </span><span style="color:#0000ff;">=
+</span><span>    </span><span style="color:#0000ff;">R</span><span style="color:#a31515;">&quot;GLSL(
+</span><span style="color:#a31515;">        #define NUM_VIEWS 2
+</span><span style="color:#a31515;">        #define VIEW_ID gl_ViewID_OVR
+</span><span style="color:#a31515;">        #extension GL_OVR_multiview2 : require
+</span><span style="color:#a31515;">        layout(num_views=NUM_VIEWS) in;
+</span><span style="color:#a31515;">        in vec3 vertexPosition;
+</span><span style="color:#a31515;">        in vec2 vertexUv;
+</span><span style="color:#a31515;">        uniform mat4 ModelMatrix;
+</span><span style="color:#a31515;">        uniform SceneMatrices
+</span><span style="color:#a31515;">        {
+</span><span style="color:#a31515;">            uniform mat4 ViewMatrix[NUM_VIEWS];
+</span><span style="color:#a31515;">            uniform mat4 ProjectionMatrix[NUM_VIEWS];
+</span><span style="color:#a31515;">        } sm;
+</span><span style="color:#a31515;">        out vec2 UV;
+</span><span style="color:#a31515;">        void main()
+</span><span style="color:#a31515;">        {
+</span><span style="color:#a31515;">            gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );
+</span><span style="color:#a31515;">            UV = vertexUv;
+</span><span style="color:#a31515;">        }
+</span><span style="color:#a31515;">    )GLSL&quot;</span><span>;
 </span><span>
-</span><span style="color:#014a69;">static const </span><span style="color:#877611;">char</span><span> CUBE_TEX_FRAGMENT_SHADER[] </span><span style="color:#016692;">=
-</span><span>    </span><span style="color:#877611;">R</span><span style="color:#009f78;">&quot;GLSL(
-</span><span style="color:#009f78;">        in vec2 UV;
-</span><span style="color:#009f78;">        out vec4 color;
-</span><span style="color:#009f78;">
-</span><span style="color:#009f78;">        uniform sampler2D Texture0;
-</span><span style="color:#009f78;">        void main()
-</span><span style="color:#009f78;">        {
-</span><span style="color:#009f78;">            color = vec4(texture( Texture0, UV ).rgb, 1.0);
-</span><span style="color:#009f78;">        }
-</span><span style="color:#009f78;">        )GLSL&quot;</span><span>;
+</span><span style="color:#0000ff;">static const char</span><span> CUBE_TEX_FRAGMENT_SHADER[] </span><span style="color:#0000ff;">=
+</span><span>    </span><span style="color:#0000ff;">R</span><span style="color:#a31515;">&quot;GLSL(
+</span><span style="color:#a31515;">        in vec2 UV;
+</span><span style="color:#a31515;">        out vec4 color;
+</span><span style="color:#a31515;">
+</span><span style="color:#a31515;">        uniform sampler2D Texture0;
+</span><span style="color:#a31515;">        void main()
+</span><span style="color:#a31515;">        {
+</span><span style="color:#a31515;">            color = vec4(texture( Texture0, UV ).rgb, 1.0);
+</span><span style="color:#a31515;">        }
+</span><span style="color:#a31515;">        )GLSL&quot;</span><span>;
 </span></code></pre>
 <p>The main other substantive change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:</p>
-<pre data-lang="cpp" style="background-color:#ffffff;color:#010101;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glUseProgram</span><span>(Scene.</span><span style="color:#696989;">TextureProgram</span><span>.</span><span style="color:#696989;">Program</span><span>));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBufferBase</span><span>(
+<pre data-lang="cpp" style="background-color:#ffffff;color:#000000;" class="language-cpp "><code class="language-cpp" data-lang="cpp"><span>    GL(glUseProgram(Scene.TextureProgram.Program));
+</span><span>    GL(glBindBufferBase(
 </span><span>           GL_UNIFORM_BUFFER,
-</span><span>           Scene.</span><span style="color:#696989;">TextureProgram</span><span>.</span><span style="color:#696989;">UniformBinding</span><span>[ovrUniform::Index::SCENE_MATRICES],
-</span><span>           Scene.</span><span style="color:#696989;">SceneMatrices</span><span>));
-</span><span>    </span><span style="color:#016692;">if </span><span>(Scene.</span><span style="color:#696989;">TextureProgram</span><span>.</span><span style="color:#696989;">UniformLocation</span><span>[ovrUniform::Index::VIEW_ID] </span><span style="color:#016692;">&gt;=
-</span><span>        </span><span style="color:#8c008a;">0</span><span>) </span><span style="color:#898989;">// NOTE: will not be present when multiview path is enabled.
+</span><span>           Scene.TextureProgram.UniformBinding[ovrUniform::Index::SCENE_MATRICES],
+</span><span>           Scene.SceneMatrices));
+</span><span>    </span><span style="color:#0000ff;">if </span><span>(Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID] </span><span style="color:#0000ff;">&gt;=
+</span><span>        </span><span style="color:#a31515;">0</span><span>) </span><span style="color:#008000;">// NOTE: will not be present when multiview path is enabled.
 </span><span>    {
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glUniform1i</span><span>(Scene.</span><span style="color:#696989;">TextureProgram</span><span>.</span><span style="color:#696989;">UniformLocation</span><span>[ovrUniform::Index::VIEW_ID], </span><span style="color:#8c008a;">0</span><span>));
+</span><span>        GL(glUniform1i(Scene.TextureProgram.UniformLocation[ovrUniform::Index::VIEW_ID], </span><span style="color:#a31515;">0</span><span>));
 </span><span>    }
-</span><span>    </span><span style="color:#016692;">for </span><span>(</span><span style="color:#877611;">auto</span><span> c </span><span style="color:#016692;">:</span><span> Scene.</span><span style="color:#696989;">CubeData</span><span>) {
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindVertexArray</span><span>(Scene.</span><span style="color:#696989;">Cube</span><span>.</span><span style="color:#696989;">VertexArrayObject</span><span>));
-</span><span>        GLint loc </span><span style="color:#016692;">=</span><span> Scene.</span><span style="color:#696989;">TextureProgram</span><span>.</span><span style="color:#696989;">UniformLocation</span><span>[ovrUniform::Index::MODEL_MATRIX];
-</span><span>        </span><span style="color:#016692;">if </span><span>(loc </span><span style="color:#016692;">&gt;= </span><span style="color:#8c008a;">0</span><span>) {
-</span><span>            </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glUniformMatrix4fv</span><span>(loc, </span><span style="color:#8c008a;">1</span><span>, GL_TRUE, </span><span style="color:#016692;">&amp;</span><span>c.</span><span style="color:#696989;">Model</span><span>.</span><span style="color:#696989;">M</span><span>[</span><span style="color:#8c008a;">0</span><span>][</span><span style="color:#8c008a;">0</span><span>]));
+</span><span>    </span><span style="color:#0000ff;">for </span><span>(</span><span style="color:#0000ff;">auto</span><span> c </span><span style="color:#0000ff;">:</span><span> Scene.CubeData) {
+</span><span>        GL(glBindVertexArray(Scene.Cube.VertexArrayObject));
+</span><span>        GLint loc </span><span style="color:#0000ff;">=</span><span> Scene.TextureProgram.UniformLocation[ovrUniform::Index::MODEL_MATRIX];
+</span><span>        </span><span style="color:#0000ff;">if </span><span>(loc </span><span style="color:#0000ff;">&gt;= </span><span style="color:#a31515;">0</span><span>) {
+</span><span>            GL(glUniformMatrix4fv(loc, </span><span style="color:#a31515;">1</span><span>, GL_TRUE, </span><span style="color:#0000ff;">&amp;</span><span>c.Model.M[</span><span style="color:#a31515;">0</span><span>][</span><span style="color:#a31515;">0</span><span>]));
 </span><span>        }
 </span><span>
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindBuffer</span><span>(GL_ELEMENT_ARRAY_BUFFER, Scene.</span><span style="color:#696989;">Cube</span><span>.</span><span style="color:#696989;">TextureIndexBuffer</span><span>));
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glActiveTexture</span><span>(GL_TEXTURE0));
+</span><span>        GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Scene.Cube.TextureIndexBuffer));
+</span><span>        GL(glActiveTexture(GL_TEXTURE0));
 </span><span>
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindTexture</span><span>(GL_TEXTURE_2D, c.</span><span style="color:#696989;">KaiTextureID</span><span>));
-</span><span>        </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glDrawElements</span><span>(GL_TRIANGLES, Scene.</span><span style="color:#696989;">Cube</span><span>.</span><span style="color:#696989;">TextureIndexCount</span><span>, GL_UNSIGNED_SHORT, </span><span style="color:#333366;">nullptr</span><span>));
+</span><span>        GL(glBindTexture(GL_TEXTURE_2D, c.KaiTextureID));
+</span><span>        GL(glDrawElements(GL_TRIANGLES, Scene.Cube.TextureIndexCount, GL_UNSIGNED_SHORT, nullptr));
 </span><span>    }
 </span><span>
-</span><span>    </span><span style="color:#696989;">glBindTexture</span><span>(GL_TEXTURE_2D, </span><span style="color:#8c008a;">0</span><span>);
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glBindVertexArray</span><span>(</span><span style="color:#8c008a;">0</span><span>));
-</span><span>    </span><span style="color:#696989;">GL</span><span>(</span><span style="color:#696989;">glUseProgram</span><span>(</span><span style="color:#8c008a;">0</span><span>));
+</span><span>    glBindTexture(GL_TEXTURE_2D, </span><span style="color:#a31515;">0</span><span>);
+</span><span>    GL(glBindVertexArray(</span><span style="color:#a31515;">0</span><span>));
+</span><span>    GL(glUseProgram(</span><span style="color:#a31515;">0</span><span>));
 </span></code></pre>
 <p>What I'm trying to illustrate is that the code you're working with in this SDK looks and behaves very similarly to run of the mill OpenGL rendering code. For the fancy stuff, like per-eye matrix transforms, the sample programs give you a strong foundation to build on rather than you having to implement them from scratch.</p>
 <p>In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.</p>
