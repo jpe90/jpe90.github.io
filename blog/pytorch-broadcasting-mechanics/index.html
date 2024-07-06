@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jon Eskin's Blog</title>
+  
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <style>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      padding: 20px 0;
+    }
+    header {
+      display: flex;
+      justify-content: center; /* Center the header horizontally */
+      align-items: center;
+      background-color: #333;
+      padding: 10px 0;
+    }
+    header .left, header .right {
+      display: flex;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .rss-button {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/atom.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about">About</a>
+      <a href="https://github.com/jpe90">Projects</a>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      
+<style>
+img { max-width: 100%; height: auto; }
+pre { max-width: 100%; height: auto; white-space: pre; word-wrap: normal; overflow: auto; font-size: 12px; font-weight: 400;}
+code {
+    font-size: 12px;
+}
+.container {
+
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+header, footer {
+    text-align: center;
+    padding: 10px 0;    
+    background-color: #333;
+    color: #fff;
+}
+header h2, footer a {
+    color: #fff;
+}
+a {
+    text-decoration: none;
+}
+p {
+    font-size: 15px;
+}
+figcaption {
+  font-size: 12px;
+  font-style: italic; 
+}
+</style>
+<h1 class="title">
+  Pytorch Broadcasting Mechanics
+</h1>
+<div class="post-content">
+  <p>In the video <a href="https://www.youtube.com/watch?v=PaCmpygFfXo">The spelled-out intro to language modeling: building makemore</a>, Andrej Karpathy briefly mentioned a bug that can occur when broadcasting tensors during mathematical operations.</p>
+<p>In the video, the bug occurred on the following lines, where N is a 27x27 tensor. The code is trying to normalize the rows of the tensor by dividing each row by the sum of the row.</p>
+<p>Here is the incorrect calculation:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">= </span><span>N.float()
+</span><span>P </span><span style="color:#0000ff;">/= </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>)
+</span></code></pre>
+<p>The correct calculation should be:</p>
+<pre data-lang="Python" style="background-color:#ffffff;color:#000000;" class="language-Python "><code class="language-Python" data-lang="Python"><span>P </span><span style="color:#0000ff;">= </span><span>N.float()
+</span><span>P </span><span style="color:#0000ff;">/= </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>,keepdims</span><span style="color:#0000ff;">=</span><span>True)
+</span></code></pre>
+<p>To visualize what's happening mechanically during each of these, we can look at smaller examples of each calculation.</p>
+<h1 id="p-p-sum-1-keepdim-true"><code>P / P.sum(1, keepdim=True)</code></h1>
+<p><code>P.sum(1, keepdim=True)</code> computes the sum of each row in P and keeps the dimension of the result as (27, 1). This means each row sum is a single value but still in a 2D array format.</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">= </span><span>[[</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">3</span><span>],
+</span><span>     [</span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">6</span><span>],
+</span><span>     [</span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">8</span><span>, </span><span style="color:#a31515;">9</span><span>]]
+</span><span>
+</span><span>P </span><span style="color:#0000ff;">= </span><span>torch.tensor(P)
+</span><span>P_sum </span><span style="color:#0000ff;">= </span><span>torch.tensor(P).sum(</span><span style="color:#a31515;">1</span><span>, keepdim</span><span style="color:#0000ff;">=</span><span>True)
+</span><span>
+</span><span style="color:#008000;"># [[6],
+</span><span style="color:#008000;">#  [15],
+</span><span style="color:#008000;">#  [24]]
+</span></code></pre>
+<p>Now when you divide P by <code>P_sum</code>, each element in a row of P is divided by the sum of that row. This normalizes each row so that the sum of the elements in each row is 1.</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">/ </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>, keepdim</span><span style="color:#0000ff;">=</span><span>True)  
+</span><span>
+</span><span style="color:#008000;"># [[1/6, 2/6, 3/6],
+</span><span style="color:#008000;"># [4/15, 5/15, 6/15],
+</span><span style="color:#008000;"># [7/24, 8/24, 9/24]]
+</span></code></pre>
+<h1 id="p-p-sum-1"><code>P / P.sum(1)</code></h1>
+<p><code>P.sum(1)</code> computes the sum of each row in P but returns a 1D array of shape (27,).</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">= </span><span>[[</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">3</span><span>],
+</span><span>     [</span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">6</span><span>],
+</span><span>     [</span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">8</span><span>, </span><span style="color:#a31515;">9</span><span>]]
+</span><span>     
+</span><span>P </span><span style="color:#0000ff;">= </span><span>torch.tensor(P)
+</span><span>P_sum </span><span style="color:#0000ff;">= </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>) 
+</span><span>
+</span><span style="color:#008000;"># [6, 15, 24]
+</span></code></pre>
+<p>When you divide P by <code>P.sum(1)</code>, the broadcasting rules in PyTorch will try to align the shapes. Here, P is 27x27 and <code>P.sum(1)</code> is 27. The broadcasting will align the 27 elements of <code>P.sum(1)</code> with the columns of P, which is not the intended behavior. This will result in incorrect normalization.</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">/ </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>)  
+</span><span>
+</span><span style="color:#008000;"># [[1/6, 2/15, 3/24],
+</span><span style="color:#008000;">#  [4/6, 5/15, 6/24],
+</span><span style="color:#008000;">#  [7/6, 8/15, 9/24]]
+</span></code></pre>
+<p>Tensor mechanics are still a little unintuitive and magical to me - unlike other libraries, I find that it's difficult to predict tensor behavior by the API alone. I find that I have to <a href="https://pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html">read the docs</a> and kind of memorize the rules instead of logically thinking through the "obvious" way that things should work. Hopefully this will get easier over time!</p>
+
+</div>
+
+    </div>
+  </section>
+</body>
+</html>
