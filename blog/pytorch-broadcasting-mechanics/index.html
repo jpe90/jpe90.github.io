@@ -107,11 +107,10 @@ figcaption {
 </span></code></pre>
 <p>The correct calculation should be:</p>
 <pre data-lang="Python" style="background-color:#ffffff;color:#000000;" class="language-Python "><code class="language-Python" data-lang="Python"><span>P </span><span style="color:#0000ff;">= </span><span>N.float()
-</span><span>P </span><span style="color:#0000ff;">/= </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>,keepdims</span><span style="color:#0000ff;">=</span><span>True)
+</span><span>P </span><span style="color:#0000ff;">/= </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>,keepdim</span><span style="color:#0000ff;">=</span><span>True)
 </span></code></pre>
 <p>Andrej briefly explained why this happens, but his explanation didn't land for me. I walked through a few smaller examples to understand the mechanics of the tensor operations.</p>
 <h1 id="p-p-sum-1-keepdim-true"><code>P / P.sum(1, keepdim=True)</code></h1>
-<p><code>P.sum(1, keepdim=True)</code> computes the sum of each row in P and returns its results as a 27 element column vector. This means each row sum is a single value but still in a 2D array format.</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">= </span><span>[[</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">3</span><span>],
 </span><span>     [</span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">6</span><span>],
 </span><span>     [</span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">8</span><span>, </span><span style="color:#a31515;">9</span><span>]]
@@ -119,11 +118,12 @@ figcaption {
 </span><span>P </span><span style="color:#0000ff;">= </span><span>torch.tensor(P)
 </span><span>P_sum </span><span style="color:#0000ff;">= </span><span>torch.tensor(P).sum(</span><span style="color:#a31515;">1</span><span>, keepdim</span><span style="color:#0000ff;">=</span><span>True)
 </span><span>
-</span><span style="color:#008000;"># This is what a column vector looks like in PyTorch
+</span><span style="color:#008000;"># P_sum: this is what a column vector looks like in PyTorch
 </span><span style="color:#008000;"># [[6],
 </span><span style="color:#008000;">#  [15],
 </span><span style="color:#008000;">#  [24]]
 </span></code></pre>
+<p>Here, <code>P.sum(1, keepdim=True)</code> computes the sum of each row in P and returns its results as a 3 element column vector. The <code>1</code> argument is specifying that we want sums computed by the first axis, which are the rows of the vector. <code>keepdim=True</code> is saying that the output should have the same dimensions as the input. In other words, each row should remain a vector, rather than being flattened during the summation operation.</p>
 <p>Now when you divide P by <code>P_sum</code>, each element in a row of P is divided by the sum of that row. This normalizes each row so that the sum of the elements in each row is 1.</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">/ </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>, keepdim</span><span style="color:#0000ff;">=</span><span>True)  
 </span><span>
@@ -132,7 +132,6 @@ figcaption {
 </span><span style="color:#008000;"># [7/24, 8/24, 9/24]]
 </span></code></pre>
 <h1 id="p-p-sum-1"><code>P / P.sum(1)</code></h1>
-<p><code>P.sum(1)</code> computes the sum of each row in P but returns a 1D array of shape (27,).</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">= </span><span>[[</span><span style="color:#a31515;">1</span><span>, </span><span style="color:#a31515;">2</span><span>, </span><span style="color:#a31515;">3</span><span>],
 </span><span>     [</span><span style="color:#a31515;">4</span><span>, </span><span style="color:#a31515;">5</span><span>, </span><span style="color:#a31515;">6</span><span>],
 </span><span>     [</span><span style="color:#a31515;">7</span><span>, </span><span style="color:#a31515;">8</span><span>, </span><span style="color:#a31515;">9</span><span>]]
@@ -142,14 +141,15 @@ figcaption {
 </span><span>
 </span><span style="color:#008000;"># [6, 15, 24]
 </span></code></pre>
-<p>When you divide P by <code>P.sum(1)</code>, the broadcasting rules in PyTorch will try to align the shapes. Here, P is 27x27 and <code>P.sum(1)</code> is a 27 element row vector. The broadcasting will align the 27 elements of <code>P.sum(1)</code> with the columns of P, which is not the intended behavior. This will result in incorrect normalization. Notice how each summed row is dividing a row, rather than a column. It's operating on the wrong dimension.</p>
+<p><code>P.sum(1)</code> computes the sum of each row in P but it flattens the results into a single, flat row vector. The inner dimensions are discarded.</p>
+<p>When you divide P by <code>P.sum(1)</code>, the broadcasting rules in PyTorch will try to align the shapes. The broadcasting will align the 3 elements of <code>P.sum(1)</code> with the columns of P, which is not the intended behavior. This will result in incorrect normalization. Notice how each summed row is dividing a row, rather than a column. It's operating on the wrong dimension.</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#000000;" class="language-python "><code class="language-python" data-lang="python"><span>P </span><span style="color:#0000ff;">/ </span><span>P.sum(</span><span style="color:#a31515;">1</span><span>)  
 </span><span>
 </span><span style="color:#008000;"># [[1/6, 2/15, 3/24],
 </span><span style="color:#008000;">#  [4/6, 5/15, 6/24],
 </span><span style="color:#008000;">#  [7/6, 8/15, 9/24]]
 </span></code></pre>
-<p>Tensor mechanics are still a little unintuitive and magical to me - unlike other libraries, I find that it's difficult to predict tensor behavior by the API alone. I find that I have to <a href="https://pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html">read the docs</a> and kind of memorize the rules instead of logically thinking through the "obvious" way that things should work. Hopefully this will get easier over time!</p>
+<p>Tensor mechanics are still a little unintuitive to me, and I find it difficult to predict tensor behavior by the API alone. I'm not sure if I'm on an ideal learning path, because I'm resorting to <a href="https://pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html">studying the docs</a> and doing rote memorization of the rules instead of logically understanding why the mechanics work the way they do. Hopefully things will become clearer over time.</p>
 
 </div>
 
