@@ -21,8 +21,6 @@
       max-width: 800px;
       margin: auto;
       padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     .section {
       padding: 20px 0;
@@ -72,8 +70,6 @@ code {
 
     padding-left: 20px;
     padding-right: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 header, footer {
     text-align: center;
@@ -99,8 +95,7 @@ figcaption {
   Leveraging Local AI for Task Automation
 </h1>
 <div class="post-content">
-  <p>I've encountered many tasks that could almost be automated, except that they have some kind of ambigious step that requires manual attention. These include instances where internal communications that met certain criteria needed to be tracked, or emails that pertained to specific subjects needed to be noted and moved.</p>
-<p>For such tasks, it's easy to write software to interact with a database or move files around, but ambiguous text-processing can be painful and error-prone. Solutions that use regular expressions or other simple text processing techniques can be finnicky, inaccurate, and difficult to tune.</p>
+  <p>I've encountered many tasks that could almost be automated, except that they have some kind of ambigious step that requires manual attention. For example, it's extremely common to find instances where freeform text needs to be flagged if it contains sensitive or important information. For such tasks, it's easy to write software that performs subsequent steps such as interacting with a database or moving files around, but ambiguous text-processing can be extremely difficult to implement programatically. Solutions that use regular expressions or other simple text processing techniques can be finnicky, inaccurate, and difficult to tune.</p>
 <p>LLMs have presented an opportunity to make big gains in this problem space. Most programming languages can easily call into large commercial models like OpenAI's GPT-4 or Google's Gemini. You can read text in from your program, pass it to these service's API, and perform actions based on the results. However, using external services for this can be problematic because of the cost and privacy implications. You may not want to depend on a paid service for an important task, and you <em>really</em> may not want to pass organizational data to it.</p>
 <p>On the other hand, open source LLMs that run locally on your system have been rapidly improving. They aren't quite as powerful as commercial models, but they can be surprisingly effective, particularly if you give them simple tasks and make efforts to constrain their responses. Additionally, you always have the option of fine-tuning to improve performance.</p>
 <p>One of the biggest open source project to run these models is <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a>, which performs inference on open source models. It can be built as a library and utilized from other languages which write bindings to its API. I really like to experiment with new problem spaces in Clojure, so I used <a href="https://github.com/phronmophobic/llama.clj">llama.clj</a> to experiment with programatically interfacing with LLMs to automate tasks.</p>
