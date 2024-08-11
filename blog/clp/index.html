@@ -14,9 +14,16 @@
       line-height: 1.5;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f9;
       color: #333;
     }
+    pre {
+      border: 1px solid #ddd;
+      box-shadow: 5px 5px 5px #eee;
+      padding: 1em;
+      overflow-x: auto;
+    }
+    code { background: #f9f9f9; }
+    pre code { background: none; }
     .container {
       max-width: 800px;
       margin: auto;
@@ -67,7 +74,6 @@ code {
     font-size: 12px;
 }
 .container {
-
     padding-left: 20px;
     padding-right: 20px;
 }
@@ -99,8 +105,8 @@ figcaption {
 <p>clp is a program that writes files to stdout with syntax highlighting. I built it to quickly fill fzf's preview window.</p>
 <p>It's similar to <a href="https://github.com/sharkdp/bat">bat</a> but is simpler, faster, and easier to add languages that don't have existing Sublime syntax definitions.</p>
 <p>When the --preview option is set in fzf, the preview command is kicked off in an external process and the results are displayed in the preview window, which in this case is clp.</p>
-<pre data-lang="bash" style="background-color:#ffffff;color:#000000;" class="language-bash "><code class="language-bash" data-lang="bash"><span>
-</span><span>fzf --preview </span><span style="color:#a31515;">&#39;clp {}&#39;
+<pre data-lang="bash" style="background-color:#ffffff;color:#323232;" class="language-bash "><code class="language-bash" data-lang="bash"><span>
+</span><span>fzf --preview </span><span style="color:#183691;">&#39;clp {}&#39;
 </span><span>
 </span></code></pre>
 <p>Here's what we see when we execute the command:</p>
@@ -135,9 +141,9 @@ figcaption {
 <h3 id="adding-color-themes">Adding color themes</h3>
 <p>I've added the ability to change clp's colors by selecting different built-in color themes or creating your own.</p>
 <p>To change your theme, create a configuration file in <code>~/.config/clp/clprc.lua</code> to override the system default. It should look like this:</p>
-<pre data-lang="lua" style="background-color:#ffffff;color:#000000;" class="language-lua "><code class="language-lua" data-lang="lua"><span>clprc </span><span style="color:#0000ff;">= </span><span>{}
-</span><span>clprc.theme </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">&quot;ansi-16&quot;
-</span><span style="color:#0000ff;">return </span><span>clprc
+<pre data-lang="lua" style="background-color:#ffffff;color:#323232;" class="language-lua "><code class="language-lua" data-lang="lua"><span>clprc </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>{}
+</span><span>clprc.theme </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#183691;">&quot;ansi-16&quot;
+</span><span style="font-weight:bold;color:#a71d5d;">return </span><span>clprc
 </span></code></pre>
 <p>The value of <code>clprc.theme</code> is the name of a colorscheme that <code>clp</code> will later <code>require</code>. The following themes are available out of the box:</p>
 <h3 id="3-bit-ansi-theme">3-bit ANSI theme</h3>
@@ -157,21 +163,21 @@ figcaption {
 </ul>
 <p>The ANSI theme is enabled by default; it uses 16 color ANSI codes and should work on both light or dark terminals. The truecolors themes were exported from vim using <a href="https://github.com/jpe90/export-colorscheme.nvim">export-colorscheme.nvim</a>, which is a little neovim plugin I wrote recently.</p>
 <p>You can create your own themes in <code>~/.config/clp/themes/</code>. Like with <code>clprc.lua</code>, these should be Lua modules. Here's the definition of <code>ansi-16</code>:</p>
-<pre data-lang="lua" style="background-color:#ffffff;color:#000000;" class="language-lua "><code class="language-lua" data-lang="lua"><span style="color:#0000ff;">local </span><span>M </span><span style="color:#0000ff;">= </span><span>{}
-</span><span>M.theme </span><span style="color:#0000ff;">= </span><span>{
-</span><span>	[</span><span style="color:#a31515;">&#39;comment&#39;</span><span>] = {</span><span style="color:#a31515;">color</span><span>=</span><span style="color:#a31515;">&quot;cyan&quot;</span><span>},
-</span><span>	[</span><span style="color:#a31515;">&#39;keyword&#39;</span><span>] = {</span><span style="color:#a31515;">color</span><span>=</span><span style="color:#a31515;">&quot;blue&quot;</span><span>},
-</span><span>	[</span><span style="color:#a31515;">&#39;number&#39;</span><span>] = {</span><span style="color:#a31515;">color</span><span>=</span><span style="color:#a31515;">&quot;red&quot;</span><span>},
-</span><span>	[</span><span style="color:#a31515;">&#39;string&#39;</span><span>] = {</span><span style="color:#a31515;">color</span><span>=</span><span style="color:#a31515;">&quot;green&quot;</span><span>},
-</span><span>	[</span><span style="color:#a31515;">&#39;preprocessor&#39;</span><span>] = {</span><span style="color:#a31515;">color</span><span>=</span><span style="color:#a31515;">&quot;magenta&quot;</span><span>},
-</span><span>	[</span><span style="color:#a31515;">&#39;type&#39;</span><span>] = {</span><span style="color:#a31515;">color</span><span>=</span><span style="color:#a31515;">&quot;yellow&quot;</span><span>},
+<pre data-lang="lua" style="background-color:#ffffff;color:#323232;" class="language-lua "><code class="language-lua" data-lang="lua"><span style="font-weight:bold;color:#a71d5d;">local </span><span>M </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>{}
+</span><span>M.theme </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>{
+</span><span>	[</span><span style="color:#183691;">&#39;comment&#39;</span><span>] = {</span><span style="color:#183691;">color</span><span>=</span><span style="color:#183691;">&quot;cyan&quot;</span><span>},
+</span><span>	[</span><span style="color:#183691;">&#39;keyword&#39;</span><span>] = {</span><span style="color:#183691;">color</span><span>=</span><span style="color:#183691;">&quot;blue&quot;</span><span>},
+</span><span>	[</span><span style="color:#183691;">&#39;number&#39;</span><span>] = {</span><span style="color:#183691;">color</span><span>=</span><span style="color:#183691;">&quot;red&quot;</span><span>},
+</span><span>	[</span><span style="color:#183691;">&#39;string&#39;</span><span>] = {</span><span style="color:#183691;">color</span><span>=</span><span style="color:#183691;">&quot;green&quot;</span><span>},
+</span><span>	[</span><span style="color:#183691;">&#39;preprocessor&#39;</span><span>] = {</span><span style="color:#183691;">color</span><span>=</span><span style="color:#183691;">&quot;magenta&quot;</span><span>},
+</span><span>	[</span><span style="color:#183691;">&#39;type&#39;</span><span>] = {</span><span style="color:#183691;">color</span><span>=</span><span style="color:#183691;">&quot;yellow&quot;</span><span>},
 </span><span>}
-</span><span style="color:#0000ff;">return </span><span>M
+</span><span style="font-weight:bold;color:#a71d5d;">return </span><span>M
 </span></code></pre>
 <p>The table keys on the left correspond to lexical tokens picked up by the lexer, and the right specifies the color assigned to that token when the text is written to stdout.</p>
 <p>When the right hand value is a Lua object like above, <code>clp</code> will use 16 color ANSI codes to highlight the token.</p>
 <p>To use truecolor, the right hand value should be a string in the form <code>"#RRGGBB"</code> using hex values, like here:</p>
-<pre data-lang="lua" style="background-color:#ffffff;color:#000000;" class="language-lua "><code class="language-lua" data-lang="lua"><span>[</span><span style="color:#a31515;">&#39;comment&#39;</span><span>] </span><span style="color:#0000ff;">= </span><span style="color:#a31515;">&quot;#6a9955&quot;</span><span>,
+<pre data-lang="lua" style="background-color:#ffffff;color:#323232;" class="language-lua "><code class="language-lua" data-lang="lua"><span>[</span><span style="color:#183691;">&#39;comment&#39;</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#183691;">&quot;#6a9955&quot;</span><span>,
 </span></code></pre>
 <p>This will cause <code>clp</code> to emit 24 bit color codes upon encountering the token. This means it will only render if the terminal being used <a href="https://github.com/termstandard/colors#fully-supporting">supports truecolor.</a></p>
 <p>Throw a bunch of these definitions in a lua file in <code>~/.config/clp/themes/</code>, then set <code>clprc.theme</code> to the name of the file (not including the file extension), and you should be good to go!</p>

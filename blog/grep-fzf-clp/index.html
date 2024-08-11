@@ -14,9 +14,16 @@
       line-height: 1.5;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f9;
       color: #333;
     }
+    pre {
+      border: 1px solid #ddd;
+      box-shadow: 5px 5px 5px #eee;
+      padding: 1em;
+      overflow-x: auto;
+    }
+    code { background: #f9f9f9; }
+    pre code { background: none; }
     .container {
       max-width: 800px;
       margin: auto;
@@ -67,7 +74,6 @@ code {
     font-size: 12px;
 }
 .container {
-
     padding-left: 20px;
     padding-right: 20px;
 }
@@ -105,31 +111,31 @@ figcaption {
 <p>As you type into the prompt, fzf narrows the results by fuzzy matching (e.g. typing "vcaa" matches <span style="color:red;">v</span>im ~/.<span style="color:red;">c</span>onfig/<span style="color:red;">a</span>erc/<span style="color:red;">a</span>erc.conf). I find this very useful for digging up infrequently used commands involving git, ssh, or the system clipboard.</p>
 <p>The --preview option will kick off a program in a subprocess and display its output <a href="https://github.com/junegunn/fzf#preview-window">in a tiled window</a>.</p>
 <p>The following command uses <a href="https://jeskin.net/blog/clp/">clp</a> to fill the preview window. clp takes a file and writes it to stdout with syntax highlighting. fzf will provide the filename for each result, feed it to clp, and display the output in the righthand pane.</p>
-<pre data-lang="bash" style="background-color:#ffffff;color:#000000;" class="language-bash "><code class="language-bash" data-lang="bash"><span>fzf --preview </span><span style="color:#a31515;">&#39;clp {}&#39;
+<pre data-lang="bash" style="background-color:#ffffff;color:#323232;" class="language-bash "><code class="language-bash" data-lang="bash"><span>fzf --preview </span><span style="color:#183691;">&#39;clp {}&#39;
 </span></code></pre>
 <p><img src="/images/fzf_clp.png" alt="fzf_clp" /></p>
 <p>You can scroll the preview window by holding shift pressing up/down, or by using your mouse wheel.</p>
 <h3 id="combination">Combination</h3>
 <p>You can combine fzf and grep tool such as grep with fzf with a Unix pipe. Let's see how that works.</p>
 <p>We'll start by grepping for the the word "time", chosen for just for demonstrative purposes:</p>
-<pre data-lang="bash" style="background-color:#ffffff;color:#000000;" class="language-bash "><code class="language-bash" data-lang="bash"><span>grep --recursive --line-number --binary-files</span><span style="color:#0000ff;">=</span><span>without-match </span><span style="color:#a31515;">&quot;time&quot;</span><span> .
+<pre data-lang="bash" style="background-color:#ffffff;color:#323232;" class="language-bash "><code class="language-bash" data-lang="bash"><span>grep --recursive --line-number --binary-files</span><span style="font-weight:bold;color:#a71d5d;">=</span><span>without-match </span><span style="color:#183691;">&quot;time&quot;</span><span> .
 </span></code></pre>
 <p>Here's grep's output, run in the <a href="https://harelang.org">Hare programming language's</a> source directory:</p>
 <p><img src="/images/grep.png" alt="grep" /></p>
 <p>We can tell fzf to pick apart the output; we state that it's colon delimited and that we want to pass the first column (the filename) to clp:</p>
-<pre data-lang="bash" style="background-color:#ffffff;color:#000000;" class="language-bash "><code class="language-bash" data-lang="bash"><span>grep --recursive --line-number --binary-files</span><span style="color:#0000ff;">=</span><span>without-match </span><span style="color:#a31515;">&quot;time&quot;</span><span> . </span><span style="color:#0000ff;">| </span><span>fzf --delimiter</span><span style="color:#0000ff;">=</span><span style="color:#a31515;">&#39;:&#39;</span><span> --preview </span><span style="color:#a31515;">&#39;clp {1}&#39;
+<pre data-lang="bash" style="background-color:#ffffff;color:#323232;" class="language-bash "><code class="language-bash" data-lang="bash"><span>grep --recursive --line-number --binary-files</span><span style="font-weight:bold;color:#a71d5d;">=</span><span>without-match </span><span style="color:#183691;">&quot;time&quot;</span><span> . </span><span style="font-weight:bold;color:#a71d5d;">| </span><span>fzf --delimiter</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#183691;">&#39;:&#39;</span><span> --preview </span><span style="color:#183691;">&#39;clp {1}&#39;
 </span></code></pre>
 <p><img src="/images/fzf_grep.png" alt="fzf_grep" /></p>
 <p>Observe that the second column of grep's output contains the line number of the match.</p>
 <p>We can tell fzf to center the output of the preview window on the matched line and tell clp to highlight the line with the -h flag.</p>
-<pre style="background-color:#ffffff;color:#000000;"><code><span>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#39;:&#39; -n 2.. --preview-window &#39;+{2}-/2&#39; --preview &#39;clp -h {2} {1}&#39;
+<pre style="background-color:#ffffff;color:#323232;"><code><span>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#39;:&#39; -n 2.. --preview-window &#39;+{2}-/2&#39; --preview &#39;clp -h {2} {1}&#39;
 </span></code></pre>
 <p><img src="/images/fzf_clp_line2.png" alt="fzf_clp_line" /></p>
 <p>Finally, we can bind a key to open the file in a text editor and jump to the location of the matched line. When we quit the editor, we'll be right back where we were in fzf.</p>
-<pre style="background-color:#ffffff;color:#000000;"><code><span>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#39;:&#39; -n 2.. --preview-window &#39;+{2}-/2&#39; --preview &#39;clp -h {2} {1}&#39; --bind &#39;ctrl-o:execute(vim +{2} {1} &lt; /dev/tty)&#39;
+<pre style="background-color:#ffffff;color:#323232;"><code><span>grep --recursive --line-number --binary-files=without-match &quot;time&quot; . | fzf --delimiter=&#39;:&#39; -n 2.. --preview-window &#39;+{2}-/2&#39; --preview &#39;clp -h {2} {1}&#39; --bind &#39;ctrl-o:execute(vim +{2} {1} &lt; /dev/tty)&#39;
 </span></code></pre>
 <p>Note that you can trivially swap out grep for ag or ripgrep and it'll work just fine.</p>
-<pre data-lang="bash" style="background-color:#ffffff;color:#000000;" class="language-bash "><code class="language-bash" data-lang="bash"><span>ag --color --line-number </span><span style="color:#a31515;">&quot;time&quot; </span><span style="color:#0000ff;">| </span><span>fzf --delimiter</span><span style="color:#0000ff;">=</span><span style="color:#a31515;">&#39;:&#39;</span><span> -n 2.. --preview-window </span><span style="color:#a31515;">&#39;+{2}-/2&#39;</span><span> --preview </span><span style="color:#a31515;">&#39;clp -h {2} {1}&#39;</span><span> --bind </span><span style="color:#a31515;">&#39;ctrl-o:execute(vim +{2} {1} &lt; /dev/tty)&#39;
+<pre data-lang="bash" style="background-color:#ffffff;color:#323232;" class="language-bash "><code class="language-bash" data-lang="bash"><span>ag --color --line-number </span><span style="color:#183691;">&quot;time&quot; </span><span style="font-weight:bold;color:#a71d5d;">| </span><span>fzf --delimiter</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#183691;">&#39;:&#39;</span><span> -n 2.. --preview-window </span><span style="color:#183691;">&#39;+{2}-/2&#39;</span><span> --preview </span><span style="color:#183691;">&#39;clp -h {2} {1}&#39;</span><span> --bind </span><span style="color:#183691;">&#39;ctrl-o:execute(vim +{2} {1} &lt; /dev/tty)&#39;
 </span></code></pre>
 <p>The command has grown pretty long. I tend to throw everything after the first pipe in a script on my path and pipe grep commands to that instead.</p>
 <p>In conclusion, we've seen that this approach provides editor agnostic searching and file previewing. Having grep at your fingertips allows you to effortlessly make elaborate searches without the constraints of editor plugins.</p>
