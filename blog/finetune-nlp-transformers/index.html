@@ -50,7 +50,7 @@
     </tr>
   </tbody>
 </table>
-<p>The results seemed okay, but I had a feeling that there was a lot of entropy that comes along with a general purpose instruction model that was probably not ideal for this task.</p>
+<p>The results seemed okay, but a general purpose instruction model didn't really seem ideal for a specific task like this. I wanted to explore other options that might be more efficient or have better performance.</p>
 <p>I considered training a model from scratch but decided against it due to the enormous amount of data required. To handle freeform natural language prompts effectively, I suspected I would need a huge amount of training data for the model to avoid struggling with unusual phrasings or context-dependent meanings. I decided not to pursue this option because I didn't want building training data to be the primary focus of this project.</p>
 <p>Instead, I explored fine-tuning an existing model. I looked at whitepapers for a number of small models that discussed fine-tuning on downsteam tasks. Some interesting models included BERT, introduced by Google in October 2018, and its smaller variant DistilBERT. With just 66 million parameters, DistilBERT preserves 95% of BERT's performance while using 40% fewer parameters and running 60% faster.</p>
 <p>Fine-tuning is a technique that adapts pre-trained language models to specific tasks by further training on a smaller, task-specific dataset. For text classification, it involves taking a model like DistilBERT and training it on custom data - in this case, labeled customer inquiries. This process adjusts the model's weights, particularly in the final layers, to better suit the classification task while preserving its general language understanding.</p>
