@@ -126,7 +126,7 @@
 </span><span>train_texts, train_labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#62a35c;">zip</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>train_data)
 </span><span>test_texts, test_labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#62a35c;">zip</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>test_data)
 </span></code></pre>
-<p>A manual split is used where the first 90% of the data is used for training and the last 10% for testing. This approach was chosen to ensure that all of the samples evaluated in the previous blog post were tested by this model without it having seen them during training, and performance could be more directly compared. More on that later.</p>
+<p>A manual split is used where the first 90% of the data is used for training and the last 10% for testing. This approach was chosen to make it easy for me to place all of the samples evaluated in the previous blog post into the test set. That way, performance could be more directly compared, because none of those samples would have been seen by any either model during training. More on that later.</p>
 <h4 id="training-loop">Training Loop</h4>
 <p>The training process involves iterating over the data multiple times and updating the model's parameters to minimize the classification error.</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#323232;">train_epoch</span><span>(model, data_loader, optimizer, device):
