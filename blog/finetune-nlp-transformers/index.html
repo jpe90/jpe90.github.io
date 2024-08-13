@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jon Eskin's Blog</title>
+  
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://jeskin.net/css/main.css">
+  <link rel="stylesheet" href="https://jeskin.net/css/nav.css">
+  
+  
+</head>
+<body>
+  <header>
+    <div class="left">
+      <a class="rss-button" href="https://jeskin.net/atom.xml">RSS</a>
+      <a href="https://jeskin.net/index.html">Home</a>
+    </div>
+    <div class="right">
+      <a href="https://jeskin.net/about">About</a>
+      <a href="https://github.com/jpe90">Projects</a>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      
+<h1 class="title">
+  Fine-Tuning NLP Transformers for Task Automation
+</h1>
+<div class="post-content">
+  <p><em>This is an early draft that I'm sharing to get feedback. If you have any, please <a href="mailto:eskinjp@gmail.com">shoot me an email</a>.</em></p>
+<h2 id="introduction">Introduction</h2>
+<p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to automate tasks that involved determining how to categorize strings of text. In that post, I used a wrapper around llama.cpp, which ran inference on the 8B parameter, 4-bit quantized version of Llama 3. The number of parameters are a measure of a model's capability; for comparison, GPT-4o, powering ChatGPT has 1.7 trillion parameters. With Llama 3 I got <strong>~92% accuracy for my task out of the box</strong>, which bumped up to <strong>~95% with some post-processing</strong>.</p>
+<p>I didn't have enough knowledge or intuition to know whether that performance was any good relative to the capabilities of an 8B model. My mental model of 8B models at the time was "ChatGPT with severe limitations", which primed me to be happy with whatever I could get. But thinking about it a little more deeply, I couldn't help but wonder how much performance budget I was ignoring with this setup.</p>
+<p>One possible option would be to train a model completely from scratch using nothing but training data. I originally measured performance with <strong>30 strings of text</strong> that were classified into one of three categories: <strong>general feedback, order inquiries, or refund requests</strong>. If I massively expanded the amount of training data, I wondered if I could reach an amount that would allow me to train a tokenized transformer that is solely designed to classify its input. In theory, this could give me an extremely efficient network that is capable of carrying out this task with the smallest possible size.</p>
+<p>I ended up not pursuing this option because I worried that it would be prohibitively difficult for me to supply enough training data to be able to correctly classify whatever weird wording might be thrown at it. I suspect it takes quite a lot of text for the attention mechanism of a deep learning network to be able to handle nuances of the English language without getting confused. Training from scratch, while an interesting idea, seemed like too ambitious of a task for what I was looking to do. It makes sense to me that a huge part of the magic of neural networks is compiling a well-rounded and complete dataset, and as an amateur, the likelihood that I would do so did not seem particularly high.</p>
+<p>I decided instead to explore <strong>fine-tuning an existing model</strong>. The Llama 3 model, trained on a representative sample of the entire internet and designed to answer any question, seemed like overkill as a starting point. I didn't need something that could talk for hours about nuanced details of the theory of relativity in order to classify my text strings. I sought out other smaller models that might be a more sensible starting point.</p>
+<p>I found a model "Bidirectional Encoder Representations from Transformers", also known as BERT, introduced in October 2018 by researchers at Google. It has very similar underlying architecture to Llama 3 or GPT-o, but was trained on much less data. It has an even smaller cousin DistilBERT which uses 40% fewer parameters, runs 60% faster, and preserves 95% of the performance of BERT. DistilBERT has a total of 66 million parameters and was trained on the Toronto Book Corpus and English Wikipedia.</p>
+<h3 id="distilbert-architecture-overview">DistilBERT Architecture Overview</h3>
+<p>DistilBERT, like its larger counterpart BERT, is based on the Transformer architecture. At its core, DistilBERT consists of several key components that work together to process and understand text. Text input is first passed through <strong>embedding layer</strong>. This layer is responsible for converting input tokens (which are essentially words or parts of words) into dense vector representations. These vectors capture the semantic meaning of the words in a format that the model can work with.</p>
+<p>Once the text is embedded, it passes through multiple <strong>Transformer blocks</strong>. These blocks contain layers of self-attention and feed-forward neural networks. The self-attention mechanism allows the model to weigh the importance of different words in the input. This means the model can understand context and relationships between words, much like how we understand language by considering words in relation to each other. After the self-attention layer, feed-forward neural networks further process the attention output, allowing the model to capture complex patterns in the data.</p>
+<h3 id="fine-tuning-process">Fine-tuning Process</h3>
+<p>The fine-tuning process involves adjusting the pre-trained DistilBERT model to our specific classification task.</p>
+<h4 id="data-preparation">Data Preparation</h4>
+<p>We start by loading our labeled data:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#323232;">load_data</span><span>(file_path):
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">with </span><span style="color:#62a35c;">open</span><span>(file_path, </span><span style="color:#183691;">&#39;r&#39;</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">as </span><span>f:
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>[line.strip() </span><span style="font-weight:bold;color:#a71d5d;">for </span><span>line </span><span style="font-weight:bold;color:#a71d5d;">in </span><span>f]
+</span><span>
+</span><span>feedback </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>load_data(</span><span style="color:#183691;">&#39;data/feedback.txt&#39;</span><span>)
+</span><span>inquiries </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>load_data(</span><span style="color:#183691;">&#39;data/inquiries.txt&#39;</span><span>)
+</span><span>refunds </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>load_data(</span><span style="color:#183691;">&#39;data/refunds.txt&#39;</span><span>)
+</span><span>
+</span><span>all_texts </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>feedback </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>inquiries </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>refunds
+</span><span>all_labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>[</span><span style="color:#0086b3;">0</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#62a35c;">len</span><span>(feedback) </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>[</span><span style="color:#0086b3;">1</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#62a35c;">len</span><span>(inquiries) </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>[</span><span style="color:#0086b3;">2</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#62a35c;">len</span><span>(refunds)
+</span></code></pre>
+<p>This code loads our three categories of text and assigns numerical labels to each. We're simply reading text files and creating lists of our input texts and their corresponding labels.</p>
+<h4 id="dataset-and-dataloader">Dataset and DataLoader</h4>
+<p>We create a custom dataset class to handle tokenization:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">class </span><span style="color:#0086b3;">TextClassificationDataset</span><span>(</span><span style="color:#0086b3;">Dataset</span><span>):
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#62a35c;">__init__</span><span>(self, texts, labels, tokenizer, max_len):
+</span><span>        self.texts </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>texts
+</span><span>        self.labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>labels
+</span><span>        self.tokenizer </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>tokenizer
+</span><span>        self.max_len </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>max_len
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#62a35c;">__getitem__</span><span>(self, item):
+</span><span>        text </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#0086b3;">str</span><span>(self.texts[item])
+</span><span>        label </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>self.labels[item]
+</span><span>
+</span><span>        encoding </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>self.tokenizer.encode_plus(
+</span><span>            text,
+</span><span>            add_special_tokens</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">True</span><span>,
+</span><span>            max_length</span><span style="font-weight:bold;color:#a71d5d;">=</span><span>self.max_len,
+</span><span>            return_token_type_ids</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">False</span><span>,
+</span><span>            padding</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#183691;">&#39;max_length&#39;</span><span>,
+</span><span>            truncation</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">True</span><span>,
+</span><span>            return_attention_mask</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">True</span><span>,
+</span><span>            return_tensors</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#183691;">&#39;pt&#39;</span><span>,
+</span><span>        )
+</span><span>
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>{
+</span><span>            </span><span style="color:#183691;">&#39;text&#39;</span><span>: text,
+</span><span>            </span><span style="color:#183691;">&#39;input_ids&#39;</span><span>: encoding[</span><span style="color:#183691;">&#39;input_ids&#39;</span><span>].flatten(),
+</span><span>            </span><span style="color:#183691;">&#39;attention_mask&#39;</span><span>: encoding[</span><span style="color:#183691;">&#39;attention_mask&#39;</span><span>].flatten(),
+</span><span>            </span><span style="color:#183691;">&#39;labels&#39;</span><span>: torch.tensor(label, dtype</span><span style="font-weight:bold;color:#a71d5d;">=</span><span>torch.long)
+</span><span>        }
+</span></code></pre>
+<p>A <strong>tokenizer</strong> is a tool that breaks down text into smaller units called tokens. These could be words, parts of words, or even punctuation. The tokenizer also handles converting these tokens into numbers that the model can understand. We're using the <strong>DistilBertTokenizer</strong> because we want to use the same tokenizer that the model was trained with. Under the hood, it uses <a href="https://huggingface.co/learn/nlp-course/en/chapter6/6">WordPiece subword segmentation</a>. This is a little older than alternatives like SentencePiece of BPE.</p>
+<p>We're using the <code>encode_plus</code> method of this tokenizer. This method does several things: It tokenizes our input text, adds special tokens that DistilBERT expects (like [CLS] at the start and [SEP] at the end), pads or truncates our input to a specified maximum length, and creates an "attention mask" which tells the model which tokens are actual input and which are padding.</p>
+<p>The <strong>torch Dataset</strong> is a PyTorch class that represents a dataset. By inheriting from this class, we're creating a custom dataset that PyTorch can easily work with. The <code>__getitem__</code> method is called when we want to access an item from our dataset.</p>
+<p>We use <strong>PyTorch's DataLoader</strong> to efficiently batch and shuffle our data:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span>train_dataloader </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>DataLoader(train_dataset, batch_size</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">16</span><span>, shuffle</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">True</span><span>)
+</span><span>test_dataloader </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>DataLoader(test_dataset, batch_size</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">16</span><span>)
+</span></code></pre>
+<p>The DataLoader is a PyTorch utility that helps manage batching of data and provides an iterable over the Dataset. For our training data, we set <code>shuffle=True</code>, which means it will randomly shuffle the data at the start of each epoch. This shuffling helps prevent the model from learning any unintended patterns based on the order of the training data.</p>
+<p>We use a batch size of 16, meaning the DataLoader will yield batches of 16 examples at a time. This batch size is a balance between memory usage and training speed. For the test data, we don't need to shuffle, so we omit the <code>shuffle</code> parameter.</p>
+<p>During training and evaluation, we'll iterate over these DataLoaders, which will give us batches of data in the format our model expects. This abstraction simplifies our training loop and makes it easier to work with large datasets that might not fit into memory all at once.</p>
+<h4 id="train-test-split">Train-Test Split</h4>
+<p>Before we start training, we split our data into training and testing sets:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#323232;">train_test_split</span><span>(data, test_size</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">0.1</span><span>):
+</span><span>    split_index </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#0086b3;">int</span><span>(</span><span style="color:#62a35c;">len</span><span>(data) </span><span style="font-weight:bold;color:#a71d5d;">* </span><span>(</span><span style="color:#0086b3;">1 </span><span style="font-weight:bold;color:#a71d5d;">- </span><span>test_size))
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>data[:split_index], data[split_index:]
+</span><span>
+</span><span>train_data, test_data </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>train_test_split(</span><span style="color:#0086b3;">list</span><span>(</span><span style="color:#62a35c;">zip</span><span>(all_texts, all_labels)))
+</span><span>train_texts, train_labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#62a35c;">zip</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>train_data)
+</span><span>test_texts, test_labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#62a35c;">zip</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>test_data)
+</span></code></pre>
+<p>We're using a manual split where the first 90% of the data is used for training and the last 10% for testing. I opted to do it this way so that I could make sure all of the samples that I evaluated in the previous blog post were tested by this model without it having seen them during training. This way, I could get a better sense of their relative performance. More on that later.</p>
+<h4 id="training-loop">Training Loop</h4>
+<p>The training process involves iterating over our data multiple times and updating the model's parameters to minimize the classification error:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#323232;">train_epoch</span><span>(model, data_loader, optimizer, device):
+</span><span>    model.train()
+</span><span>    total_loss </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#0086b3;">0
+</span><span>    total_correct </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#0086b3;">0
+</span><span>    total_samples </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#0086b3;">0
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">for </span><span>batch </span><span style="font-weight:bold;color:#a71d5d;">in </span><span>data_loader:
+</span><span>        input_ids </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>batch[</span><span style="color:#183691;">&#39;input_ids&#39;</span><span>].to(device)
+</span><span>        attention_mask </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>batch[</span><span style="color:#183691;">&#39;attention_mask&#39;</span><span>].to(device)
+</span><span>        labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>batch[</span><span style="color:#183691;">&#39;labels&#39;</span><span>].to(device)
+</span><span>
+</span><span>        optimizer.zero_grad()
+</span><span>        outputs </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>model(input_ids, attention_mask</span><span style="font-weight:bold;color:#a71d5d;">=</span><span>attention_mask, labels</span><span style="font-weight:bold;color:#a71d5d;">=</span><span>labels)
+</span><span>        loss </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>outputs.loss
+</span><span>        logits </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>outputs.logits
+</span><span>
+</span><span>        _, predicted </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>torch.max(logits, </span><span style="color:#0086b3;">1</span><span>)
+</span><span>        total_correct </span><span style="font-weight:bold;color:#a71d5d;">+= </span><span>(predicted </span><span style="font-weight:bold;color:#a71d5d;">== </span><span>labels).sum().item()
+</span><span>        total_samples </span><span style="font-weight:bold;color:#a71d5d;">+= </span><span>labels.size(</span><span style="color:#0086b3;">0</span><span>)
+</span><span>
+</span><span>        loss.backward()
+</span><span>        optimizer.step()
+</span><span>
+</span><span>        total_loss </span><span style="font-weight:bold;color:#a71d5d;">+= </span><span>loss.item()
+</span><span>
+</span><span>    avg_loss </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>total_loss </span><span style="font-weight:bold;color:#a71d5d;">/ </span><span style="color:#62a35c;">len</span><span>(data_loader)
+</span><span>    accuracy </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>total_correct </span><span style="font-weight:bold;color:#a71d5d;">/ </span><span>total_samples
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>avg_loss, accuracy
+</span></code></pre>
+<p>This function performs one training epoch, updating the model's parameters and calculating the loss and accuracy.</p>
+<h4 id="model-configuration-and-training">Model Configuration and Training</h4>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span>tokenizer </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>DistilBertTokenizer.from_pretrained(</span><span style="color:#183691;">&#39;distilbert-base-uncased&#39;</span><span>)
+</span><span>model </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>DistilBertForSequenceClassification.from_pretrained(</span><span style="color:#183691;">&#39;distilbert-base-uncased&#39;</span><span>, num_labels</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">3</span><span>)
+</span><span>
+</span><span>train_dataset </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>TextClassificationDataset(train_texts, train_labels, tokenizer, max_len</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">128</span><span>)
+</span><span>test_dataset </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>TextClassificationDataset(test_texts, test_labels, tokenizer, max_len</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">128</span><span>)
+</span></code></pre>
+<p>First, we initialize our <strong>tokenizer</strong> and <strong>model</strong>. We're using the pre-trained 'distilbert-base-uncased' model, which means it's been trained on lowercase English text. The <code>num_labels=3</code> parameter tells the model we're dealing with a three-class classification problem.</p>
+<p>We set <code>max_len=128</code> when creating our datasets. This <strong>maximum length</strong> parameter determines the longest sequence of tokens our model will process. Shorter sequences will be padded, and longer ones will be truncated.</p>
+<p>The <strong>batch size</strong> of 16 in our DataLoader means we'll process 16 examples at a time during training. This is another balance between memory usage and training speed. Larger batch sizes can lead to faster training but require more memory.</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span>device </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>torch.device(</span><span style="color:#183691;">&#39;mps&#39; </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>torch.backends.mps.is_available() </span><span style="font-weight:bold;color:#a71d5d;">else </span><span style="color:#183691;">&#39;cpu&#39;</span><span>)
+</span><span>model.to(device)
+</span></code></pre>
+<p>Next, we move our model to the appropriate device. We're checking if Apple's Metal Performance Shaders (MPS) are available, which can accelerate training on compatible Mac hardware (I just did it this way because I'm running on my Macbook, you would want to change this if you wanted to run it optimally on different hardware).</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span>optimizer </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>AdamW(model.parameters(), lr</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">2e-5</span><span>)
+</span></code></pre>
+<p>Neural networks rely on nonlinear activation functions to model complex relationships in data. These functions, like <strong>tanh</strong> or <strong>ReLU</strong>, work best when their inputs are well-distributed across their operating range. For instance, a tanh function, which maps inputs to outputs between -1 and 1, is most effective when its inputs span this entire range rather than being concentrated at the extremes.</p>
+<p>Ensuring this ideal distribution of inputs became a significant challenge as networks grew deeper. In 2015, researchers introduced Batch Normalization as a solution. This technique normalizes the inputs to each layer, improving the flow of data through the network. This worked, but it also introduced complexities.</p>
+<p>The search for better optimization techniques led to the development of adaptive learning rate methods like <strong>Adam (Adaptive Moment Estimation)</strong> and later the variant <strong>AdamW</strong>. To be honest, I don't know much about these methods other than the fact that they solve this issue (among others) and that they see widespread use. Learning more about them is on my bucket list.</p>
+<p>We're setting a <strong>learning rate</strong> of 2e-5 (0.00002). It's small enough to allow for fine adjustments to the pre-trained weights without causing drastic changes that could destroy the model's pre-trained knowledge. Too high, and your model might overshoot optimal solutions; too low, and your model might train too slowly or get stuck in suboptimal solutions.</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span>num_epochs </span><span style="font-weight:bold;color:#a71d5d;">= </span><span style="color:#0086b3;">5
+</span><span style="font-weight:bold;color:#a71d5d;">for </span><span>epoch </span><span style="font-weight:bold;color:#a71d5d;">in </span><span style="color:#62a35c;">range</span><span>(num_epochs):
+</span><span>    </span><span style="color:#62a35c;">print</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">f</span><span style="color:#183691;">&#39;Epoch </span><span>{epoch </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span style="color:#0086b3;">1</span><span>}</span><span style="color:#183691;">/</span><span>{num_epochs}</span><span style="color:#183691;">&#39;</span><span>)
+</span><span>    train_loss, train_acc </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>train_epoch(model, train_dataloader, optimizer, device)
+</span><span>    </span><span style="color:#62a35c;">print</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">f</span><span style="color:#183691;">&#39;Train loss </span><span>{train_loss</span><span style="color:#0086b3;">:.4f</span><span>}</span><span style="color:#183691;"> accuracy </span><span>{train_acc</span><span style="color:#0086b3;">:.4f</span><span>}</span><span style="color:#183691;">&#39;</span><span>)
+</span><span>
+</span><span>    val_loss, val_acc </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>evaluate(model, test_dataloader, device)
+</span><span>    </span><span style="color:#62a35c;">print</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">f</span><span style="color:#183691;">&#39;Val loss </span><span>{val_loss</span><span style="color:#0086b3;">:.4f</span><span>}</span><span style="color:#183691;"> accuracy </span><span>{val_acc</span><span style="color:#0086b3;">:.4f</span><span>}</span><span style="color:#183691;">&#39;</span><span>)
+</span><span>
+</span><span>torch.save(model.state_dict(), </span><span style="color:#183691;">&#39;model/distilbert_classifier.pth&#39;</span><span>)
+</span><span style="color:#62a35c;">print</span><span>(</span><span style="color:#183691;">&quot;Model saved successfully.&quot;</span><span>)
+</span></code></pre>
+<p>The training loop runs for <strong>5 epochs</strong>. An epoch is one complete pass through the entire training dataset. This was a YOLO pick, and judging from the results it might be one or two more than we needed.</p>
+<p>In each epoch, we train the model on the training data and then evaluate it on the validation (test) data. We print out the loss and accuracy for both training and validation sets. The <code>.4f</code> formatting in the print statements is a Python string formatting specifier that displays floating-point numbers with 4 decimal places. This gives us a consistent, readable format for our metrics.</p>
+<p>After training, we save our model using <code>torch.save()</code>. This function saves the model's <strong>state_dict</strong>. A state_dict in PyTorch is a Python dictionary that maps each layer to its parameter tensors. It contains all the learned weights and biases of our model. By saving the state_dict, we're essentially saving all the knowledge our model has gained during training.</p>
+<p>We save our model with a <strong>.pth</strong> file extension. This is a common convention in PyTorch for saved model files, standing for "PyTorch". The .pth file is essentially a serialized version of our model's state_dict. This contains all the weights and biases for the network.</p>
+<p>To use this saved model later, we would load it like this:</p>
+<pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span>model </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>DistilBertForSequenceClassification.from_pretrained(</span><span style="color:#183691;">&#39;distilbert-base-uncased&#39;</span><span>, num_labels</span><span style="font-weight:bold;color:#a71d5d;">=</span><span style="color:#0086b3;">3</span><span>)
+</span><span>model.load_state_dict(torch.load(</span><span style="color:#183691;">&#39;model/distilbert_classifier.pth&#39;</span><span>))
+</span><span>model.eval()
+</span></code></pre>
+<h3 id="results-and-discussion">Results and Discussion</h3>
+<p>After fine-tuning, I got an accuracy of 100% on the test set. This needs to be taken with a few grains of salt:</p>
+<ol>
+<li>The task was extremely easy by design. It reflected a very doable classification task that reflects a number of real-world situations I've run into.</li>
+<li>The training and test data does not come from real-world data, and as such it does not reflect the weirdness and oddities that you would get from real people.</li>
+</ol>
+<p>Because of these factors, achieving 100% accuracy doesn't necessarily mean that much. But there are a few things worth noting. For one, that 100% accuracy includes the entirety of the test set that Llama 3 8B only achieved 92% on, with additional test data added in. And just for kicks, I later tried coming up with weird and contrived strings of text to try to confuse the model. I could not get it to incorrectly classify anything.</p>
+<p>For simplicity, I ran with the assumption that each string of text had one and only one classification. It would be much more useful if each string of text instead could have 0-3 classifications. This would also almost certainly bring down the accuracy of the model because determining whether a given string belongs to a single category at all seems like it would be a much more complex task than what it had to learn during training.</p>
+
+</div>
+
+    </div>
+  </section>
+</body>
+</html>
