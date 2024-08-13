@@ -29,7 +29,7 @@
   Fine-Tuning NLP Transformers for Task Automation
 </h1>
 <div class="post-content">
-  <p><em>This is an early draft that I'm sharing to get feedback. If you have any, please <a href="mailto:eskinjp@gmail.com">shoot me an email</a>.</em></p>
+  <p><em>This is a WIP early draft that I'm sharing to get feedback as I write it. If you have any, please <a href="mailto:eskinjp@gmail.com">shoot me an email</a>.</em></p>
 <h2 id="introduction">Introduction</h2>
 <p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to automate tasks that involved determining how to categorize strings of text. In that post, I used a wrapper around llama.cpp, which ran inference on the 8B parameter, 4-bit quantized version of Llama 3. The number of parameters are a measure of a model's capability; for comparison, GPT-4o, powering ChatGPT has 1.7 trillion parameters. With Llama 3 I got <strong>~92% accuracy for my task out of the box</strong>, which bumped up to <strong>~95% with some post-processing</strong>.</p>
 <p>I didn't have enough knowledge or intuition to know whether that performance was any good relative to the capabilities of an 8B model. My mental model of 8B models at the time was "ChatGPT with severe limitations", which primed me to be happy with whatever I could get. But thinking about it a little more deeply, I couldn't help but wonder how much performance budget I was ignoring with this setup.</p>
