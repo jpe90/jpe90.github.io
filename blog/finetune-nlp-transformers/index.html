@@ -202,13 +202,13 @@
 </span></code></pre>
 <h3 id="results-and-discussion">Results and Discussion</h3>
 <p>For simplicity, I ran with the assumption that each string of text had one and only one classification. It would be much more useful if each string of text instead could have 0-3 classifications. This would also almost certainly bring down the accuracy of the model because determining whether a given string belongs to a single category at all seems like it would be a much more complex task than what it had to learn during training.</p>
-<p>After fine-tuning, I got an accuracy of 100% on the test set. This needs to be taken with a few grains of salt:</p>
+<p>After fine-tuning, I got an <strong>accuracy of 100%</strong> on the test set. This needs to be taken with a few grains of salt:</p>
 <ol>
 <li>The task was extremely easy by design. It reflected a very doable classification task that reflects a number of real-world situations I've run into.</li>
 <li>The training and test data does not come from real-world data, and as such it does not reflect the weirdness and oddities that you would get from real people.</li>
 </ol>
-<p>Because of these factors, achieving 100% accuracy doesn't necessarily mean that much. But there are a few things worth noting. For one, that 100% accuracy includes the entirety of the test set that Llama 3 8B only achieved 92% on, with additional test data added in. And just for kicks, I later tried coming up with weird and contrived strings of text to try to confuse the model. I could not get it to incorrectly classify anything.</p>
-<p>What I can definitely say is that the fine-tuned model outperformed base Llama 3 at less than 1% of its size. I came away completely sold on the idea of fine-tuning small models for repetitive, special purpose tasks. It is inevitable that many suitable tasks will instead be run on models that are hundreds of billions of parameters or larger via commercial APIs. This presents a huge opportunity for cost savings and efficiency that will only grow over time.</p>
+<p>Because of these factors, achieving 100% accuracy doesn't necessarily mean that much. But there are a few things worth noting. For one, that 100% accuracy includes the entirety of the test set that <strong>Llama 3 8B only achieved 92%</strong> on, with additional test data added in. And just for kicks, I later tried coming up with weird and contrived strings of text to try to confuse the model. I could not get it to incorrectly classify anything.</p>
+<p>What I can definitely say is that <strong>the fine-tuned model outperformed base Llama 3 at less than 1% of its size</strong>. I came away completely sold on the idea of fine-tuning small models for repetitive, special purpose tasks. It is inevitable that many suitable tasks will instead be run on models that are hundreds of billions of parameters or larger via commercial APIs. This presents a huge opportunity for cost savings and efficiency that will only grow over time.</p>
 
 </div>
 
