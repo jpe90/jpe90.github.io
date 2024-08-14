@@ -27,7 +27,8 @@
 <div class="post-content">
   <p><em>This is a WIP early draft that I'm sharing to get feedback as I write it. If you have any, please <a href="mailto:eskinjp@gmail.com">shoot me an email</a>.</em></p>
 <h2 id="introduction">Introduction</h2>
-<p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to automate text categorization tasks. I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. With careful prompts I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong>.</p>
+<p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to automate text categorization tasks.</p>
+<p>The classification task involves categorizing customer messages into three distinct classes: refund requests, order inquiries, and general feedback. Refund requests typically involve customers seeking to return products and receive their money back. Order inquiries are messages from customers asking about the status of their orders, product details, or shipping information. General feedback includes customer comments on their shopping experience, product quality, and suggestions for improvement.</p>
 <table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
   <thead>
     <tr style="background-color: #f2f2f2;">
@@ -50,6 +51,7 @@
     </tr>
   </tbody>
 </table>
+<p>I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. With careful prompts I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong>.</p>
 <p>The results seemed okay, but a general purpose instruction model didn't really seem ideal for a specific task like this. I wanted to explore other options that might be more efficient or have better performance.</p>
 <p>I considered training a model from scratch but decided against it due to the enormous amount of data required. To handle freeform natural language prompts effectively, I suspected I would need a huge amount of training data for the model to avoid struggling with unusual phrasings or context-dependent meanings. I decided not to pursue this option because I didn't want building training data to be the primary focus of this mini-project.</p>
 <p>Instead, I looked at fine-tuning an existing model. I read through a few whitepapers describing small models which discussed fine-tuning on downsteam tasks. Some interesting models included BERT, introduced by Google in October 2018, and its smaller variant DistilBERT. With just 66 million parameters, DistilBERT preserves 95% of BERT's performance while using 40% fewer parameters and running 60% faster.</p>
@@ -62,7 +64,7 @@
 <h3 id="fine-tuning-process">Fine-tuning Process</h3>
 <p>The fine-tuning process involves adjusting the pre-trained DistilBERT model to our specific classification task.</p>
 <h4 id="data-preparation">Data Preparation</h4>
-<p>The process begins by loading the labeled data:</p>
+<p>The process begins by loading the labeled data. It consisted of three files, one for each category, each containing several hundred customer messages.</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">def </span><span style="font-weight:bold;color:#323232;">load_data</span><span>(file_path):
 </span><span>    </span><span style="font-weight:bold;color:#a71d5d;">with </span><span style="color:#62a35c;">open</span><span>(file_path, </span><span style="color:#183691;">&#39;r&#39;</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">as </span><span>f:
 </span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>[line.strip() </span><span style="font-weight:bold;color:#a71d5d;">for </span><span>line </span><span style="font-weight:bold;color:#a71d5d;">in </span><span>f]
@@ -74,7 +76,7 @@
 </span><span>all_texts </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>feedback </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>inquiries </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>refunds
 </span><span>all_labels </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>[</span><span style="color:#0086b3;">0</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#62a35c;">len</span><span>(feedback) </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>[</span><span style="color:#0086b3;">1</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#62a35c;">len</span><span>(inquiries) </span><span style="font-weight:bold;color:#a71d5d;">+ </span><span>[</span><span style="color:#0086b3;">2</span><span>] </span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#62a35c;">len</span><span>(refunds)
 </span></code></pre>
-<p>This code loads the several hundred examples of each of the three categories of text and assigns numerical labels to each. In neural networks, labels refer to "the right answer" and are used during training to check the model's guesses.</p>
+<p>This code loads the text strings and assigns numerical labels to each. In neural networks, labels refer to "the right answer" and are used during training to check the model's guesses.</p>
 <h4 id="dataset-and-dataloader">Dataset and DataLoader</h4>
 <p>A custom dataset class is created to handle tokenization:</p>
 <pre data-lang="python" style="background-color:#ffffff;color:#323232;" class="language-python "><code class="language-python" data-lang="python"><span style="font-weight:bold;color:#a71d5d;">class </span><span style="color:#0086b3;">TextClassificationDataset</span><span>(</span><span style="color:#0086b3;">Dataset</span><span>):
