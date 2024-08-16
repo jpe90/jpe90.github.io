@@ -43,13 +43,13 @@
 <h2 id="rest-api">REST API</h2>
 <p>Ollama has a REST API for running and managing models.</p>
 <h3 id="generate-a-response">Generate a response</h3>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>curl http://localhost:11434/api/generate -d &#39;{
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>curl http://localhost:11434/api/generate -d &#39;{
 </span><span>  &quot;model&quot;: &quot;llama3&quot;,
 </span><span>  &quot;prompt&quot;:&quot;Why is the sky blue?&quot;
 </span><span>}&#39;
 </span></code></pre>
 <h3 id="chat-with-a-model">Chat with a model</h3>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>curl http://localhost:11434/api/chat -d &#39;{
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>curl http://localhost:11434/api/chat -d &#39;{
 </span><span>  &quot;model&quot;: &quot;llama3&quot;,
 </span><span>  &quot;messages&quot;: [
 </span><span>    { &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;why is the sky blue?&quot; }
@@ -59,7 +59,7 @@
 <p>See the <a href="https://jeskin.net/blog/llama-chat/./docs/api.md">API documentation</a> for all endpoints.</p>
 <hr />
 <p>We can try one of those curl commands and see what the responses look like:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.629748Z&quot;,&quot;response&quot;:&quot;The&quot;,&quot;done&quot;:false}
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.629748Z&quot;,&quot;response&quot;:&quot;The&quot;,&quot;done&quot;:false}
 </span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.662856Z&quot;,&quot;response&quot;:&quot; sky&quot;,&quot;done&quot;:false}
 </span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.695868Z&quot;,&quot;response&quot;:&quot; appears&quot;,&quot;done&quot;:false}
 </span><span>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.729704Z&quot;,&quot;response&quot;:&quot; blue&quot;,&quot;done&quot;:false}
@@ -67,28 +67,28 @@
 </span><span>...
 </span></code></pre>
 <p>These stream in over time instead of being dumped out when the message is complete. Here's the code from ollama that's generating the stream:</p>
-<pre data-lang="Go" style="background-color:#272822;color:#f8f8f2;" class="language-Go "><code class="language-Go" data-lang="Go"><span style="font-style:italic;color:#66d9ef;">func </span><span style="color:#a6e22e;">streamResponse</span><span>(</span><span style="font-style:italic;color:#fd971f;">c </span><span style="color:#f92672;">*</span><span>gin.</span><span style="font-style:italic;color:#66d9ef;">Context</span><span>, </span><span style="font-style:italic;color:#fd971f;">ch </span><span style="font-style:italic;color:#66d9ef;">chan any</span><span>) {
-</span><span>	c.Header(</span><span style="color:#e6db74;">&quot;Content-Type&quot;</span><span>, </span><span style="color:#e6db74;">&quot;application/x-ndjson&quot;</span><span>)
-</span><span>	c.Stream(</span><span style="font-style:italic;color:#66d9ef;">func</span><span>(</span><span style="font-style:italic;color:#fd971f;">w </span><span>io.</span><span style="font-style:italic;color:#66d9ef;">Writer</span><span>) </span><span style="font-style:italic;color:#66d9ef;">bool </span><span>{
-</span><span>		val, ok </span><span style="color:#f92672;">:= &lt;-</span><span>ch
-</span><span>		</span><span style="color:#f92672;">if !</span><span>ok {
-</span><span>			</span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">false
+<pre data-lang="Go" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Go "><code class="language-Go" data-lang="Go"><span style="color:#569cd6;">func </span><span>streamResponse(c </span><span style="color:#569cd6;">*</span><span>gin.</span><span style="color:#569cd6;">Context</span><span>, ch </span><span style="color:#569cd6;">chan any</span><span>) {
+</span><span>	c.Header(</span><span style="color:#d69d85;">&quot;Content-Type&quot;</span><span>, </span><span style="color:#d69d85;">&quot;application/x-ndjson&quot;</span><span>)
+</span><span>	c.Stream(</span><span style="color:#569cd6;">func</span><span>(w io.</span><span style="color:#569cd6;">Writer</span><span>) bool {
+</span><span>		val, ok := </span><span style="color:#569cd6;">&lt;-</span><span>ch
+</span><span>		</span><span style="color:#569cd6;">if !</span><span>ok {
+</span><span>			</span><span style="color:#569cd6;">return false
 </span><span>		}
 </span><span>
-</span><span>		bts, err </span><span style="color:#f92672;">:= </span><span>json.Marshal(val)
-</span><span>		</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
-</span><span>			slog.Info(fmt.Sprintf(</span><span style="color:#e6db74;">&quot;streamResponse: json.Marshal failed with </span><span style="color:#ae81ff;">%s</span><span style="color:#e6db74;">&quot;</span><span>, err))
-</span><span>			</span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">false
+</span><span>		bts, err := json.Marshal(val)
+</span><span>		</span><span style="color:#569cd6;">if </span><span>err </span><span style="color:#569cd6;">!= nil </span><span>{
+</span><span>			slog.Info(fmt.Sprintf(</span><span style="color:#d69d85;">&quot;streamResponse: json.Marshal failed with </span><span style="color:#b4cea8;">%s</span><span style="color:#d69d85;">&quot;</span><span>, err))
+</span><span>			</span><span style="color:#569cd6;">return false
 </span><span>		}
 </span><span>
-</span><span>		</span><span style="color:#75715e;">// Delineate chunks with new-line delimiter
-</span><span>		bts </span><span style="color:#f92672;">= </span><span style="color:#66d9ef;">append</span><span>(bts, </span><span style="color:#ae81ff;">&#39;\n&#39;</span><span>)
-</span><span>		</span><span style="color:#f92672;">if </span><span>_, err </span><span style="color:#f92672;">:= </span><span>w.Write(bts); err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
-</span><span>			slog.Info(fmt.Sprintf(</span><span style="color:#e6db74;">&quot;streamResponse: w.Write failed with </span><span style="color:#ae81ff;">%s</span><span style="color:#e6db74;">&quot;</span><span>, err))
-</span><span>			</span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">false
+</span><span>		</span><span style="color:#608b4e;">// Delineate chunks with new-line delimiter
+</span><span>		bts = append(bts, </span><span style="color:#b4cea8;">&#39;</span><span style="color:#e3bbab;">\n</span><span style="color:#b4cea8;">&#39;</span><span>)
+</span><span>		</span><span style="color:#569cd6;">if </span><span>_, err := w.Write(bts); err </span><span style="color:#569cd6;">!= nil </span><span>{
+</span><span>			slog.Info(fmt.Sprintf(</span><span style="color:#d69d85;">&quot;streamResponse: w.Write failed with </span><span style="color:#b4cea8;">%s</span><span style="color:#d69d85;">&quot;</span><span>, err))
+</span><span>			</span><span style="color:#569cd6;">return false
 </span><span>		}
 </span><span>
-</span><span>		</span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">true
+</span><span>		</span><span style="color:#569cd6;">return true
 </span><span>	})
 </span><span>}
 </span></code></pre>
@@ -107,77 +107,77 @@
 <p>With that in mind, let's get to work!</p>
 <h1 id="go-implementation">Go Implementation</h1>
 <p>We can do everything in Go using just the standard library.</p>
-<pre data-lang="Go" style="background-color:#272822;color:#f8f8f2;" class="language-Go "><code class="language-Go" data-lang="Go"><span style="color:#f92672;">package </span><span>main
+<pre data-lang="Go" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Go "><code class="language-Go" data-lang="Go"><span style="color:#569cd6;">package </span><span>main
 </span><span>
-</span><span style="color:#f92672;">import </span><span>(
-</span><span>	</span><span style="color:#e6db74;">&quot;bytes&quot;
-</span><span>	</span><span style="color:#e6db74;">&quot;encoding/json&quot;
-</span><span>	</span><span style="color:#e6db74;">&quot;fmt&quot;
-</span><span>	</span><span style="color:#e6db74;">&quot;html/template&quot;
-</span><span>	</span><span style="color:#e6db74;">&quot;io&quot;
-</span><span>	</span><span style="color:#e6db74;">&quot;log&quot;
-</span><span>	</span><span style="color:#e6db74;">&quot;net/http&quot;
+</span><span style="color:#569cd6;">import </span><span>(
+</span><span>	</span><span style="color:#d69d85;">&quot;bytes&quot;
+</span><span>	</span><span style="color:#d69d85;">&quot;encoding/json&quot;
+</span><span>	</span><span style="color:#d69d85;">&quot;fmt&quot;
+</span><span>	</span><span style="color:#d69d85;">&quot;html/template&quot;
+</span><span>	</span><span style="color:#d69d85;">&quot;io&quot;
+</span><span>	</span><span style="color:#d69d85;">&quot;log&quot;
+</span><span>	</span><span style="color:#d69d85;">&quot;net/http&quot;
 </span><span>)
 </span><span>
-</span><span style="font-style:italic;color:#66d9ef;">func </span><span style="color:#a6e22e;">main</span><span>() {
-</span><span>	tmpl </span><span style="color:#f92672;">:= </span><span>template.Must(template.ParseFiles(</span><span style="color:#e6db74;">&quot;index.html&quot;</span><span>))
+</span><span style="color:#569cd6;">func </span><span>main() {
+</span><span>	tmpl := template.Must(template.ParseFiles(</span><span style="color:#d69d85;">&quot;index.html&quot;</span><span>))
 </span><span>
-</span><span>	http.HandleFunc(</span><span style="color:#e6db74;">&quot;/&quot;</span><span>, </span><span style="font-style:italic;color:#66d9ef;">func</span><span>(</span><span style="font-style:italic;color:#fd971f;">w </span><span>http.</span><span style="font-style:italic;color:#66d9ef;">ResponseWriter</span><span>, </span><span style="font-style:italic;color:#fd971f;">r </span><span style="color:#f92672;">*</span><span>http.</span><span style="font-style:italic;color:#66d9ef;">Request</span><span>) {
-</span><span>		</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">:= </span><span>tmpl.Execute(w, </span><span style="color:#ae81ff;">nil</span><span>); err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
+</span><span>	http.HandleFunc(</span><span style="color:#d69d85;">&quot;/&quot;</span><span>, </span><span style="color:#569cd6;">func</span><span>(w http.</span><span style="color:#569cd6;">ResponseWriter</span><span>, r </span><span style="color:#569cd6;">*</span><span>http.</span><span style="color:#569cd6;">Request</span><span>) {
+</span><span>		</span><span style="color:#569cd6;">if </span><span>err := tmpl.Execute(w, </span><span style="color:#569cd6;">nil</span><span>); err </span><span style="color:#569cd6;">!= nil </span><span>{
 </span><span>			http.Error(w, err.Error(), http.StatusInternalServerError)
 </span><span>		}
 </span><span>	})
 </span><span>
-</span><span>	http.HandleFunc(</span><span style="color:#e6db74;">&quot;/api/generate&quot;</span><span>, </span><span style="font-style:italic;color:#66d9ef;">func</span><span>(</span><span style="font-style:italic;color:#fd971f;">w </span><span>http.</span><span style="font-style:italic;color:#66d9ef;">ResponseWriter</span><span>, </span><span style="font-style:italic;color:#fd971f;">r </span><span style="color:#f92672;">*</span><span>http.</span><span style="font-style:italic;color:#66d9ef;">Request</span><span>) {
-</span><span>		</span><span style="font-style:italic;color:#66d9ef;">var </span><span>request </span><span style="font-style:italic;color:#66d9ef;">struct </span><span>{
-</span><span>			Model  </span><span style="font-style:italic;color:#66d9ef;">string </span><span style="color:#e6db74;">`json:&quot;model&quot;`
-</span><span>			Prompt </span><span style="font-style:italic;color:#66d9ef;">string </span><span style="color:#e6db74;">`json:&quot;prompt&quot;`
+</span><span>	http.HandleFunc(</span><span style="color:#d69d85;">&quot;/api/generate&quot;</span><span>, </span><span style="color:#569cd6;">func</span><span>(w http.</span><span style="color:#569cd6;">ResponseWriter</span><span>, r </span><span style="color:#569cd6;">*</span><span>http.</span><span style="color:#569cd6;">Request</span><span>) {
+</span><span>		</span><span style="color:#569cd6;">var </span><span>request </span><span style="color:#569cd6;">struct </span><span>{
+</span><span>			Model  string </span><span style="color:#d69d85;">`json:&quot;model&quot;`
+</span><span>			Prompt string </span><span style="color:#d69d85;">`json:&quot;prompt&quot;`
 </span><span>		}
-</span><span>		</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">:= </span><span>json.NewDecoder(r.Body).Decode(</span><span style="color:#f92672;">&amp;</span><span>request); err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
+</span><span>		</span><span style="color:#569cd6;">if </span><span>err := json.NewDecoder(r.Body).Decode(</span><span style="color:#569cd6;">&amp;</span><span>request); err </span><span style="color:#569cd6;">!= nil </span><span>{
 </span><span>			http.Error(w, err.Error(), http.StatusBadRequest)
-</span><span>			</span><span style="color:#f92672;">return
+</span><span>			</span><span style="color:#569cd6;">return
 </span><span>		}
 </span><span>
-</span><span>		payload </span><span style="color:#f92672;">:= </span><span style="font-style:italic;color:#66d9ef;">map</span><span>[</span><span style="font-style:italic;color:#66d9ef;">string</span><span>]</span><span style="font-style:italic;color:#66d9ef;">string</span><span>{
-</span><span>			</span><span style="color:#e6db74;">&quot;model&quot;</span><span>:  request.Model,
-</span><span>			</span><span style="color:#e6db74;">&quot;prompt&quot;</span><span>: request.Prompt,
+</span><span>		payload := </span><span style="color:#569cd6;">map</span><span>[string]string{
+</span><span>			</span><span style="color:#d69d85;">&quot;model&quot;</span><span>:  request.Model,
+</span><span>			</span><span style="color:#d69d85;">&quot;prompt&quot;</span><span>: request.Prompt,
 </span><span>		}
 </span><span>
-</span><span>		payloadBytes, err </span><span style="color:#f92672;">:= </span><span>json.Marshal(payload)
-</span><span>		</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
+</span><span>		payloadBytes, err := json.Marshal(payload)
+</span><span>		</span><span style="color:#569cd6;">if </span><span>err </span><span style="color:#569cd6;">!= nil </span><span>{
 </span><span>			http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>			</span><span style="color:#f92672;">return
+</span><span>			</span><span style="color:#569cd6;">return
 </span><span>		}
 </span><span>
-</span><span>		resp, err </span><span style="color:#f92672;">:= </span><span>http.Post(</span><span style="color:#e6db74;">&quot;http://localhost:11434/api/generate&quot;</span><span>, </span><span style="color:#e6db74;">&quot;application/json&quot;</span><span>, bytes.NewBuffer(payloadBytes))
-</span><span>		</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
+</span><span>		resp, err := http.Post(</span><span style="color:#d69d85;">&quot;http://localhost:11434/api/generate&quot;</span><span>, </span><span style="color:#d69d85;">&quot;application/json&quot;</span><span>, bytes.NewBuffer(payloadBytes))
+</span><span>		</span><span style="color:#569cd6;">if </span><span>err </span><span style="color:#569cd6;">!= nil </span><span>{
 </span><span>			http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>			</span><span style="color:#f92672;">return
+</span><span>			</span><span style="color:#569cd6;">return
 </span><span>		}
-</span><span>		</span><span style="color:#f92672;">defer </span><span>resp.Body.Close()
+</span><span>		</span><span style="color:#569cd6;">defer </span><span>resp.Body.Close()
 </span><span>
-</span><span>		w.Header().Set(</span><span style="color:#e6db74;">&quot;Content-Type&quot;</span><span>, </span><span style="color:#e6db74;">&quot;application/json&quot;</span><span>)
+</span><span>		w.Header().Set(</span><span style="color:#d69d85;">&quot;Content-Type&quot;</span><span>, </span><span style="color:#d69d85;">&quot;application/json&quot;</span><span>)
 </span><span>		w.WriteHeader(http.StatusOK)
 </span><span>
-</span><span>		decoder </span><span style="color:#f92672;">:= </span><span>json.NewDecoder(resp.Body)
-</span><span>		</span><span style="color:#f92672;">for </span><span>{
-</span><span>			</span><span style="font-style:italic;color:#66d9ef;">var </span><span>response </span><span style="font-style:italic;color:#66d9ef;">map</span><span>[</span><span style="font-style:italic;color:#66d9ef;">string</span><span>]</span><span style="font-style:italic;color:#66d9ef;">interface</span><span>{}
-</span><span>			</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">:= </span><span>decoder.Decode(</span><span style="color:#f92672;">&amp;</span><span>response); err </span><span style="color:#f92672;">== </span><span>io.EOF {
-</span><span>				</span><span style="color:#f92672;">break
-</span><span>			} </span><span style="color:#f92672;">else if </span><span>err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
+</span><span>		decoder := json.NewDecoder(resp.Body)
+</span><span>		</span><span style="color:#569cd6;">for </span><span>{
+</span><span>			</span><span style="color:#569cd6;">var </span><span>response </span><span style="color:#569cd6;">map</span><span>[string]</span><span style="color:#569cd6;">interface</span><span>{}
+</span><span>			</span><span style="color:#569cd6;">if </span><span>err := decoder.Decode(</span><span style="color:#569cd6;">&amp;</span><span>response); err </span><span style="color:#569cd6;">== </span><span>io.EOF {
+</span><span>				</span><span style="color:#569cd6;">break
+</span><span>			} </span><span style="color:#569cd6;">else if </span><span>err </span><span style="color:#569cd6;">!= nil </span><span>{
 </span><span>				http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>				</span><span style="color:#f92672;">return
+</span><span>				</span><span style="color:#569cd6;">return
 </span><span>			}
-</span><span>			</span><span style="color:#f92672;">if </span><span>err </span><span style="color:#f92672;">:= </span><span>json.NewEncoder(w).Encode(response); err </span><span style="color:#f92672;">!= </span><span style="color:#ae81ff;">nil </span><span>{
+</span><span>			</span><span style="color:#569cd6;">if </span><span>err := json.NewEncoder(w).Encode(response); err </span><span style="color:#569cd6;">!= nil </span><span>{
 </span><span>				http.Error(w, err.Error(), http.StatusInternalServerError)
-</span><span>				</span><span style="color:#f92672;">return
+</span><span>				</span><span style="color:#569cd6;">return
 </span><span>			}
-</span><span>			w.(http.</span><span style="font-style:italic;color:#66d9ef;">Flusher</span><span>).Flush()
+</span><span>			w.(http.</span><span style="color:#569cd6;">Flusher</span><span>).Flush()
 </span><span>		}
 </span><span>	})
 </span><span>
-</span><span>	fmt.Println(</span><span style="color:#e6db74;">&quot;Server is running on http://localhost:8080&quot;</span><span>)
-</span><span>	log.Fatal(http.ListenAndServe(</span><span style="color:#e6db74;">&quot;:8080&quot;</span><span>, </span><span style="color:#ae81ff;">nil</span><span>))
+</span><span>	fmt.Println(</span><span style="color:#d69d85;">&quot;Server is running on http://localhost:8080&quot;</span><span>)
+</span><span>	log.Fatal(http.ListenAndServe(</span><span style="color:#d69d85;">&quot;:8080&quot;</span><span>, </span><span style="color:#569cd6;">nil</span><span>))
 </span><span>}
 </span></code></pre>
 <p>Handling the chunked JSON is done in that last block with the decoder. The decoder is a state machine that handles its own buffering. The <code>for</code> loop checks for error conditions, and if they aren't found, will flush the buffer contents to the client, which in this case is a javascript program running inside the browser. As the Javascript program receives those messages, it writes them on the page.</p>
@@ -197,76 +197,76 @@
 <p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library.</p>
 <p>I used <a href="https://http-kit.github.io">http-kit</a> for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
 <p>In Clojure, Ring-compliant HTTP server's use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">read-html-template </span><span>[]
-</span><span>  (println </span><span style="color:#e6db74;">&quot;fetching html template&quot;</span><span>)
-</span><span>  (slurp (io/resource </span><span style="color:#e6db74;">&quot;index.html&quot;</span><span>)))
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>read-html-template []
+</span><span>  (println </span><span style="color:#d69d85;">&quot;fetching html template&quot;</span><span>)
+</span><span>  (slurp (io/resource </span><span style="color:#d69d85;">&quot;index.html&quot;</span><span>)))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">index-handler </span><span>[req]
-</span><span>  (println </span><span style="color:#e6db74;">&quot;in index handler&quot;</span><span>)
-</span><span>  {</span><span style="color:#ae81ff;">:status  200
-</span><span>   </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;text/html&quot;</span><span>}
-</span><span>   </span><span style="color:#ae81ff;">:body    </span><span>(read-html-template)})
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>index-handler [req]
+</span><span>  (println </span><span style="color:#d69d85;">&quot;in index handler&quot;</span><span>)
+</span><span>  {</span><span style="color:#b4cea8;">:status  </span><span style="color:#b5cea8;">200
+</span><span>   </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;text/html&quot;</span><span>}
+</span><span>   </span><span style="color:#b4cea8;">:body    </span><span>(read-html-template)})
 </span><span>   
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">not-found-handler </span><span>[req]
-</span><span>  {</span><span style="color:#ae81ff;">:status  404
-</span><span>   </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;text/plain&quot;</span><span>}
-</span><span>   </span><span style="color:#ae81ff;">:body    </span><span style="color:#e6db74;">&quot;Page not found.&quot;</span><span>})
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>not-found-handler [req]
+</span><span>  {</span><span style="color:#b4cea8;">:status  </span><span style="color:#b5cea8;">404
+</span><span>   </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;text/plain&quot;</span><span>}
+</span><span>   </span><span style="color:#b4cea8;">:body    </span><span style="color:#d69d85;">&quot;Page not found.&quot;</span><span>})
 </span><span>   
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">app </span><span>[req]
-</span><span>  (let [uri (</span><span style="color:#ae81ff;">:uri</span><span> req)
-</span><span>        method (</span><span style="color:#ae81ff;">:request-method</span><span> req)]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>app [req]
+</span><span>  (let [uri (</span><span style="color:#b4cea8;">:uri</span><span> req)
+</span><span>        method (</span><span style="color:#b4cea8;">:request-method</span><span> req)]
 </span><span>    (cond
-</span><span>      (and (= uri </span><span style="color:#e6db74;">&quot;/&quot;</span><span>) (= method </span><span style="color:#ae81ff;">:get</span><span>)) (index-handler req)
-</span><span>      </span><span style="color:#ae81ff;">:else </span><span>(not-found-handler req)))) 
+</span><span>      (and (= uri </span><span style="color:#d69d85;">&quot;/&quot;</span><span>) (= method </span><span style="color:#b4cea8;">:get</span><span>)) (index-handler req)
+</span><span>      </span><span style="color:#b4cea8;">:else </span><span>(not-found-handler req)))) 
 </span></code></pre>
 <p>That all works because you can pass any arbitrary string as your response body and set its content type to text/html, it will render correctly.</p>
 <p>At this point, the client has a javascript programming that wants to pass a prompt and listen for the streaming response. We will want an asynchronous handler to do this, so we'll use http-kit's <code>as-channel</code> function. It's not covered in the project's main documentation, but the docstring in the source itself has enough to get started with. Let's use it and wire it up.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">clients_ </span><span>(atom #{}))
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">my-async-handler </span><span>[ring-req]
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">def </span><span>clients_ (atom #{}))
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>my-async-handler [ring-req]
 </span><span>  (http/as-channel ring-req
-</span><span>              {</span><span style="color:#ae81ff;">:on-open </span><span>(</span><span style="color:#f92672;">fn </span><span>[ch]
-</span><span>                          (println </span><span style="color:#e6db74;">&quot;conn open!&quot;</span><span>)
+</span><span>              {</span><span style="color:#b4cea8;">:on-open </span><span>(</span><span style="color:#569cd6;">fn </span><span>[ch]
+</span><span>                          (println </span><span style="color:#d69d85;">&quot;conn open!&quot;</span><span>)
 </span><span>                          (println ring-req)
 </span><span>                          (swap! clients_ conj ch))
-</span><span>               </span><span style="color:#ae81ff;">:on-close </span><span>(</span><span style="color:#f92672;">fn </span><span>[ch]
-</span><span>                           (println </span><span style="color:#e6db74;">&quot;conn close!&quot;</span><span>)
+</span><span>               </span><span style="color:#b4cea8;">:on-close </span><span>(</span><span style="color:#569cd6;">fn </span><span>[ch]
+</span><span>                           (println </span><span style="color:#d69d85;">&quot;conn close!&quot;</span><span>)
 </span><span>                           (swap! clients_ disj ch))}))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">app </span><span>[req]
-</span><span>  (let [uri (</span><span style="color:#ae81ff;">:uri</span><span> req)
-</span><span>        method (</span><span style="color:#ae81ff;">:request-method</span><span> req)]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>app [req]
+</span><span>  (let [uri (</span><span style="color:#b4cea8;">:uri</span><span> req)
+</span><span>        method (</span><span style="color:#b4cea8;">:request-method</span><span> req)]
 </span><span>    (cond
-</span><span>      (and (= uri </span><span style="color:#e6db74;">&quot;/&quot;</span><span>) (= method </span><span style="color:#ae81ff;">:get</span><span>)) (index-handler req)
-</span><span>      (and (= uri </span><span style="color:#e6db74;">&quot;/api/generate&quot;</span><span>) (= method </span><span style="color:#ae81ff;">:post</span><span>)) (my-async-handler req)
-</span><span>      </span><span style="color:#ae81ff;">:else </span><span>(not-found-handler req))))
+</span><span>      (and (= uri </span><span style="color:#d69d85;">&quot;/&quot;</span><span>) (= method </span><span style="color:#b4cea8;">:get</span><span>)) (index-handler req)
+</span><span>      (and (= uri </span><span style="color:#d69d85;">&quot;/api/generate&quot;</span><span>) (= method </span><span style="color:#b4cea8;">:post</span><span>)) (my-async-handler req)
+</span><span>      </span><span style="color:#b4cea8;">:else </span><span>(not-found-handler req))))
 </span></code></pre>
 <p>When I evaluate these forms, switch back to my browser, and hit the "Submit" buttton, I see the print statements fire. When I evaliate <code>clients_</code>, I see it now has a new client.</p>
 <p>To get the actual messages, we can start writing a function to send a POST request to the ollama server. After that, we want to find a way to access messages as they stream in and send them to the client.</p>
 <p>In typical asynchronous programming, this kind of message passage is done with callbacks. http-kit has its own concept of channels that is separate from core.async with its own semantics. When we get a message, we will want to send it to the client like this:</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(http/send! ch {</span><span style="color:#ae81ff;">:status 200
-</span><span>                </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                </span><span style="color:#ae81ff;">:body</span><span> json-encoded}
-</span><span>            </span><span style="color:#ae81ff;">false</span><span>)
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(http/send! ch {</span><span style="color:#b4cea8;">:status </span><span style="color:#b5cea8;">200
+</span><span>                </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
+</span><span>                </span><span style="color:#b4cea8;">:body</span><span> json-encoded}
+</span><span>            </span><span style="color:#569cd6;">false</span><span>)
 </span></code></pre>
 <p>To kick off the HTTP request to ollama with the prompt, we want to use http-kit's client functionality. There is documentation on making asynchronous requests with callbacks:</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span style="color:#75715e;">;fire and forget, returns immediately[1], returned promise is ignored
-</span><span>(http/get </span><span style="color:#e6db74;">&quot;http://host.com/path&quot;</span><span>)
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span style="color:#608b4e;">;fire and forget, returns immediately[1], returned promise is ignored
+</span><span>(http/get </span><span style="color:#d69d85;">&quot;http://host.com/path&quot;</span><span>)
 </span><span>
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">options </span><span>{</span><span style="color:#ae81ff;">:timeout 200             </span><span style="color:#75715e;">; ms
-</span><span>              </span><span style="color:#ae81ff;">:basic-auth </span><span>[</span><span style="color:#e6db74;">&quot;user&quot; &quot;pass&quot;</span><span>]
-</span><span>              </span><span style="color:#ae81ff;">:query-params </span><span>{</span><span style="color:#ae81ff;">:param </span><span style="color:#e6db74;">&quot;value&quot; </span><span style="color:#ae81ff;">:param2 </span><span>[</span><span style="color:#e6db74;">&quot;value1&quot; &quot;value2&quot;</span><span>]}
-</span><span>              </span><span style="color:#ae81ff;">:user-agent </span><span style="color:#e6db74;">&quot;User-Agent-string&quot;
-</span><span>              </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;X-Header&quot; &quot;Value&quot;</span><span>}})
-</span><span>(http/get </span><span style="color:#e6db74;">&quot;http://host.com/path&quot;</span><span> options
-</span><span>          (</span><span style="color:#f92672;">fn </span><span>[{</span><span style="color:#ae81ff;">:keys </span><span>[status headers body error]}] </span><span style="color:#75715e;">;; asynchronous response handling
+</span><span>(</span><span style="color:#569cd6;">def </span><span>options {</span><span style="color:#b4cea8;">:timeout </span><span style="color:#b5cea8;">200             </span><span style="color:#608b4e;">; ms
+</span><span>              </span><span style="color:#b4cea8;">:basic-auth </span><span>[</span><span style="color:#d69d85;">&quot;user&quot; &quot;pass&quot;</span><span>]
+</span><span>              </span><span style="color:#b4cea8;">:query-params </span><span>{</span><span style="color:#b4cea8;">:param </span><span style="color:#d69d85;">&quot;value&quot; </span><span style="color:#b4cea8;">:param2 </span><span>[</span><span style="color:#d69d85;">&quot;value1&quot; &quot;value2&quot;</span><span>]}
+</span><span>              </span><span style="color:#b4cea8;">:user-agent </span><span style="color:#d69d85;">&quot;User-Agent-string&quot;
+</span><span>              </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;X-Header&quot; &quot;Value&quot;</span><span>}})
+</span><span>(http/get </span><span style="color:#d69d85;">&quot;http://host.com/path&quot;</span><span> options
+</span><span>          (</span><span style="color:#569cd6;">fn </span><span>[{</span><span style="color:#b4cea8;">:keys </span><span>[status headers body error]}] </span><span style="color:#608b4e;">;; asynchronous response handling
 </span><span>            (if error
-</span><span>              (println </span><span style="color:#e6db74;">&quot;Failed, exception is &quot;</span><span> error)
-</span><span>              (println </span><span style="color:#e6db74;">&quot;Async HTTP GET: &quot;</span><span> status))))
-</span><span> </span><span style="color:#75715e;">; [1] may not always true, since DNS lookup maybe slow
+</span><span>              (println </span><span style="color:#d69d85;">&quot;Failed, exception is &quot;</span><span> error)
+</span><span>              (println </span><span style="color:#d69d85;">&quot;Async HTTP GET: &quot;</span><span> status))))
+</span><span> </span><span style="color:#608b4e;">; [1] may not always true, since DNS lookup maybe slow
 </span></code></pre>
 <p>This will kind of work, but it will fire the promise once all the messages are received. We're looking for some way to access the messages as the stream in.</p>
 <p>I looked at the source for help and found the following. Without guidance from the documentation, the <code>:stream</code> option sounded like a good option to try.</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>  Returned body type is controlled by `:as` option:
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>  Returned body type is controlled by `:as` option:
 </span><span>
 </span><span>   Without automatic unzipping:
 </span><span>     `:none`           - org.httpkit.DynamicBytes
@@ -279,7 +279,7 @@
 </span><span>     `:auto`           - As `:text` or `:stream` (based on Content-Type header)
 </span></code></pre>
 <p>There's no further mention of how to use a ByteInputStream in the docs, so we can check the source for that.</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>package org.httpkit;
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>package org.httpkit;
 </span><span>
 </span><span>import java.io.IOException;
 </span><span>import java.io.InputStream;
@@ -317,19 +317,19 @@
 </span></code></pre>
 <p>Since this class subclasses InputStream, it can be read by an <a href="https://docs.oracle.com/javase%2F8%2Fdocs%2Fapi%2F%2F/java/io/InputStreamReader.html">InputStreamReader</a>.</p>
 <p>The docs for InputStreamReader recommend wrapping with a BufferedReader, so let's do that. We want to take inputs line by line</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">send-prompt-to-ollama </span><span>[ch prompt]
-</span><span>  (let [url </span><span style="color:#e6db74;">&quot;http://localhost:11434/api/generate&quot;</span><span>]
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>send-prompt-to-ollama [ch prompt]
+</span><span>  (let [url </span><span style="color:#d69d85;">&quot;http://localhost:11434/api/generate&quot;</span><span>]
 </span><span>    (client/post url
-</span><span>                 {</span><span style="color:#ae81ff;">:as :stream
-</span><span>                  </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                  </span><span style="color:#ae81ff;">:body </span><span>(json/write-str {</span><span style="color:#ae81ff;">:model </span><span style="color:#e6db74;">&quot;llama3&quot; </span><span style="color:#ae81ff;">:prompt</span><span> prompt})}
-</span><span>                 (</span><span style="color:#f92672;">fn </span><span>[{</span><span style="color:#ae81ff;">:keys </span><span>[status headers body error]}]
+</span><span>                 {</span><span style="color:#b4cea8;">:as :stream
+</span><span>                  </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
+</span><span>                  </span><span style="color:#b4cea8;">:body </span><span>(json/write-str {</span><span style="color:#b4cea8;">:model </span><span style="color:#d69d85;">&quot;llama3&quot; </span><span style="color:#b4cea8;">:prompt</span><span> prompt})}
+</span><span>                 (</span><span style="color:#569cd6;">fn </span><span>[{</span><span style="color:#b4cea8;">:keys </span><span>[status headers body error]}]
 </span><span>                   (if error
 </span><span>                     (do
-</span><span>                       (http/send! ch {</span><span style="color:#ae81ff;">:status 500 :body </span><span>(str </span><span style="color:#e6db74;">&quot;Internal Server Error: &quot;</span><span> error)})
+</span><span>                       (http/send! ch {</span><span style="color:#b4cea8;">:status </span><span style="color:#b5cea8;">500 </span><span style="color:#b4cea8;">:body </span><span>(str </span><span style="color:#d69d85;">&quot;Internal Server Error: &quot;</span><span> error)})
 </span><span>                       (http/close ch))
-</span><span>                     (let [stream </span><span style="color:#f92672;">^</span><span>java.io.InputStream body
-</span><span>                           reader (java.io.BufferedReader. (java.io.InputStreamReader. stream </span><span style="color:#e6db74;">&quot;UTF-8&quot;</span><span>))]
+</span><span>                     (let [stream </span><span style="color:#569cd6;">^</span><span>java.io.InputStream body
+</span><span>                           reader (java.io.BufferedReader. (java.io.InputStreamReader. stream </span><span style="color:#d69d85;">&quot;UTF-8&quot;</span><span>))]
 </span><span>                       (loop []
 </span><span>                         (let [line (.readLine reader)]
 </span><span>                           (if (nil? line)
@@ -337,25 +337,25 @@
 </span><span>                               (.close reader)
 </span><span>                               (http/close ch))
 </span><span>                             (do
-</span><span>                               (let [response (</span><span style="color:#ae81ff;">:response </span><span>(json/read-json line))
-</span><span>                                     json-encoded (json/write-str {</span><span style="color:#ae81ff;">:response</span><span> response})]
-</span><span>                                 (http/send! ch {</span><span style="color:#ae81ff;">:status 200
-</span><span>                                                 </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                                                 </span><span style="color:#ae81ff;">:body</span><span> json-encoded}
-</span><span>                                             </span><span style="color:#ae81ff;">false</span><span>))
+</span><span>                               (let [response (</span><span style="color:#b4cea8;">:response </span><span>(json/read-json line))
+</span><span>                                     json-encoded (json/write-str {</span><span style="color:#b4cea8;">:response</span><span> response})]
+</span><span>                                 (http/send! ch {</span><span style="color:#b4cea8;">:status </span><span style="color:#b5cea8;">200
+</span><span>                                                 </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
+</span><span>                                                 </span><span style="color:#b4cea8;">:body</span><span> json-encoded}
+</span><span>                                             </span><span style="color:#569cd6;">false</span><span>))
 </span><span>                               (recur)))))))))))
 </span></code></pre>
 <p>Unfortunately, after writing this up, I observed the same behavior as earlier: responses were not streamed in, but rather returned all at once.</p>
 <p>It turns out this appears to be a <a href="https://github.com/http-kit/http-kit/issues/90">known limitation</a> of http-kit's client functionality. The comment thread mentioned that clj-http works for this use case, but part of the reason I went with http-kit in the first place was to minimize dependencies.</p>
 <p>Another option to try without introducing a new dependency is to interop with <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html">java.net.http.HttpClient</a>, which has been included with the JDK since Java 11.</p>
 <p>Here's how I initially got that working:</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(import (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)
 </span><span>        (java.net URI)
 </span><span>        (java.nio.charset StandardCharsets)
 </span><span>        (java.io InputStreamReader BufferedReader)
 </span><span>        (java.util.concurrent CompletableFuture))
 </span><span>        
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">handle-response </span><span>[ch response]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>handle-response [ch response]
 </span><span>  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]
 </span><span>    (loop []
 </span><span>      (let [line (.readLine reader)]
@@ -364,37 +364,37 @@
 </span><span>            (.close reader)
 </span><span>            (http/close ch))
 </span><span>          (do
-</span><span>            (println </span><span style="color:#e6db74;">&quot;got line&quot;</span><span> line)
-</span><span>            (let [response (</span><span style="color:#ae81ff;">:response </span><span>(json/read-json line))
-</span><span>                  json-encoded (json/write-str {</span><span style="color:#ae81ff;">:response</span><span> response})]
-</span><span>              (println </span><span style="color:#e6db74;">&quot;sending response&quot;</span><span> response)
-</span><span>              (http/send! ch {</span><span style="color:#ae81ff;">:status 200
-</span><span>                              </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                              </span><span style="color:#ae81ff;">:body</span><span> json-encoded}
-</span><span>                          </span><span style="color:#ae81ff;">false</span><span>))
+</span><span>            (println </span><span style="color:#d69d85;">&quot;got line&quot;</span><span> line)
+</span><span>            (let [response (</span><span style="color:#b4cea8;">:response </span><span>(json/read-json line))
+</span><span>                  json-encoded (json/write-str {</span><span style="color:#b4cea8;">:response</span><span> response})]
+</span><span>              (println </span><span style="color:#d69d85;">&quot;sending response&quot;</span><span> response)
+</span><span>              (http/send! ch {</span><span style="color:#b4cea8;">:status </span><span style="color:#b5cea8;">200
+</span><span>                              </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
+</span><span>                              </span><span style="color:#b4cea8;">:body</span><span> json-encoded}
+</span><span>                          </span><span style="color:#569cd6;">false</span><span>))
 </span><span>            (recur)))))))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">send-async-request </span><span>[ch model prompt]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>send-async-request [ch model prompt]
 </span><span>  (let [client (HttpClient/newHttpClient)
-</span><span>        body (str </span><span style="color:#e6db74;">&quot;{</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">model</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">:</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">&quot;</span><span> model </span><span style="color:#e6db74;">&quot;</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">, </span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">prompt</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">:</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">&quot;</span><span> prompt </span><span style="color:#e6db74;">&quot;</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">}&quot;</span><span>)
+</span><span>        body (str </span><span style="color:#d69d85;">&quot;{</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">model</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">:</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">&quot;</span><span> model </span><span style="color:#d69d85;">&quot;</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">, </span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">prompt</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">:</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">&quot;</span><span> prompt </span><span style="color:#d69d85;">&quot;</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">}&quot;</span><span>)
 </span><span>        request (-&gt; (HttpRequest/newBuilder)
-</span><span>                    (.uri (URI/create </span><span style="color:#e6db74;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
-</span><span>                    (.header </span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
+</span><span>                    (.uri (URI/create </span><span style="color:#d69d85;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
+</span><span>                    (.header </span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
 </span><span>                    (.POST (HttpRequest$BodyPublishers/ofString body))
 </span><span>                     (.build))]
 </span><span>    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))
-</span><span>        (.thenAccept (reify </span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">java.util.function.Consumer
-</span><span>                       (</span><span style="color:#a6e22e;">accept </span><span>[_ response]
+</span><span>        (.thenAccept (reify </span><span style="color:#4ec9b0;">java.util.function.Consumer
+</span><span>                       (accept [_ response]
 </span><span>                         (handle-response ch response))))
-</span><span>        (.exceptionally (reify </span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">java.util.function.Function
-</span><span>                          (</span><span style="color:#a6e22e;">apply </span><span>[_ error]
-</span><span>                            (println (str </span><span style="color:#e6db74;">&quot;Request failed: &quot;</span><span> error))
-</span><span>                            </span><span style="color:#ae81ff;">nil</span><span>))))))
+</span><span>        (.exceptionally (reify </span><span style="color:#4ec9b0;">java.util.function.Function
+</span><span>                          (apply [_ error]
+</span><span>                            (println (str </span><span style="color:#d69d85;">&quot;Request failed: &quot;</span><span> error))
+</span><span>                            </span><span style="color:#569cd6;">nil</span><span>))))))
 </span></code></pre>
 <p>This gave me the behavior I was looking for: responses were sent to the client as soon as they come in.</p>
 <p>The code is a little noisy because the library uses Java idioms that were introduced after Clojure was created.</p>
 <p>Luckily, Clojure's maintainers recently introduced language changes that make using these features less painful. From the release notes of Clojure 1.12.0-alpha12:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>Functional interfaces
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>Functional interfaces
 </span><span>
 </span><span>Java programs define &quot;functions&quot; with Java functional interfaces (marked with the @FunctionalInterface annotation), which have a single method.
 </span><span>
@@ -404,10 +404,10 @@
 </span><span>
 </span></code></pre>
 <p>To take advantage of these changes, we can use a preview build of the language by updating the language version in <code>deps.edn</code>:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>org.clojure/clojure       {:mvn/version &quot;1.12.0-beta1&quot;}
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>org.clojure/clojure       {:mvn/version &quot;1.12.0-beta1&quot;}
 </span></code></pre>
 <p>After doing so, we can change the above functions to this:</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">handle-response </span><span>[ch response]
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>handle-response [ch response]
 </span><span>  (with-open [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]
 </span><span>    (loop []
 </span><span>      (let [line (.readLine reader)]
@@ -415,61 +415,61 @@
 </span><span>          (do
 </span><span>            (.close reader)
 </span><span>            (http/close ch))
-</span><span>          (let [response (</span><span style="color:#ae81ff;">:response </span><span>(json/read-json line))
-</span><span>                json-encoded (json/write-str {</span><span style="color:#ae81ff;">:response</span><span> response})]
-</span><span>            (http/send! ch {</span><span style="color:#ae81ff;">:status 200
-</span><span>                            </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>                            </span><span style="color:#ae81ff;">:body</span><span> json-encoded}
-</span><span>                        </span><span style="color:#ae81ff;">false</span><span>))
+</span><span>          (let [response (</span><span style="color:#b4cea8;">:response </span><span>(json/read-json line))
+</span><span>                json-encoded (json/write-str {</span><span style="color:#b4cea8;">:response</span><span> response})]
+</span><span>            (http/send! ch {</span><span style="color:#b4cea8;">:status </span><span style="color:#b5cea8;">200
+</span><span>                            </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
+</span><span>                            </span><span style="color:#b4cea8;">:body</span><span> json-encoded}
+</span><span>                        </span><span style="color:#569cd6;">false</span><span>))
 </span><span>          (recur))))))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">send-async-request </span><span>[ch model prompt]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>send-async-request [ch model prompt]
 </span><span>  (let [client (HttpClient/newHttpClient)
-</span><span>        body (str </span><span style="color:#e6db74;">&quot;{</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">model</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">:</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">&quot;</span><span> model </span><span style="color:#e6db74;">&quot;</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">, </span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">prompt</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">:</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">&quot;</span><span> prompt </span><span style="color:#e6db74;">&quot;</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">}&quot;</span><span>)
+</span><span>        body (str </span><span style="color:#d69d85;">&quot;{</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">model</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">:</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">&quot;</span><span> model </span><span style="color:#d69d85;">&quot;</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">, </span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">prompt</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">:</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">&quot;</span><span> prompt </span><span style="color:#d69d85;">&quot;</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">}&quot;</span><span>)
 </span><span>        request (-&gt; (HttpRequest/newBuilder)
-</span><span>                    (.uri (URI/create </span><span style="color:#e6db74;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
-</span><span>                    (.header </span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
+</span><span>                    (.uri (URI/create </span><span style="color:#d69d85;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
+</span><span>                    (.header </span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
 </span><span>                    (.POST (HttpRequest$BodyPublishers/ofString body))
 </span><span>                    (.build))]
 </span><span>    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))
-</span><span>        (.thenAccept (</span><span style="color:#f92672;">fn </span><span>[response] (handle-response ch response)))
-</span><span>        (.exceptionally (</span><span style="color:#f92672;">fn </span><span>[error] (println (str </span><span style="color:#e6db74;">&quot;Request failed: &quot;</span><span> error)))))))
+</span><span>        (.thenAccept (</span><span style="color:#569cd6;">fn </span><span>[response] (handle-response ch response)))
+</span><span>        (.exceptionally (</span><span style="color:#569cd6;">fn </span><span>[error] (println (str </span><span style="color:#d69d85;">&quot;Request failed: &quot;</span><span> error)))))))
 </span></code></pre>
 <p>From here, I just needed to wire up the request logic to my async handler and then update my main handler to route to it.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">my-async-handler </span><span>[ring-req]
-</span><span>  (let [body (slurp (</span><span style="color:#ae81ff;">:body</span><span> ring-req))
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>my-async-handler [ring-req]
+</span><span>  (let [body (slurp (</span><span style="color:#b4cea8;">:body</span><span> ring-req))
 </span><span>        prompt (try
-</span><span>                 (</span><span style="color:#ae81ff;">:prompt </span><span>(json/read-json body))
+</span><span>                 (</span><span style="color:#b4cea8;">:prompt </span><span>(json/read-json body))
 </span><span>                 (catch Exception e
-</span><span>                   (println </span><span style="color:#e6db74;">&quot;Error parsing request body:&quot;</span><span> e)
-</span><span>                   </span><span style="color:#ae81ff;">nil</span><span>))]
+</span><span>                   (println </span><span style="color:#d69d85;">&quot;Error parsing request body:&quot;</span><span> e)
+</span><span>                   </span><span style="color:#569cd6;">nil</span><span>))]
 </span><span>    (if prompt
 </span><span>      (http/as-channel ring-req
-</span><span>                       {</span><span style="color:#ae81ff;">:on-open </span><span>(</span><span style="color:#f92672;">fn </span><span>[ch]
-</span><span>                                   (println </span><span style="color:#e6db74;">&quot;conn open!&quot;</span><span>)
+</span><span>                       {</span><span style="color:#b4cea8;">:on-open </span><span>(</span><span style="color:#569cd6;">fn </span><span>[ch]
+</span><span>                                   (println </span><span style="color:#d69d85;">&quot;conn open!&quot;</span><span>)
 </span><span>                                   (swap! clients_ conj ch)
-</span><span>                                   (send-async-request ch </span><span style="color:#e6db74;">&quot;llama3&quot;</span><span> prompt))
-</span><span>                        </span><span style="color:#ae81ff;">:on-close </span><span>(</span><span style="color:#f92672;">fn </span><span>[ch]
-</span><span>                                    (println </span><span style="color:#e6db74;">&quot;conn close!&quot;</span><span>)
+</span><span>                                   (send-async-request ch </span><span style="color:#d69d85;">&quot;llama3&quot;</span><span> prompt))
+</span><span>                        </span><span style="color:#b4cea8;">:on-close </span><span>(</span><span style="color:#569cd6;">fn </span><span>[ch]
+</span><span>                                    (println </span><span style="color:#d69d85;">&quot;conn close!&quot;</span><span>)
 </span><span>                                    (swap! clients_ disj ch))})
-</span><span>      {</span><span style="color:#ae81ff;">:status 400
-</span><span>       </span><span style="color:#ae81ff;">:headers </span><span>{</span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
-</span><span>       </span><span style="color:#ae81ff;">:body </span><span>(json/write-str {</span><span style="color:#ae81ff;">:error </span><span style="color:#e6db74;">&quot;Invalid request&quot;</span><span>})})))
+</span><span>      {</span><span style="color:#b4cea8;">:status </span><span style="color:#b5cea8;">400
+</span><span>       </span><span style="color:#b4cea8;">:headers </span><span>{</span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>}
+</span><span>       </span><span style="color:#b4cea8;">:body </span><span>(json/write-str {</span><span style="color:#b4cea8;">:error </span><span style="color:#d69d85;">&quot;Invalid request&quot;</span><span>})})))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">app </span><span>[req]
-</span><span>  (let [uri (</span><span style="color:#ae81ff;">:uri</span><span> req)
-</span><span>        method (</span><span style="color:#ae81ff;">:request-method</span><span> req)]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>app [req]
+</span><span>  (let [uri (</span><span style="color:#b4cea8;">:uri</span><span> req)
+</span><span>        method (</span><span style="color:#b4cea8;">:request-method</span><span> req)]
 </span><span>    (cond
-</span><span>      (and (= uri </span><span style="color:#e6db74;">&quot;/&quot;</span><span>) (= method </span><span style="color:#ae81ff;">:get</span><span>)) (index-handler req)
-</span><span>      (and (= uri </span><span style="color:#e6db74;">&quot;/api/generate&quot;</span><span>) (= method </span><span style="color:#ae81ff;">:post</span><span>)) (</span><span style="color:#f92672;">#&#39;</span><span>my-async-handler req)
-</span><span>      </span><span style="color:#ae81ff;">:else </span><span>(not-found-handler req))))
+</span><span>      (and (= uri </span><span style="color:#d69d85;">&quot;/&quot;</span><span>) (= method </span><span style="color:#b4cea8;">:get</span><span>)) (index-handler req)
+</span><span>      (and (= uri </span><span style="color:#d69d85;">&quot;/api/generate&quot;</span><span>) (= method </span><span style="color:#b4cea8;">:post</span><span>)) (</span><span style="color:#569cd6;">#&#39;</span><span>my-async-handler req)
+</span><span>      </span><span style="color:#b4cea8;">:else </span><span>(not-found-handler req))))
 </span><span>
 </span></code></pre>
 <h1 id="clojure-pedestal-implementation">Clojure - Pedestal Implementation</h1>
 <p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn't really make sense to use core.async there.</p>
 <p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it.</p>
 <p>In this version, my request function sends a request with the user's prompt and returns a channel that has the messages queued.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">handle-response </span><span>[response-ch </span><span style="color:#f92672;">^</span><span>HttpResponse response]
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>handle-response [response-ch </span><span style="color:#569cd6;">^</span><span>HttpResponse response]
 </span><span>  (let [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]
 </span><span>    (go-loop []
 </span><span>      (if-let [line (.readLine reader)]
@@ -479,49 +479,49 @@
 </span><span>          (recur))
 </span><span>        (a/close! response-ch)))))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">send-async-request </span><span>[model prompt]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>send-async-request [model prompt]
 </span><span>  (let [client (HttpClient/newHttpClient)
-</span><span>        body (generate-string {</span><span style="color:#ae81ff;">:model</span><span> model </span><span style="color:#ae81ff;">:prompt</span><span> prompt})
+</span><span>        body (generate-string {</span><span style="color:#b4cea8;">:model</span><span> model </span><span style="color:#b4cea8;">:prompt</span><span> prompt})
 </span><span>        request (-&gt; (HttpRequest/newBuilder)
-</span><span>                    (.uri (URI/create </span><span style="color:#e6db74;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
-</span><span>                    (.header </span><span style="color:#e6db74;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
+</span><span>                    (.uri (URI/create </span><span style="color:#d69d85;">&quot;http://localhost:11434/api/generate&quot;</span><span>))
+</span><span>                    (.header </span><span style="color:#d69d85;">&quot;Content-Type&quot; &quot;application/json&quot;</span><span>)
 </span><span>                    (.POST (HttpRequest$BodyPublishers/ofString body))
 </span><span>                    (.build))
 </span><span>        response-ch (a/chan)]
 </span><span>    (-&gt; (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))
-</span><span>        (.thenAccept (</span><span style="color:#f92672;">fn </span><span>[response] (handle-response response-ch response)))
-</span><span>        (.exceptionally (</span><span style="color:#f92672;">fn </span><span>[error] (println (str </span><span style="color:#e6db74;">&quot;Request failed: &quot;</span><span> error)))))
+</span><span>        (.thenAccept (</span><span style="color:#569cd6;">fn </span><span>[response] (handle-response response-ch response)))
+</span><span>        (.exceptionally (</span><span style="color:#569cd6;">fn </span><span>[error] (println (str </span><span style="color:#d69d85;">&quot;Request failed: &quot;</span><span> error)))))
 </span><span>    response-ch))
 </span></code></pre>
 <p>I used Pedestal's <a href="http://pedestal.io/pedestal/0.6/reference/server-sent-events.html">Server Sent Events</a> functionality to make it work. The json interceptor is necessary to get access to the json params sent from the client to the asynchronous endpoint.</p>
 <p><code>start-event-stream</code> returns an interceptor and a function to call which takes a channel as an argument - you'll put messages on it to send them to the client. The channel's buffer is maintained by the library. In my callback function, I pop messages off the request channel and put them onto the request channel.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">stream-ready </span><span>[event-ch ctx]
-</span><span>  (let [{</span><span style="color:#ae81ff;">:keys </span><span>[model prompt] </span><span style="color:#ae81ff;">:as</span><span> raw} (-&gt; ctx </span><span style="color:#ae81ff;">:request :json-params</span><span>)
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>stream-ready [event-ch ctx]
+</span><span>  (let [{</span><span style="color:#b4cea8;">:keys </span><span>[model prompt] </span><span style="color:#b4cea8;">:as</span><span> raw} (-&gt; ctx </span><span style="color:#b4cea8;">:request :json-params</span><span>)
 </span><span>        response-chan (send-async-request model prompt)]
 </span><span>    (go-loop []
 </span><span>      (if-let [msg (&lt;! response-chan)]
 </span><span>        (do
-</span><span>          (a/put! event-ch (generate-string {</span><span style="color:#ae81ff;">:response</span><span> msg}))
+</span><span>          (a/put! event-ch (generate-string {</span><span style="color:#b4cea8;">:response</span><span> msg}))
 </span><span>          (recur))
 </span><span>        (a/close! event-ch)))))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">my-json-interceptor
-</span><span>  {</span><span style="color:#ae81ff;">:name  ::my-json-interceptor
-</span><span>   </span><span style="color:#ae81ff;">:enter </span><span>(</span><span style="color:#f92672;">fn </span><span>[{</span><span style="color:#ae81ff;">:keys </span><span>[request] </span><span style="color:#ae81ff;">:as</span><span> ctx}]
-</span><span>            (if (#{</span><span style="color:#ae81ff;">:post :put</span><span>} (</span><span style="color:#ae81ff;">:request-method</span><span> request))
-</span><span>              (let [raw-body-str (slurp (</span><span style="color:#ae81ff;">:body</span><span> request))
-</span><span>                    json-params (parse-string raw-body-str </span><span style="color:#ae81ff;">true</span><span>)]
-</span><span>                (assoc-in (assoc-in ctx [</span><span style="color:#ae81ff;">:request :json-params</span><span>] json-params)
-</span><span>                          [</span><span style="color:#ae81ff;">:request :raw-body-str</span><span>] raw-body-str))
+</span><span>(</span><span style="color:#569cd6;">def </span><span>my-json-interceptor
+</span><span>  {</span><span style="color:#b4cea8;">:name  ::my-json-interceptor
+</span><span>   </span><span style="color:#b4cea8;">:enter </span><span>(</span><span style="color:#569cd6;">fn </span><span>[{</span><span style="color:#b4cea8;">:keys </span><span>[request] </span><span style="color:#b4cea8;">:as</span><span> ctx}]
+</span><span>            (if (#{</span><span style="color:#b4cea8;">:post :put</span><span>} (</span><span style="color:#b4cea8;">:request-method</span><span> request))
+</span><span>              (let [raw-body-str (slurp (</span><span style="color:#b4cea8;">:body</span><span> request))
+</span><span>                    json-params (parse-string raw-body-str </span><span style="color:#569cd6;">true</span><span>)]
+</span><span>                (assoc-in (assoc-in ctx [</span><span style="color:#b4cea8;">:request :json-params</span><span>] json-params)
+</span><span>                          [</span><span style="color:#b4cea8;">:request :raw-body-str</span><span>] raw-body-str))
 </span><span>              ctx))})
 </span><span>
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">routes
-</span><span>  #{[</span><span style="color:#e6db74;">&quot;/&quot; </span><span style="color:#ae81ff;">:get
+</span><span>(</span><span style="color:#569cd6;">def </span><span>routes
+</span><span>  #{[</span><span style="color:#d69d85;">&quot;/&quot; </span><span style="color:#b4cea8;">:get
 </span><span>     [index-handler]
-</span><span>     </span><span style="color:#ae81ff;">:route-name :index</span><span>]
-</span><span>    [</span><span style="color:#e6db74;">&quot;/api/generate&quot; </span><span style="color:#ae81ff;">:post
+</span><span>     </span><span style="color:#b4cea8;">:route-name :index</span><span>]
+</span><span>    [</span><span style="color:#d69d85;">&quot;/api/generate&quot; </span><span style="color:#b4cea8;">:post
 </span><span>     [my-json-interceptor (sse/start-event-stream stream-ready)]
-</span><span>     </span><span style="color:#ae81ff;">:route-name :stream</span><span>]})
+</span><span>     </span><span style="color:#b4cea8;">:route-name :stream</span><span>]})
 </span></code></pre>
 <p>I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there's a lot of cool stuff you can do with core.async in general. It can be difficult to use, so you are pretty much required to be willing to read the source and ask for help on Clojurians slack when needed.</p>
 <p>For a project as small as this, Go was way easier to work with. I've written Clojure on and off over the last few years and I still spent 10-20x longer getting those implementations working. With Go, it's really easy to just pick the first dumb implementation that pops into your head and it will work. And of course, trivial deployment is always a relief.</p>

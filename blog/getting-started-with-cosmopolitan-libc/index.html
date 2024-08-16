@@ -49,54 +49,54 @@
 <h3 id="building-programs-with-the-prebuilt-amalgamation">Building Programs with the Prebuilt Amalgamation</h3>
 <p>The simplest way to build APE programs is to use GCC and link the <a href="https://justine.lol/cosmopolitan/cosmopolitan.zip">prebuilt library</a>.</p>
 <p>An example of this approach can be seen in <a href="https://github.com/jpe90/hello-cosmo">this makefile project</a> consisting of a "hello world source file":</p>
-<pre data-lang="c" style="background-color:#272822;color:#f8f8f2;" class="language-c "><code class="language-c" data-lang="c"><span style="font-style:italic;color:#66d9ef;">int </span><span style="color:#a6e22e;">main</span><span>() {
-</span><span>    </span><span style="color:#66d9ef;">printf</span><span>(</span><span style="color:#e6db74;">&quot;hello world</span><span style="color:#ae81ff;">\n</span><span style="color:#e6db74;">&quot;</span><span>);
+<pre data-lang="c" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-c "><code class="language-c" data-lang="c"><span style="color:#569cd6;">int </span><span>main() {
+</span><span>    printf(</span><span style="color:#d69d85;">&quot;hello world</span><span style="color:#e3bbab;">\n</span><span style="color:#d69d85;">&quot;</span><span>);
 </span><span>}
 </span></code></pre>
 <p>And a Makefile, which, which grabs Cosmopolitan libs and compiles the program with it:</p>
-<pre data-lang="Makefile" style="background-color:#272822;color:#f8f8f2;" class="language-Makefile "><code class="language-Makefile" data-lang="Makefile"><span>CC</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">gcc
-</span><span>OBJCOPY</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">objcopy
-</span><span style="color:#a6e22e;">BASEURL=https</span><span style="color:#f92672;">:</span><span style="color:#e6db74;">//worker.jart.workers.dev
-</span><span>AMALGAMATION</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">cosmopolitan-amalgamation-2.0.zip
-</span><span>LIBCOSMO_SHA256_EXPECTED</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">\
-</span><span style="color:#e6db74;">2228cd5924c001b2d8c8efcc9ddacaab354ba4c99a3e0c8858098e2c3f2e3fdb
+<pre data-lang="Makefile" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Makefile "><code class="language-Makefile" data-lang="Makefile"><span>CC=</span><span style="background-color:#282828;color:#d69d85;">gcc</span><span>
+</span><span>OBJCOPY=</span><span style="background-color:#282828;color:#d69d85;">objcopy</span><span>
+</span><span>BASEURL=https:</span><span style="background-color:#282828;color:#d69d85;">//worker.jart.workers.dev</span><span>
+</span><span>AMALGAMATION=</span><span style="background-color:#282828;color:#d69d85;">cosmopolitan-amalgamation-2.0.zip</span><span>
+</span><span>LIBCOSMO_SHA256_EXPECTED=</span><span style="background-color:#282828;color:#d69d85;">\
+</span><span style="background-color:#282828;color:#d69d85;">2228cd5924c001b2d8c8efcc9ddacaab354ba4c99a3e0c8858098e2c3f2e3fdb</span><span>
 </span><span>
-</span><span style="color:#a6e22e;">hello.com</span><span style="color:#f92672;">: </span><span style="color:#e6db74;">libcosmo hello.c
-</span><span>	</span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">CC</span><span style="font-style:italic;color:#f92672;">) </span><span>-g</span><span style="font-style:italic;color:#fd971f;"> -Os -static -fno-pie -no-pie -nostdlib -nostdinc                  </span><span>\
-</span><span style="font-style:italic;color:#fd971f;">		-fno-omit-frame-pointer -pg -mnop-mcount -mno-tls-direct-seg-refs -o   </span><span>\
-</span><span>		hello.com.dbg hello.c</span><span style="font-style:italic;color:#fd971f;"> -Wl</span><span>,--gc-sections</span><span style="font-style:italic;color:#fd971f;"> -fuse-ld</span><span style="color:#f92672;">=</span><span>bfd</span><span style="font-style:italic;color:#fd971f;"> -Wl</span><span>,--gc-sections \
-</span><span style="font-style:italic;color:#fd971f;">		-Wl</span><span>,-T,libcosmo/ape.lds</span><span style="font-style:italic;color:#fd971f;"> -include</span><span> libcosmo/cosmopolitan.h         \
+</span><span>hello.com: </span><span style="background-color:#282828;color:#d69d85;">libcosmo hello.c</span><span>
+</span><span>	</span><span style="color:#569cd6;">$(</span><span>CC</span><span style="color:#569cd6;">) </span><span>-g -Os -static -fno-pie -no-pie -nostdlib -nostdinc                  \
+</span><span>		-fno-omit-frame-pointer -pg -mnop-mcount -mno-tls-direct-seg-refs -o   \
+</span><span>		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld=bfd -Wl,--gc-sections \
+</span><span>		-Wl,-T,libcosmo/ape.lds -include libcosmo/cosmopolitan.h         \
 </span><span>		libcosmo/crt.o libcosmo/ape-no-modify-self.o                     \
 </span><span>		libcosmo/cosmopolitan.a
-</span><span>	</span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">OBJCOPY</span><span style="font-style:italic;color:#f92672;">) </span><span>-S</span><span style="font-style:italic;color:#fd971f;"> -O</span><span> binary hello.com.dbg hello.com
+</span><span>	</span><span style="color:#569cd6;">$(</span><span>OBJCOPY</span><span style="color:#569cd6;">) </span><span>-S -O binary hello.com.dbg hello.com
 </span><span>
-</span><span style="color:#a6e22e;">libcosmo</span><span style="color:#f92672;">: </span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">AMALGAMATION</span><span style="font-style:italic;color:#f92672;">)
-</span><span>	</span><span style="color:#ae81ff;">@</span><span>libcosmo_sha256_actual</span><span style="color:#f92672;">=</span><span>`sha256sum </span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">AMALGAMATION</span><span style="font-style:italic;color:#f92672;">) </span><span style="color:#f92672;">| </span><span>cut</span><span style="font-style:italic;color:#fd971f;"> -d </span><span style="color:#e6db74;">&#39; &#39;</span><span style="font-style:italic;color:#fd971f;"> -f</span><span> 1`</span><span style="color:#f92672;">; </span><span>\
-</span><span style="color:#66d9ef;">echo </span><span style="color:#e6db74;">&quot;expected sha256sum: </span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">LIBCOSMO_SHA256_EXPECTED</span><span style="font-style:italic;color:#f92672;">)</span><span style="color:#e6db74;">&quot; </span><span style="color:#f92672;">&amp;&amp; </span><span style="color:#66d9ef;">echo </span><span>\
-</span><span style="color:#e6db74;">&quot;actual   sha256sum: </span><span style="color:#ae81ff;">$$</span><span style="color:#e6db74;">libcosmo_sha256_actual&quot;</span><span style="color:#f92672;">; if	 </span><span>\
-</span><span style="color:#66d9ef;">[ </span><span style="color:#e6db74;">&quot;</span><span style="color:#ae81ff;">$$</span><span style="color:#e6db74;">libcosmo_sha256_actual&quot; </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;</span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">LIBCOSMO_SHA256_EXPECTED</span><span style="font-style:italic;color:#f92672;">)</span><span style="color:#e6db74;">&quot; </span><span style="color:#66d9ef;">]</span><span style="color:#f92672;">; then </span><span style="color:#66d9ef;">echo </span><span>\
-</span><span style="color:#e6db74;">&quot;checksums match&quot;</span><span style="color:#f92672;">; else </span><span style="color:#66d9ef;">echo </span><span style="color:#e6db74;">&quot;checksums don&#39;t match, aborting&quot; </span><span style="color:#f92672;">&amp;&amp; </span><span style="color:#66d9ef;">exit</span><span> 1</span><span style="color:#f92672;">; fi;
-</span><span>	unzip</span><span style="font-style:italic;color:#fd971f;"> -d</span><span> libcosmo </span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">AMALGAMATION</span><span style="font-style:italic;color:#f92672;">)
+</span><span>libcosmo: </span><span style="background-color:#282828;color:#569cd6;">$(</span><span style="background-color:#282828;color:#dcdcdc;">AMALGAMATION</span><span style="background-color:#282828;color:#569cd6;">)</span><span>
+</span><span>	</span><span style="color:#569cd6;">@</span><span>libcosmo_sha256_actual=`sha256sum </span><span style="color:#569cd6;">$(</span><span>AMALGAMATION</span><span style="color:#569cd6;">) | </span><span>cut -d </span><span style="color:#d69d85;">&#39; &#39;</span><span> -f 1`</span><span style="color:#569cd6;">; </span><span>\
+</span><span>echo </span><span style="color:#d69d85;">&quot;expected sha256sum: </span><span style="color:#569cd6;">$(</span><span>LIBCOSMO_SHA256_EXPECTED</span><span style="color:#569cd6;">)</span><span style="color:#d69d85;">&quot; </span><span style="color:#569cd6;">&amp;&amp; </span><span>echo \
+</span><span style="color:#d69d85;">&quot;actual   sha256sum: </span><span style="color:#e3bbab;">$$</span><span style="color:#d69d85;">libcosmo_sha256_actual&quot;</span><span style="color:#569cd6;">; if	 </span><span>\
+</span><span>[ </span><span style="color:#d69d85;">&quot;</span><span style="color:#e3bbab;">$$</span><span style="color:#d69d85;">libcosmo_sha256_actual&quot; </span><span style="color:#569cd6;">= </span><span style="color:#d69d85;">&quot;</span><span style="color:#569cd6;">$(</span><span>LIBCOSMO_SHA256_EXPECTED</span><span style="color:#569cd6;">)</span><span style="color:#d69d85;">&quot; </span><span>]</span><span style="color:#569cd6;">; then </span><span>echo \
+</span><span style="color:#d69d85;">&quot;checksums match&quot;</span><span style="color:#569cd6;">; else </span><span>echo </span><span style="color:#d69d85;">&quot;checksums don&#39;t match, aborting&quot; </span><span style="color:#569cd6;">&amp;&amp; </span><span>exit 1</span><span style="color:#569cd6;">; fi;
+</span><span>	unzip -d libcosmo </span><span style="color:#569cd6;">$(</span><span>AMALGAMATION</span><span style="color:#569cd6;">)
 </span><span>
-</span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">AMALGAMATION</span><span style="font-style:italic;color:#f92672;">)</span><span style="color:#f92672;">:
-</span><span>	wget </span><span style="color:#e6db74;">&quot;</span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">BASEURL</span><span style="font-style:italic;color:#f92672;">)</span><span style="color:#e6db74;">/</span><span style="font-style:italic;color:#f92672;">$(</span><span style="font-style:italic;color:#fd971f;">AMALGAMATION</span><span style="font-style:italic;color:#f92672;">)</span><span style="color:#e6db74;">&quot;
+</span><span style="color:#569cd6;">$(</span><span>AMALGAMATION</span><span style="color:#569cd6;">)</span><span>:
+</span><span>	wget </span><span style="color:#d69d85;">&quot;</span><span style="color:#569cd6;">$(</span><span>BASEURL</span><span style="color:#569cd6;">)</span><span style="color:#d69d85;">/</span><span style="color:#569cd6;">$(</span><span>AMALGAMATION</span><span style="color:#569cd6;">)</span><span style="color:#d69d85;">&quot;
 </span><span>
-</span><span style="color:#a6e22e;">clean</span><span style="color:#f92672;">:
-</span><span>	rm</span><span style="font-style:italic;color:#fd971f;"> -f</span><span> hello.com.dbg hello.com
+</span><span>clean:
+</span><span>	rm -f hello.com.dbg hello.com
 </span><span>
-</span><span style="color:#a6e22e;">distclean</span><span style="color:#f92672;">: </span><span style="color:#e6db74;">clean
-</span><span>	rm</span><span style="font-style:italic;color:#fd971f;"> -rf</span><span> cosmopolitan</span><span style="color:#f92672;">*</span><span> libcosmo
+</span><span>distclean: </span><span style="background-color:#282828;color:#d69d85;">clean</span><span>
+</span><span>	rm -rf cosmopolitan</span><span style="color:#569cd6;">*</span><span> libcosmo
 </span></code></pre>
 <p>You might notice that hello.c does not contain a <code>#include &lt;stdio.h&gt;</code> line to provide the header for printf. Ordinarily, the c compiler would search the system headers for this file, which would provide the function declaration for <code>printf</code>, and then the linker would find the definition in the system standard library.</p>
 <p>In this case, the Makefile does not search the system headers because of the <code>-nostdinc</code> flag,  and it doesn't link the system standard library because of the <code>-nostdlib</code> flag.</p>
 <p>Instead, the makefile specifies an include for <code>cosmopolitan.h</code>, which provides declarations for all libc functions including <code>printf</code>, while the function definitions are provided by <code>cosmopolitan.a</code>.</p>
 <p>Because of the <code>-nostdinc</code> flag, if we added the include line to <code>hello.c</code>, we would get an error:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>hello.c:1:19: error: no include path in which to search for stdio.h
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>hello.c:1:19: error: no include path in which to search for stdio.h
 </span><span>    1 | #include &lt;stdio.h&gt;
 </span></code></pre>
 <p>As you might imagine, this will cause issues when you're trying to port existing code written against the standard library. In some cases, there's quite a few of them- too many to remove by hand. And we can't just remove the <code>-nostdinc</code> flag, otherwise the compiler would find conflicting function declarations.</p>
 <p>A workaround is to create a folder in your project, fill it empty files that have names of all the system headers your code is looking for, and include that folder in the build path.</p>
-<pre data-lang="diff" style="background-color:#272822;color:#f8f8f2;" class="language-diff "><code class="language-diff" data-lang="diff"><span>---
+<pre data-lang="diff" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-diff "><code class="language-diff" data-lang="diff"><span>---
 </span><span> Makefile             | 2 +-
 </span><span> header_stubs/stdio.h | 0
 </span><span> hello.c              | 2 ++
@@ -151,37 +151,37 @@
 <h3 id="shortcut-for-portable-lua-programs">Shortcut for Portable Lua Programs</h3>
 <p>Here's a quick demonstration of how to package portable Lua programs. In this section we'll build the Lua interpreter, copy it to the base of the repository, zip up a lua file into the executable, and configure it to run the lua file when the file is run.</p>
 <p>First, grab the monorepo if you haven't already.</p>
-<pre data-lang="bash" style="background-color:#272822;color:#f8f8f2;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/jart/cosmopolitan.git
-</span><span style="color:#66d9ef;">cd</span><span> cosmopolitan
+<pre data-lang="bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/jart/cosmopolitan.git
+</span><span>cd cosmopolitan
 </span></code></pre>
 <p>From this point on, all commands should be run from the base of the repository.</p>
 <p>Build the Lua interpreter, and copy it to the base of the repo.</p>
-<pre data-lang="bash" style="background-color:#272822;color:#f8f8f2;" class="language-bash "><code class="language-bash" data-lang="bash"><span>build/bootstrap/make.com</span><span style="font-style:italic;color:#fd971f;"> -j$(</span><span style="color:#fd971f;">nproc</span><span style="font-style:italic;color:#fd971f;">)</span><span> o//third_party/lua
+<pre data-lang="bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>build/bootstrap/make.com -j$(nproc) o//third_party/lua
 </span><span>cp o//third_party/lua/lua.com .
 </span></code></pre>
 <p>Next, make a <code>.lua</code> folder and build the <code>zip.com</code> program.</p>
-<pre data-lang="bash" style="background-color:#272822;color:#f8f8f2;" class="language-bash "><code class="language-bash" data-lang="bash"><span>mkdir</span><span style="font-style:italic;color:#fd971f;"> -p</span><span> .lua
-</span><span>build/bootstrap/make.com</span><span style="font-style:italic;color:#fd971f;"> -j$(</span><span style="color:#fd971f;">nproc</span><span style="font-style:italic;color:#fd971f;">)</span><span> o//third_party/zip
+<pre data-lang="bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>mkdir -p .lua
+</span><span>build/bootstrap/make.com -j$(nproc) o//third_party/zip
 </span></code></pre>
 <p>Now create a file <code>mymodule.lua</code> inside <code>.lua</code> by pasting the following text into your shell.</p>
-<pre data-lang="bash" style="background-color:#272822;color:#f8f8f2;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#66d9ef;">printf </span><span>%s </span><span style="color:#e6db74;">&#39;local mymodule = {}
-</span><span style="color:#e6db74;">
-</span><span style="color:#e6db74;">function mymodule.hello()
-</span><span style="color:#e6db74;">   print(&quot;Hello World!&quot;)
-</span><span style="color:#e6db74;">end
-</span><span style="color:#e6db74;">
-</span><span style="color:#e6db74;">return mymodule&#39; </span><span style="color:#f92672;">&gt;</span><span> .lua/mymodule.lua
+<pre data-lang="bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>printf %s </span><span style="color:#d69d85;">&#39;local mymodule = {}
+</span><span style="color:#d69d85;">
+</span><span style="color:#d69d85;">function mymodule.hello()
+</span><span style="color:#d69d85;">   print(&quot;Hello World!&quot;)
+</span><span style="color:#d69d85;">end
+</span><span style="color:#d69d85;">
+</span><span style="color:#d69d85;">return mymodule&#39; </span><span>&gt; .lua/mymodule.lua
 </span></code></pre>
 <p>Next create a file <code>.args</code> in the base of the repository by again pasting the following text into your shell.</p>
-<pre data-lang="bash" style="background-color:#272822;color:#f8f8f2;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#66d9ef;">printf </span><span>%s </span><span style="color:#e6db74;">&#39;-l
-</span><span style="color:#e6db74;">mymodule
-</span><span style="color:#e6db74;">-e
-</span><span style="color:#e6db74;">require&quot;mymodule&quot;.hello()&#39; </span><span style="color:#f92672;">&gt;</span><span> .args
+<pre data-lang="bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>printf %s </span><span style="color:#d69d85;">&#39;-l
+</span><span style="color:#d69d85;">mymodule
+</span><span style="color:#d69d85;">-e
+</span><span style="color:#d69d85;">require&quot;mymodule&quot;.hello()&#39; </span><span>&gt; .args
 </span></code></pre>
 <p>This file will tell be loaded by the modified interpreter and the arguments will be presented to the interpreter as if they came from the command line.</p>
 <p>Finally, we'll  use the <code>zip.com</code> program to load a <code>.lua</code> directory containing your lua files and the <code>.args</code> file which launches your program into the Lua interpreter binary.</p>
-<pre data-lang="bash" style="background-color:#272822;color:#f8f8f2;" class="language-bash "><code class="language-bash" data-lang="bash"><span>./o/third_party/zip/zip.com</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> lua.com .lua/
-</span><span>./o/third_party/zip/zip.com</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> lua.com .args
+<pre data-lang="bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>./o/third_party/zip/zip.com -r lua.com .lua/
+</span><span>./o/third_party/zip/zip.com -r lua.com .args
 </span></code></pre>
 <p>Now if you run <code>lua.com</code>, the program will run the lua file and print "Hello World!" as if you had run it with <code>lua.com -l mymodule -e 'require"mymodule".hello()'</code>.</p>
 <p>You can read more about these in the <code>/.args</code> and the <code>/.lua/...</code> sections of <a href="https://redbean.dev/#specials">redbean's documenation</a>; just be aware that not all of redbean's functionality is available to the Lua interpreter out of the box.</p>

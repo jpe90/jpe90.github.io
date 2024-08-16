@@ -30,87 +30,87 @@
 <p>On the other hand, open source LLMs that run locally on your system have been rapidly improving. They aren't quite as powerful as commercial models, but they can be surprisingly effective, particularly if you give them simple tasks and make efforts to constrain their responses. Additionally, you always have the option of fine-tuning to improve performance.</p>
 <p>One of the biggest open source project to run these models is <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a>, which performs inference on open source models. It can be built as a library and utilized from other languages which write bindings to its API. I really like to experiment with new problem spaces in Clojure, so I used <a href="https://github.com/phronmophobic/llama.clj">llama.clj</a> to experiment with programatically interfacing with LLMs to automate tasks.</p>
 <p>I decided to put together an example to experiment with to simulate a case where we have a bunch of customer service inquiries and we want to figure out whether they are refund requests, order inquiries, or just general feedback. The goal of these experiments was only to perform this classification step.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(require </span><span style="color:#f92672;">&#39;</span><span>[com.phronemophobic.llama </span><span style="color:#ae81ff;">:as</span><span> llama])
-</span><span>(require </span><span style="color:#f92672;">&#39;</span><span>[com.phronemophobic.llama.util </span><span style="color:#ae81ff;">:as</span><span> llutil])
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(require </span><span style="color:#569cd6;">&#39;</span><span>[com.phronemophobic.llama </span><span style="color:#b4cea8;">:as</span><span> llama])
+</span><span>(require </span><span style="color:#569cd6;">&#39;</span><span>[com.phronemophobic.llama.util </span><span style="color:#b4cea8;">:as</span><span> llutil])
 </span><span>
-</span><span style="color:#75715e;">;; 8B parameter llama 3 model with 4bit quantization that easily runs on my Macbook M1
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">model-path </span><span style="color:#e6db74;">&quot;/Users/jon/development/cpp/llama.cpp/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf&quot;</span><span>)
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">llama-context </span><span>(llama/create-context model-path {}))
+</span><span style="color:#608b4e;">;; 8B parameter llama 3 model with 4bit quantization that easily runs on my Macbook M1
+</span><span>(</span><span style="color:#569cd6;">def </span><span>model-path </span><span style="color:#d69d85;">&quot;/Users/jon/development/cpp/llama.cpp/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf&quot;</span><span>)
+</span><span>(</span><span style="color:#569cd6;">def </span><span>llama-context (llama/create-context model-path {}))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">inquiries
-</span><span>  [{</span><span style="color:#ae81ff;">:classification </span><span style="color:#e6db74;">&quot;Order Inquiry&quot; </span><span style="color:#ae81ff;">:inquiry </span><span style="color:#e6db74;">&quot;Where is my order? It was supposed to arrive yesterday.&quot;</span><span>}
-</span><span>   {</span><span style="color:#ae81ff;">:classification </span><span style="color:#e6db74;">&quot;Refund Request&quot; </span><span style="color:#ae81ff;">:inquiry </span><span style="color:#e6db74;">&quot;I want to return an item and get a refund. Can you help me with that?&quot;</span><span>}
-</span><span>   {</span><span style="color:#ae81ff;">:classification </span><span style="color:#e6db74;">&quot;General Feedback&quot; </span><span style="color:#ae81ff;">:inquiry </span><span style="color:#e6db74;">&quot;I think your website could be more user-friendly.&quot;</span><span>}
-</span><span>   </span><span style="color:#75715e;">;; ... many more omitted
+</span><span>(</span><span style="color:#569cd6;">def </span><span>inquiries
+</span><span>  [{</span><span style="color:#b4cea8;">:classification </span><span style="color:#d69d85;">&quot;Order Inquiry&quot; </span><span style="color:#b4cea8;">:inquiry </span><span style="color:#d69d85;">&quot;Where is my order? It was supposed to arrive yesterday.&quot;</span><span>}
+</span><span>   {</span><span style="color:#b4cea8;">:classification </span><span style="color:#d69d85;">&quot;Refund Request&quot; </span><span style="color:#b4cea8;">:inquiry </span><span style="color:#d69d85;">&quot;I want to return an item and get a refund. Can you help me with that?&quot;</span><span>}
+</span><span>   {</span><span style="color:#b4cea8;">:classification </span><span style="color:#d69d85;">&quot;General Feedback&quot; </span><span style="color:#b4cea8;">:inquiry </span><span style="color:#d69d85;">&quot;I think your website could be more user-friendly.&quot;</span><span>}
+</span><span>   </span><span style="color:#608b4e;">;; ... many more omitted
 </span><span>])
 </span><span>
-</span><span>(</span><span style="color:#f92672;">def </span><span style="color:#a6e22e;">classifications </span><span>[</span><span style="color:#e6db74;">&quot;Order Inquiry&quot; &quot;Refund Request&quot; &quot;General Feedback&quot;</span><span>])
+</span><span>(</span><span style="color:#569cd6;">def </span><span>classifications [</span><span style="color:#d69d85;">&quot;Order Inquiry&quot; &quot;Refund Request&quot; &quot;General Feedback&quot;</span><span>])
 </span></code></pre>
 <p>My setup was to run each classification over a classify function and append the experimental result to the actual result so that I could compare them.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">naive-classify </span><span>[inquiry]
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>naive-classify [inquiry]
 </span><span>  (llama/generate-string
 </span><span>   llama-context
 </span><span>   (llama3-inquiry inquiry)))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">naive-greedy-classify </span><span>[inquiry]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>naive-greedy-classify [inquiry]
 </span><span>  (llama/generate-string
 </span><span>   llama-context
 </span><span>   (llama3-inquiry inquiry)
-</span><span>   {</span><span style="color:#ae81ff;">:samplef</span><span> llama/sample-logits-greedy}))
+</span><span>   {</span><span style="color:#b4cea8;">:samplef</span><span> llama/sample-logits-greedy}))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">classify-inquiries </span><span>[classify-fn inquiries]
-</span><span>  (map (</span><span style="color:#f92672;">fn </span><span>[inquiry]
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>classify-inquiries [classify-fn inquiries]
+</span><span>  (map (</span><span style="color:#569cd6;">fn </span><span>[inquiry]
 </span><span>         (assoc inquiry
-</span><span>                </span><span style="color:#ae81ff;">:experimental-classification
-</span><span>                (classify-fn (</span><span style="color:#ae81ff;">:inquiry</span><span> inquiry))))
+</span><span>                </span><span style="color:#b4cea8;">:experimental-classification
+</span><span>                (classify-fn (</span><span style="color:#b4cea8;">:inquiry</span><span> inquiry))))
 </span><span>       inquiries))
 </span><span>       
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">correct-results </span><span>[results]
-</span><span>  (filter </span><span style="color:#f92672;">#</span><span>(= (</span><span style="color:#ae81ff;">:classification</span><span> %) (</span><span style="color:#ae81ff;">:experimental-classification</span><span> %)) results))
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>correct-results [results]
+</span><span>  (filter </span><span style="color:#569cd6;">#</span><span>(= (</span><span style="color:#b4cea8;">:classification</span><span> %) (</span><span style="color:#b4cea8;">:experimental-classification</span><span> %)) results))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">incorrect-results </span><span>[results]
-</span><span>  (filter </span><span style="color:#f92672;">#</span><span>(not= (</span><span style="color:#ae81ff;">:classification</span><span> %) (</span><span style="color:#ae81ff;">:experimental-classification</span><span> %)) results))
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>incorrect-results [results]
+</span><span>  (filter </span><span style="color:#569cd6;">#</span><span>(not= (</span><span style="color:#b4cea8;">:classification</span><span> %) (</span><span style="color:#b4cea8;">:experimental-classification</span><span> %)) results))
 </span><span>
-</span><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">summary-results </span><span>[results]
-</span><span>  {</span><span style="color:#ae81ff;">:correct </span><span>(count (correct-results results))
-</span><span>   </span><span style="color:#ae81ff;">:incorrect </span><span>(count (incorrect-results results))
-</span><span>   </span><span style="color:#ae81ff;">:accuracy </span><span>(/ (count (correct-results results)) (count results))})
+</span><span>(</span><span style="color:#569cd6;">defn </span><span>summary-results [results]
+</span><span>  {</span><span style="color:#b4cea8;">:correct </span><span>(count (correct-results results))
+</span><span>   </span><span style="color:#b4cea8;">:incorrect </span><span>(count (incorrect-results results))
+</span><span>   </span><span style="color:#b4cea8;">:accuracy </span><span>(/ (count (correct-results results)) (count results))})
 </span></code></pre>
 <p>llama.clj provides a few different sampling functions that you can use to generate text. Sampling functions are the means by which the text tokens which form the response are selected. In addition to giving a few options for pre-defined functions, the library also gives you the ability to create your own. For my experiments, I started with microstatv2 (which <code>naive-classify</code> above uses above - llama.clj uses this function by default) and a greedy sampling function  (which <code>naive-greedy-classify</code> requests via the <code>samplef</code> key).</p>
 <p>I noticed I would generally get about 92% accuracy with the model, data, and prompts I used. When I looked at the responses that were incorrect, I noticed that many of them were from responses that would misformat the specific response format that I asked for, e.g. returning something like "[Order Inquiry]" instead of just "Order Inquiry". Since llama.cpp is feeding you text straight from the model, you have to get a little creative to deal with this. Both llama.cpp and llama.clj provide different ways to constrain models to produce valid json, which you can then further validate. I decided to try constraining responses by first just retrying if the gets a response does not belong to the set of strings I'm looking for:</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">retry-classify </span><span>[inquiry]
-</span><span>  (loop [count </span><span style="color:#ae81ff;">0</span><span>]
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>retry-classify [inquiry]
+</span><span>  (loop [count </span><span style="color:#b5cea8;">0</span><span>]
 </span><span>    (let [response (llama/generate-string
 </span><span>                    llama-context
 </span><span>                    (llama3-inquiry inquiry))]
-</span><span>      (if (some </span><span style="color:#f92672;">#</span><span>(= response %) classifications)
+</span><span>      (if (some </span><span style="color:#569cd6;">#</span><span>(= response %) classifications)
 </span><span>        response
-</span><span>        (if (&gt; count </span><span style="color:#ae81ff;">3</span><span>)
-</span><span>          </span><span style="color:#ae81ff;">nil
+</span><span>        (if (&gt; count </span><span style="color:#b5cea8;">3</span><span>)
+</span><span>          </span><span style="color:#569cd6;">nil
 </span><span>          (recur (inc count)))))))
 </span></code></pre>
 <p>This took care of those cases nicely and brought accuracy up to about 95%. It didn't noticeably decrease performance because it doesn't retry often - only in specific failure cases.</p>
 <p>One potential issue is that if the model ever went haywire and started filling the context window with garbage (which does happen occasionally on some models), it would take inordinate amounts of time to generate responses and fail, which would slow everything to a crawl. I decided to try hand rolling a greedy sampling function that selects the first token which completes a valid classification to avoid this situation. The way that llama.cpp works is that it determines the relative probability of every possible text token at each point in the response. What I wanted to try to do in my sampling function was constrain the responses by forcing it to only choose tokens that are available in pre-defined categories (defined by <code>classifications</code> above). For the first generated token, it can only select the first token of any of those classifications. It selects the member of those tokens which it deems most likely to be correct.</p>
 <p>From there, at each step, we filter out only classifications which start with the response tokens we've already accumulated, and repeat the process until we have a full response.</p>
-<pre data-lang="Clojure" style="background-color:#272822;color:#f8f8f2;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#f92672;">defn </span><span style="color:#a6e22e;">greedy-constrained-classify </span><span>[inquiry]
-</span><span>  (let [prompt (llama3-prompt (str </span><span style="color:#e6db74;">&quot;Inquiries can be one of &#39;Order Inquiry&#39;, &#39;Refund Request&#39;, or &#39;General Feedback&#39;. What is the classification of the following inquiry? Reply with only the classification and nothing else: </span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">&quot;</span><span> inquiry </span><span style="color:#e6db74;">&quot;</span><span style="color:#ae81ff;">\&quot;</span><span style="color:#e6db74;">&quot;</span><span>))
+<pre data-lang="Clojure" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Clojure "><code class="language-Clojure" data-lang="Clojure"><span>(</span><span style="color:#569cd6;">defn </span><span>greedy-constrained-classify [inquiry]
+</span><span>  (let [prompt (llama3-prompt (str </span><span style="color:#d69d85;">&quot;Inquiries can be one of &#39;Order Inquiry&#39;, &#39;Refund Request&#39;, or &#39;General Feedback&#39;. What is the classification of the following inquiry? Reply with only the classification and nothing else: </span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">&quot;</span><span> inquiry </span><span style="color:#d69d85;">&quot;</span><span style="color:#e3bbab;">\&quot;</span><span style="color:#d69d85;">&quot;</span><span>))
 </span><span>        prompt-tokens (llutil/tokenize llama-context prompt)]
-</span><span>    (llama/llama-update llama-context (llama/bos) </span><span style="color:#ae81ff;">0</span><span>)
+</span><span>    (llama/llama-update llama-context (llama/bos) </span><span style="color:#b5cea8;">0</span><span>)
 </span><span>    (doseq [token prompt-tokens]
 </span><span>      (llama/llama-update llama-context token))
-</span><span>    (loop [classification-tokens (map </span><span style="color:#f92672;">#</span><span>(llutil/tokenize llama-context %) classifications)
+</span><span>    (loop [classification-tokens (map </span><span style="color:#569cd6;">#</span><span>(llutil/tokenize llama-context %) classifications)
 </span><span>           acc []]
 </span><span>      (let [logits (llama/get-logits llama-context)
 </span><span>            valid-tokens (map first classification-tokens)
 </span><span>            token (-&gt;&gt; logits
-</span><span>                       (map-indexed (</span><span style="color:#f92672;">fn </span><span>[idx p]
+</span><span>                       (map-indexed (</span><span style="color:#569cd6;">fn </span><span>[idx p]
 </span><span>                                      [idx p]))
-</span><span>                       (filter </span><span style="color:#f92672;">#</span><span>(contains? (set valid-tokens) (first %)))
+</span><span>                       (filter </span><span style="color:#569cd6;">#</span><span>(contains? (set valid-tokens) (first %)))
 </span><span>                       (apply max-key second)
 </span><span>                       first)
 </span><span>            next-acc (conj acc token)
 </span><span>            next-classification-tokens (-&gt;&gt; classification-tokens
-</span><span>                                            (filter </span><span style="color:#f92672;">#</span><span>(= (first %) token))
+</span><span>                                            (filter </span><span style="color:#569cd6;">#</span><span>(= (first %) token))
 </span><span>                                            (map rest)
 </span><span>                                            (map vec)
 </span><span>                                            (into []))]

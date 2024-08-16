@@ -40,7 +40,7 @@
 <p>Representing processes by files in this manner is known as using a “Named Pipe” or a “FIFO” in Unix systems.</p>
 <h1 id="using-ii">using ii</h1>
 <p>If you run <code>ii</code> on its own, you’ll see a concise summary of its usage:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>usage: ii -s host [-p port | -u sockname] [-i ircdir]
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>usage: ii -s host [-p port | -u sockname] [-i ircdir]
 </span><span>[-n nickname] [-f fullname] [-k env_pass]
 </span></code></pre>
 <p>When I run <code>ii -s irc.libera.chat -n eskin</code>, ii connects me to libera.chat. By default this creates a few folders in “~/irc”:</p>
@@ -59,20 +59,20 @@
 <p>lchat will work with any program that uses FIFO this way, including a few programs listed on the <a href="https://tools.suckless.org/lchat/">lchat homepage</a>.</p>
 <h1 id="installation">Installation</h1>
 <p>If you'd like to try out lchat, you'll first need to grab ii:</p>
-<pre data-lang="Bash" style="background-color:#272822;color:#f8f8f2;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>git clone https://git.suckless.org/ii
-</span><span style="color:#66d9ef;">cd</span><span> ii
+<pre data-lang="Bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>git clone https://git.suckless.org/ii
+</span><span>cd ii
 </span></code></pre>
 <p>If you want to use SSL, you'll want to apply a patch to the repository:</p>
-<pre data-lang="Bash" style="background-color:#272822;color:#f8f8f2;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>wget https://tools.suckless.org/ii/patches/ssl/ii-2.0-ssl.diff
+<pre data-lang="Bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>wget https://tools.suckless.org/ii/patches/ssl/ii-2.0-ssl.diff
 </span><span>git apply ii-2.0-ssl.diff
 </span></code></pre>
 <p>Then build and install ii:</p>
-<pre data-lang="Bash" style="background-color:#272822;color:#f8f8f2;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>make
+<pre data-lang="Bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>make
 </span><span>sudo make install
 </span></code></pre>
 <p>Finally, you'll want to clone, build, make, and install lchat:</p>
-<pre data-lang="Bash" style="background-color:#272822;color:#f8f8f2;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>git clone https://git.suckless.org/lchat
-</span><span style="color:#66d9ef;">cd</span><span> lchat
+<pre data-lang="Bash" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Bash "><code class="language-Bash" data-lang="Bash"><span>git clone https://git.suckless.org/lchat
+</span><span>cd lchat
 </span><span>make
 </span><span>sudo make install
 </span></code></pre>

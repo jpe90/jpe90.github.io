@@ -66,100 +66,100 @@
 <p>The fine-tuning process involves adjusting the pre-trained DistilBERT model to our specific classification task.</p>
 <h4 id="data-preparation">Data Preparation</h4>
 <p>The process begins by loading the labeled data. It consisted of three files, one for each category, each containing several hundred customer messages.</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">load_data</span><span>(</span><span style="font-style:italic;color:#fd971f;">file_path</span><span>):
-</span><span>    </span><span style="color:#f92672;">with </span><span style="color:#66d9ef;">open</span><span>(file_path, </span><span style="color:#e6db74;">&#39;r&#39;</span><span>) </span><span style="color:#f92672;">as </span><span>f:
-</span><span>        </span><span style="color:#f92672;">return </span><span>[line.strip() </span><span style="color:#f92672;">for </span><span>line </span><span style="color:#f92672;">in </span><span>f]
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#569cd6;">def </span><span>load_data(file_path):
+</span><span>    </span><span style="color:#569cd6;">with </span><span>open(file_path, </span><span style="color:#d69d85;">&#39;r&#39;</span><span>) </span><span style="color:#569cd6;">as </span><span>f:
+</span><span>        </span><span style="color:#569cd6;">return </span><span>[line.strip() </span><span style="color:#569cd6;">for </span><span>line </span><span style="color:#569cd6;">in </span><span>f]
 </span><span>
-</span><span>feedback </span><span style="color:#f92672;">= </span><span>load_data(</span><span style="color:#e6db74;">&#39;data/feedback.txt&#39;</span><span>)
-</span><span>inquiries </span><span style="color:#f92672;">= </span><span>load_data(</span><span style="color:#e6db74;">&#39;data/inquiries.txt&#39;</span><span>)
-</span><span>refunds </span><span style="color:#f92672;">= </span><span>load_data(</span><span style="color:#e6db74;">&#39;data/refunds.txt&#39;</span><span>)
+</span><span>feedback = load_data(</span><span style="color:#d69d85;">&#39;data/feedback.txt&#39;</span><span>)
+</span><span>inquiries = load_data(</span><span style="color:#d69d85;">&#39;data/inquiries.txt&#39;</span><span>)
+</span><span>refunds = load_data(</span><span style="color:#d69d85;">&#39;data/refunds.txt&#39;</span><span>)
 </span><span>
-</span><span>all_texts </span><span style="color:#f92672;">= </span><span>feedback </span><span style="color:#f92672;">+ </span><span>inquiries </span><span style="color:#f92672;">+ </span><span>refunds
-</span><span>all_labels </span><span style="color:#f92672;">= </span><span>[</span><span style="color:#ae81ff;">0</span><span>] </span><span style="color:#f92672;">* </span><span style="color:#66d9ef;">len</span><span>(feedback) </span><span style="color:#f92672;">+ </span><span>[</span><span style="color:#ae81ff;">1</span><span>] </span><span style="color:#f92672;">* </span><span style="color:#66d9ef;">len</span><span>(inquiries) </span><span style="color:#f92672;">+ </span><span>[</span><span style="color:#ae81ff;">2</span><span>] </span><span style="color:#f92672;">* </span><span style="color:#66d9ef;">len</span><span>(refunds)
+</span><span>all_texts = feedback + inquiries + refunds
+</span><span>all_labels = [</span><span style="color:#b5cea8;">0</span><span>] * len(feedback) + [</span><span style="color:#b5cea8;">1</span><span>] * len(inquiries) + [</span><span style="color:#b5cea8;">2</span><span>] * len(refunds)
 </span></code></pre>
 <p>This code loads the text strings and assigns numerical labels to each. In neural networks, labels refer to "the right answer" and are used during training to check the model's guesses.</p>
 <h4 id="dataset-and-dataloader">Dataset and DataLoader</h4>
 <p>A custom dataset class is created to handle tokenization:</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span style="font-style:italic;color:#f92672;">class </span><span style="text-decoration:underline;color:#a6e22e;">TextClassificationDataset</span><span>(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">Dataset</span><span>):
-</span><span>    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#66d9ef;">__init__</span><span>(</span><span style="font-style:italic;color:#fd971f;">self</span><span>, </span><span style="font-style:italic;color:#fd971f;">texts</span><span>, </span><span style="font-style:italic;color:#fd971f;">labels</span><span>, </span><span style="font-style:italic;color:#fd971f;">tokenizer</span><span>, </span><span style="font-style:italic;color:#fd971f;">max_len</span><span>):
-</span><span>        self.texts </span><span style="color:#f92672;">= </span><span>texts
-</span><span>        self.labels </span><span style="color:#f92672;">= </span><span>labels
-</span><span>        self.tokenizer </span><span style="color:#f92672;">= </span><span>tokenizer
-</span><span>        self.max_len </span><span style="color:#f92672;">= </span><span>max_len
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#569cd6;">class </span><span>TextClassificationDataset(</span><span style="color:#4ec9b0;">Dataset</span><span>):
+</span><span>    </span><span style="color:#569cd6;">def </span><span>__init__(self, texts, labels, tokenizer, max_len):
+</span><span>        self.texts = texts
+</span><span>        self.labels = labels
+</span><span>        self.tokenizer = tokenizer
+</span><span>        self.max_len = max_len
 </span><span>
-</span><span>    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#66d9ef;">__getitem__</span><span>(</span><span style="font-style:italic;color:#fd971f;">self</span><span>, </span><span style="font-style:italic;color:#fd971f;">item</span><span>):
-</span><span>        text </span><span style="color:#f92672;">= </span><span style="font-style:italic;color:#66d9ef;">str</span><span>(self.texts[item])
-</span><span>        label </span><span style="color:#f92672;">= </span><span>self.labels[item]
+</span><span>    </span><span style="color:#569cd6;">def </span><span>__getitem__(self, item):
+</span><span>        text = str(self.texts[item])
+</span><span>        label = self.labels[item]
 </span><span>
-</span><span>        encoding </span><span style="color:#f92672;">= </span><span>self.tokenizer.encode_plus(
+</span><span>        encoding = self.tokenizer.encode_plus(
 </span><span>            text,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">add_special_tokens</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">True</span><span>,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">max_length</span><span style="color:#f92672;">=</span><span>self.max_len,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">return_token_type_ids</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">False</span><span>,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">padding</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;max_length&#39;</span><span>,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">truncation</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">True</span><span>,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">return_attention_mask</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">True</span><span>,
-</span><span>            </span><span style="font-style:italic;color:#fd971f;">return_tensors</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;pt&#39;</span><span>,
+</span><span>            add_special_tokens=</span><span style="color:#569cd6;">True</span><span>,
+</span><span>            max_length=self.max_len,
+</span><span>            return_token_type_ids=</span><span style="color:#569cd6;">False</span><span>,
+</span><span>            padding=</span><span style="color:#d69d85;">&#39;max_length&#39;</span><span>,
+</span><span>            truncation=</span><span style="color:#569cd6;">True</span><span>,
+</span><span>            return_attention_mask=</span><span style="color:#569cd6;">True</span><span>,
+</span><span>            return_tensors=</span><span style="color:#d69d85;">&#39;pt&#39;</span><span>,
 </span><span>        )
 </span><span>
-</span><span>        </span><span style="color:#f92672;">return </span><span>{
-</span><span>            </span><span style="color:#e6db74;">&#39;text&#39;</span><span>: text,
-</span><span>            </span><span style="color:#e6db74;">&#39;input_ids&#39;</span><span>: encoding[</span><span style="color:#e6db74;">&#39;input_ids&#39;</span><span>].flatten(),
-</span><span>            </span><span style="color:#e6db74;">&#39;attention_mask&#39;</span><span>: encoding[</span><span style="color:#e6db74;">&#39;attention_mask&#39;</span><span>].flatten(),
-</span><span>            </span><span style="color:#e6db74;">&#39;labels&#39;</span><span>: torch.tensor(label, </span><span style="font-style:italic;color:#fd971f;">dtype</span><span style="color:#f92672;">=</span><span>torch.long)
+</span><span>        </span><span style="color:#569cd6;">return </span><span>{
+</span><span>            </span><span style="color:#d69d85;">&#39;text&#39;</span><span>: text,
+</span><span>            </span><span style="color:#d69d85;">&#39;input_ids&#39;</span><span>: encoding[</span><span style="color:#d69d85;">&#39;input_ids&#39;</span><span>].flatten(),
+</span><span>            </span><span style="color:#d69d85;">&#39;attention_mask&#39;</span><span>: encoding[</span><span style="color:#d69d85;">&#39;attention_mask&#39;</span><span>].flatten(),
+</span><span>            </span><span style="color:#d69d85;">&#39;labels&#39;</span><span>: torch.tensor(label, dtype=torch.long)
 </span><span>        }
 </span></code></pre>
 <p>A <strong>tokenizer</strong> is a tool that breaks down text into smaller units called tokens. These could be words, parts of words, or even punctuation. The tokenizer also handles converting these tokens into numbers that the model can understand. The <strong>DistilBertTokenizer</strong> is used because the same tokenizer that the model was trained with is desired. Under the hood, it uses <a href="https://huggingface.co/learn/nlp-course/en/chapter6/6">WordPiece subword segmentation</a>.</p>
 <p>The <code>encode_plus</code> method of this tokenizer is used. This method does several things: It tokenizes the input text, adds special tokens that DistilBERT expects (like [CLS] at the start and [SEP] at the end), pads or truncates the input to a specified maximum length, and creates an "attention mask" which tells the model which tokens are actual input and which are padding.</p>
 <p>The <strong>torch Dataset</strong> is a PyTorch class that represents a dataset. By inheriting from this class, a custom dataset that PyTorch can easily work with is created. The <code>__getitem__</code> method is called when an item from the dataset needs to be accessed.</p>
 <p>PyTorch's DataLoader is used to efficiently batch and shuffle the data:</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span>train_dataloader </span><span style="color:#f92672;">= </span><span>DataLoader(train_dataset, </span><span style="font-style:italic;color:#fd971f;">batch_size</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">16</span><span>, </span><span style="font-style:italic;color:#fd971f;">shuffle</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">True</span><span>)
-</span><span>test_dataloader </span><span style="color:#f92672;">= </span><span>DataLoader(test_dataset, </span><span style="font-style:italic;color:#fd971f;">batch_size</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">16</span><span>)
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>train_dataloader = DataLoader(train_dataset, batch_size=</span><span style="color:#b5cea8;">16</span><span>, shuffle=</span><span style="color:#569cd6;">True</span><span>)
+</span><span>test_dataloader = DataLoader(test_dataset, batch_size=</span><span style="color:#b5cea8;">16</span><span>)
 </span></code></pre>
 <p>The DataLoader is a PyTorch utility that helps manage batching of data and provides an iterable over the Dataset. For the training data, <code>shuffle=True</code> is set, which means it will randomly shuffle the data at the start of each epoch. This shuffling helps prevent the model from learning any unintended patterns based on the order of the training data.</p>
 <p>A batch size of 16 is used, meaning the DataLoader will yield batches of 16 examples at a time. This batch size is a balance between memory usage and training speed. For the test data, shuffling is not needed, so the <code>shuffle</code> parameter is omitted.</p>
 <p>During training and evaluation, these DataLoaders will be iterated over, which will give batches of data in the format the model expects. This abstraction simplifies the training loop and makes it easier to work with large datasets that might not fit into memory all at once.</p>
 <h4 id="train-test-split">Train-Test Split</h4>
 <p>Before training begins, the data is split into training and testing sets:</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">train_test_split</span><span>(</span><span style="font-style:italic;color:#fd971f;">data</span><span>, </span><span style="font-style:italic;color:#fd971f;">test_size</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">0.1</span><span>):
-</span><span>    split_index </span><span style="color:#f92672;">= </span><span style="font-style:italic;color:#66d9ef;">int</span><span>(</span><span style="color:#66d9ef;">len</span><span>(data) </span><span style="color:#f92672;">* </span><span>(</span><span style="color:#ae81ff;">1 </span><span style="color:#f92672;">- </span><span>test_size))
-</span><span>    </span><span style="color:#f92672;">return </span><span>data[:split_index], data[split_index:]
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#569cd6;">def </span><span>train_test_split(data, test_size=</span><span style="color:#b5cea8;">0.1</span><span>):
+</span><span>    split_index = int(len(data) * (</span><span style="color:#b5cea8;">1 </span><span>- test_size))
+</span><span>    </span><span style="color:#569cd6;">return </span><span>data[:split_index], data[split_index:]
 </span><span>
-</span><span>train_data, test_data </span><span style="color:#f92672;">= </span><span>train_test_split(</span><span style="font-style:italic;color:#66d9ef;">list</span><span>(</span><span style="color:#66d9ef;">zip</span><span>(all_texts, all_labels)))
-</span><span>train_texts, train_labels </span><span style="color:#f92672;">= </span><span style="color:#66d9ef;">zip</span><span>(</span><span style="color:#f92672;">*</span><span>train_data)
-</span><span>test_texts, test_labels </span><span style="color:#f92672;">= </span><span style="color:#66d9ef;">zip</span><span>(</span><span style="color:#f92672;">*</span><span>test_data)
+</span><span>train_data, test_data = train_test_split(list(zip(all_texts, all_labels)))
+</span><span>train_texts, train_labels = zip(*train_data)
+</span><span>test_texts, test_labels = zip(*test_data)
 </span></code></pre>
 <p>A manual split is used where the first 90% of the data is used for training and the last 10% for testing. This approach was chosen to make it easy for me to place all of the samples evaluated in the previous blog post into the test set. That way, performance could be more directly compared, because none of those samples would have been seen by any either model during training. More on that later.</p>
 <h4 id="training-loop">Training Loop</h4>
 <p>The training process involves iterating over the data multiple times and updating the model's parameters to minimize the classification error.</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">train_epoch</span><span>(</span><span style="font-style:italic;color:#fd971f;">model</span><span>, </span><span style="font-style:italic;color:#fd971f;">data_loader</span><span>, </span><span style="font-style:italic;color:#fd971f;">optimizer</span><span>, </span><span style="font-style:italic;color:#fd971f;">device</span><span>):
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#569cd6;">def </span><span>train_epoch(model, data_loader, optimizer, device):
 </span><span>    model.train()
-</span><span>    total_loss </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">0
-</span><span>    total_correct </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">0
-</span><span>    total_samples </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">0
+</span><span>    total_loss = </span><span style="color:#b5cea8;">0
+</span><span>    total_correct = </span><span style="color:#b5cea8;">0
+</span><span>    total_samples = </span><span style="color:#b5cea8;">0
 </span><span>
-</span><span>    </span><span style="color:#f92672;">for </span><span>batch </span><span style="color:#f92672;">in </span><span>data_loader:
-</span><span>        input_ids </span><span style="color:#f92672;">= </span><span>batch[</span><span style="color:#e6db74;">&#39;input_ids&#39;</span><span>].to(device)
-</span><span>        attention_mask </span><span style="color:#f92672;">= </span><span>batch[</span><span style="color:#e6db74;">&#39;attention_mask&#39;</span><span>].to(device)
-</span><span>        labels </span><span style="color:#f92672;">= </span><span>batch[</span><span style="color:#e6db74;">&#39;labels&#39;</span><span>].to(device)
+</span><span>    </span><span style="color:#569cd6;">for </span><span>batch </span><span style="color:#569cd6;">in </span><span>data_loader:
+</span><span>        input_ids = batch[</span><span style="color:#d69d85;">&#39;input_ids&#39;</span><span>].to(device)
+</span><span>        attention_mask = batch[</span><span style="color:#d69d85;">&#39;attention_mask&#39;</span><span>].to(device)
+</span><span>        labels = batch[</span><span style="color:#d69d85;">&#39;labels&#39;</span><span>].to(device)
 </span><span>
 </span><span>        optimizer.zero_grad()
-</span><span>        outputs </span><span style="color:#f92672;">= </span><span>model(input_ids, </span><span style="font-style:italic;color:#fd971f;">attention_mask</span><span style="color:#f92672;">=</span><span>attention_mask, </span><span style="font-style:italic;color:#fd971f;">labels</span><span style="color:#f92672;">=</span><span>labels)
-</span><span>        loss </span><span style="color:#f92672;">= </span><span>outputs.loss
-</span><span>        logits </span><span style="color:#f92672;">= </span><span>outputs.logits
+</span><span>        outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
+</span><span>        loss = outputs.loss
+</span><span>        logits = outputs.logits
 </span><span>
-</span><span>        _, predicted </span><span style="color:#f92672;">= </span><span>torch.max(logits, </span><span style="color:#ae81ff;">1</span><span>)
-</span><span>        total_correct </span><span style="color:#f92672;">+= </span><span>(predicted </span><span style="color:#f92672;">== </span><span>labels).sum().item()
-</span><span>        total_samples </span><span style="color:#f92672;">+= </span><span>labels.size(</span><span style="color:#ae81ff;">0</span><span>)
+</span><span>        _, predicted = torch.max(logits, </span><span style="color:#b5cea8;">1</span><span>)
+</span><span>        total_correct += (predicted == labels).sum().item()
+</span><span>        total_samples += labels.size(</span><span style="color:#b5cea8;">0</span><span>)
 </span><span>
 </span><span>        loss.backward()
 </span><span>        optimizer.step()
 </span><span>
-</span><span>        total_loss </span><span style="color:#f92672;">+= </span><span>loss.item()
+</span><span>        total_loss += loss.item()
 </span><span>
-</span><span>    avg_loss </span><span style="color:#f92672;">= </span><span>total_loss </span><span style="color:#f92672;">/ </span><span style="color:#66d9ef;">len</span><span>(data_loader)
-</span><span>    accuracy </span><span style="color:#f92672;">= </span><span>total_correct </span><span style="color:#f92672;">/ </span><span>total_samples
-</span><span>    </span><span style="color:#f92672;">return </span><span>avg_loss, accuracy
+</span><span>    avg_loss = total_loss / len(data_loader)
+</span><span>    accuracy = total_correct / total_samples
+</span><span>    </span><span style="color:#569cd6;">return </span><span>avg_loss, accuracy
 </span></code></pre>
 <p>It isn't shown here, but <code>model</code> passed in to this function is an instance of the <code>DistilBertForSequenceClassification</code> class. <code>input_ids</code>, <code>attention mask</code>, and <code>labels</code> are determined during dataset preparation outside of this function call. The <code>input_id</code>s represent the tokenized input text, while <code>attention_mask</code> indicates which tokens should be attended to. <code>labels</code> represent the correct answers, while <code>predicted</code> represents the guesses.</p>
 <p>The function performs gradient descent. At a high level, this refers to a process where the model makes a "forward pass" where it makes guesses and checks its answers. Then it makes a "backward pass" where it nudges its weights in a direction that it believes will make a better guess next time.</p>
@@ -169,48 +169,48 @@
 <p>As you can see, there isn't really a defined API for gradient descent. It's on you to know what steps need to be done and do them.</p>
 <h4 id="model-configuration-and-training">Model Configuration and Training</h4>
 <p>The model configuration and training takes place in the program's main method, separate from the above helper methods.</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span>tokenizer </span><span style="color:#f92672;">= </span><span>DistilBertTokenizer.from_pretrained(</span><span style="color:#e6db74;">&#39;distilbert-base-uncased&#39;</span><span>)
-</span><span>model </span><span style="color:#f92672;">= </span><span>DistilBertForSequenceClassification.from_pretrained(</span><span style="color:#e6db74;">&#39;distilbert-base-uncased&#39;</span><span>, </span><span style="font-style:italic;color:#fd971f;">num_labels</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">3</span><span>)
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>tokenizer = DistilBertTokenizer.from_pretrained(</span><span style="color:#d69d85;">&#39;distilbert-base-uncased&#39;</span><span>)
+</span><span>model = DistilBertForSequenceClassification.from_pretrained(</span><span style="color:#d69d85;">&#39;distilbert-base-uncased&#39;</span><span>, num_labels=</span><span style="color:#b5cea8;">3</span><span>)
 </span><span>
-</span><span>train_dataset </span><span style="color:#f92672;">= </span><span>TextClassificationDataset(train_texts, train_labels, tokenizer, </span><span style="font-style:italic;color:#fd971f;">max_len</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">128</span><span>)
-</span><span>test_dataset </span><span style="color:#f92672;">= </span><span>TextClassificationDataset(test_texts, test_labels, tokenizer, </span><span style="font-style:italic;color:#fd971f;">max_len</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">128</span><span>)
+</span><span>train_dataset = TextClassificationDataset(train_texts, train_labels, tokenizer, max_len=</span><span style="color:#b5cea8;">128</span><span>)
+</span><span>test_dataset = TextClassificationDataset(test_texts, test_labels, tokenizer, max_len=</span><span style="color:#b5cea8;">128</span><span>)
 </span></code></pre>
 <p>First, the <strong>tokenizer</strong> and <strong>model</strong> are initialized. The pre-trained 'distilbert-base-uncased' model is used, which means it's been trained on lowercase English text. The <code>num_labels=3</code> parameter tells the model it's dealing with a three-class classification problem.</p>
 <p><code>max_len=128</code> is set when creating the datasets. This <strong>maximum length</strong> parameter determines the longest sequence of tokens the model will process. Shorter sequences will be padded, and longer ones will be truncated.</p>
 <p>The <strong>batch size</strong> of 16 in the DataLoader means 16 examples will be processed at a time during training. This is another balance between memory usage and training speed. Larger batch sizes can lead to faster training but require more memory.</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span>device </span><span style="color:#f92672;">= </span><span>torch.device(</span><span style="color:#e6db74;">&#39;mps&#39; </span><span style="color:#f92672;">if </span><span>torch.backends.mps.is_available() </span><span style="color:#f92672;">else </span><span style="color:#e6db74;">&#39;cpu&#39;</span><span>)
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>device = torch.device(</span><span style="color:#d69d85;">&#39;mps&#39; </span><span style="color:#569cd6;">if </span><span>torch.backends.mps.is_available() </span><span style="color:#569cd6;">else </span><span style="color:#d69d85;">&#39;cpu&#39;</span><span>)
 </span><span>model.to(device)
 </span></code></pre>
 <p>Next, the model is moved to the appropriate device. A check is made if Apple's Metal Performance Shaders (MPS) are available, which can accelerate training on compatible Mac hardware (this was only run on a Mac; this line would need to be changed if it were to be run optimally on different hardware).</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span>optimizer </span><span style="color:#f92672;">= </span><span>AdamW(model.parameters(), </span><span style="font-style:italic;color:#fd971f;">lr</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">2e-5</span><span>)
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>optimizer = AdamW(model.parameters(), lr=</span><span style="color:#b5cea8;">2e-5</span><span>)
 </span></code></pre>
 <p>Neural networks rely on nonlinear activation functions to model complex relationships in data. These functions, like <strong>tanh</strong> or <strong>ReLU</strong>, work best when their inputs are well-distributed across their operating range. For instance, a tanh function, which maps inputs to outputs between -1 and 1, is most effective when its inputs span this entire range rather than being concentrated at the extremes.</p>
 <p>Ensuring this ideal distribution of inputs became a significant challenge as networks grew deeper. In 2015, researchers introduced Batch Normalization as a solution. This technique normalizes the inputs to each layer, improving the flow of data through the network. This worked, but it also introduced complexities. Eventually, this approach was superseded by adaptive learning rate methods like <strong>Adam (Adaptive Moment Estimation)</strong> and later the variant <strong>AdamW</strong>.</p>
 <p>A <strong>learning rate</strong> of 2e-5 (0.00002) is used here. It was selected by manually tuning the learning rate and number of epochs and evaluating network performance. It's small enough to allow for fine adjustments to the pre-trained weights without causing drastic changes that could destroy the model's pre-trained knowledge. Too high, and the model might overshoot optimal solutions; too low, and the model might train too slowly or get stuck in suboptimal solutions. This learning rate is much lower than what you would use for training a network from scratch, which is usually around 1e-3.</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span>num_epochs </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">3
-</span><span style="color:#f92672;">for </span><span>epoch </span><span style="color:#f92672;">in </span><span style="color:#66d9ef;">range</span><span>(num_epochs):
-</span><span>    </span><span style="color:#66d9ef;">print</span><span>(</span><span style="font-style:italic;color:#66d9ef;">f</span><span style="color:#e6db74;">&#39;Epoch </span><span>{epoch </span><span style="color:#f92672;">+ </span><span style="color:#ae81ff;">1</span><span>}</span><span style="color:#e6db74;">/</span><span>{num_epochs}</span><span style="color:#e6db74;">&#39;</span><span>)
-</span><span>    train_loss, train_acc </span><span style="color:#f92672;">= </span><span>train_epoch(model, train_dataloader, optimizer, device)
-</span><span>    </span><span style="color:#66d9ef;">print</span><span>(</span><span style="font-style:italic;color:#66d9ef;">f</span><span style="color:#e6db74;">&#39;Train loss </span><span>{train_loss</span><span style="color:#ae81ff;">:.4f</span><span>}</span><span style="color:#e6db74;"> accuracy </span><span>{train_acc</span><span style="color:#ae81ff;">:.4f</span><span>}</span><span style="color:#e6db74;">&#39;</span><span>)
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>num_epochs = </span><span style="color:#b5cea8;">3
+</span><span style="color:#569cd6;">for </span><span>epoch </span><span style="color:#569cd6;">in </span><span>range(num_epochs):
+</span><span>    print(</span><span style="color:#569cd6;">f</span><span style="color:#d69d85;">&#39;Epoch </span><span>{epoch + </span><span style="color:#b5cea8;">1</span><span>}</span><span style="color:#d69d85;">/</span><span>{num_epochs}</span><span style="color:#d69d85;">&#39;</span><span>)
+</span><span>    train_loss, train_acc = train_epoch(model, train_dataloader, optimizer, device)
+</span><span>    print(</span><span style="color:#569cd6;">f</span><span style="color:#d69d85;">&#39;Train loss </span><span>{train_loss</span><span style="color:#b4cea8;">:.4f</span><span>}</span><span style="color:#d69d85;"> accuracy </span><span>{train_acc</span><span style="color:#b4cea8;">:.4f</span><span>}</span><span style="color:#d69d85;">&#39;</span><span>)
 </span><span>
-</span><span>    val_loss, val_acc </span><span style="color:#f92672;">= </span><span>evaluate(model, test_dataloader, device)
-</span><span>    </span><span style="color:#66d9ef;">print</span><span>(</span><span style="font-style:italic;color:#66d9ef;">f</span><span style="color:#e6db74;">&#39;Val loss </span><span>{val_loss</span><span style="color:#ae81ff;">:.4f</span><span>}</span><span style="color:#e6db74;"> accuracy </span><span>{val_acc</span><span style="color:#ae81ff;">:.4f</span><span>}</span><span style="color:#e6db74;">&#39;</span><span>)
+</span><span>    val_loss, val_acc = evaluate(model, test_dataloader, device)
+</span><span>    print(</span><span style="color:#569cd6;">f</span><span style="color:#d69d85;">&#39;Val loss </span><span>{val_loss</span><span style="color:#b4cea8;">:.4f</span><span>}</span><span style="color:#d69d85;"> accuracy </span><span>{val_acc</span><span style="color:#b4cea8;">:.4f</span><span>}</span><span style="color:#d69d85;">&#39;</span><span>)
 </span><span>
-</span><span>torch.save(model.state_dict(), </span><span style="color:#e6db74;">&#39;model/distilbert_classifier.pth&#39;</span><span>)
-</span><span style="color:#66d9ef;">print</span><span>(</span><span style="color:#e6db74;">&quot;Model saved successfully.&quot;</span><span>)
+</span><span>torch.save(model.state_dict(), </span><span style="color:#d69d85;">&#39;model/distilbert_classifier.pth&#39;</span><span>)
+</span><span>print(</span><span style="color:#d69d85;">&quot;Model saved successfully.&quot;</span><span>)
 </span></code></pre>
 <p>The training loop runs for <strong>3 epochs</strong>, after which the accuracy and loss of both the training and validation sets reached desirable values (see "Results and Discussion" below).</p>
 <p>An epoch is one complete pass through the entire training dataset. In each epoch, the model is trained on the training data and then evaluated on the validation (test) data. The loss and accuracy for both training and validation sets are printed out with 4 decimal places.</p>
 <p>After training, the model is saved using <code>torch.save()</code>. This function saves the model's <strong>state_dict</strong>. A state_dict in PyTorch is a Python dictionary that maps each layer to its parameter tensors. It contains all the learned weights and biases of the model. By saving the state_dict, all the knowledge the model has gained during training is essentially saved. The model is saved with a <strong>.pth</strong> file extension. This is a common convention in PyTorch for saved model files, standing for "PyTorch".</p>
 <p>To use this saved model later, it would be loaded like this:</p>
-<pre data-lang="python" style="background-color:#272822;color:#f8f8f2;" class="language-python "><code class="language-python" data-lang="python"><span>model </span><span style="color:#f92672;">= </span><span>DistilBertForSequenceClassification.from_pretrained(</span><span style="color:#e6db74;">&#39;distilbert-base-uncased&#39;</span><span>, </span><span style="font-style:italic;color:#fd971f;">num_labels</span><span style="color:#f92672;">=</span><span style="color:#ae81ff;">3</span><span>)
-</span><span>model.load_state_dict(torch.load(</span><span style="color:#e6db74;">&#39;model/distilbert_classifier.pth&#39;</span><span>))
+<pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>model = DistilBertForSequenceClassification.from_pretrained(</span><span style="color:#d69d85;">&#39;distilbert-base-uncased&#39;</span><span>, num_labels=</span><span style="color:#b5cea8;">3</span><span>)
+</span><span>model.load_state_dict(torch.load(</span><span style="color:#d69d85;">&#39;model/distilbert_classifier.pth&#39;</span><span>))
 </span><span>model.eval()
 </span></code></pre>
 <h3 id="results-and-discussion">Results and Discussion</h3>
 <p>For simplicity, I ran with the assumption that each string of text had one and only one classification. It would be much more useful if each string of text instead could have 0-3 classifications. This would also almost certainly bring down the accuracy of the model because determining whether a given string belongs to a single category at all seems like it would be a much more complex task than what it had to learn during training.</p>
 <p>After 3 epochs, the model achieves an <strong>accuracy of 100% and loss of 0.156 on the test set</strong> and an <strong>accuracy of 99.59% and loss of 0.0278 on the training set</strong>.</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>Epoch 1/3
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>Epoch 1/3
 </span><span>Train loss 0.6052 accuracy 0.8264
 </span><span>Val loss 0.1448 accuracy 1.0000
 </span><span>Epoch 2/3

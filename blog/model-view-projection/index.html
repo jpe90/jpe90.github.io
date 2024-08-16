@@ -39,16 +39,16 @@
 <h2 id="defining-vertices">Defining Vertices</h2>
 <p>Before you can draw an object, you must tell the graphics API the locations of its vertices. Vertices are normalized floating point values between -1.0f and 1.0f that define points on a surface.</p>
 <p>For example, the following define the position of a cube in 3D space:</p>
-<pre data-lang="C" style="background-color:#272822;color:#f8f8f2;" class="language-C "><code class="language-C" data-lang="C"><span style="color:#f92672;">static</span><span> GLfloat cube_verts[] </span><span style="color:#f92672;">=
+<pre data-lang="C" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-C "><code class="language-C" data-lang="C"><span style="color:#569cd6;">static</span><span> GLfloat cube_verts[] =
 </span><span>{
-</span><span>    </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 0 -- front
-</span><span>    </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 1
-</span><span>     </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 2
-</span><span>     </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 3
-</span><span>     </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 4 -- back
-</span><span>     </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 5
-</span><span>    </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 6
-</span><span>    </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#f92672;">-</span><span style="color:#ae81ff;">0.5</span><span style="font-style:italic;color:#66d9ef;">f</span><span>,  </span><span style="color:#75715e;">// 7
+</span><span>    -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 0 -- front
+</span><span>    -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 1
+</span><span>     </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 2
+</span><span>     </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 3
+</span><span>     </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 4 -- back
+</span><span>     </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 5
+</span><span>    -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 6
+</span><span>    -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>, -</span><span style="color:#b5cea8;">0.5</span><span style="color:#569cd6;">f</span><span>,  </span><span style="color:#608b4e;">// 7
 </span><span>};
 </span></code></pre>
 <img src="/images/rectpts.png" alt="verts" style="width: 100%;" />
@@ -60,14 +60,14 @@
 <img src="/images/fgx2.png" alt="fgx" style="width: 100%;" />
 <p>Matrix transformations represent functions that map one point in space to another point in space.</p>
 <p>As such, when you see a matrix transformation like this:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>⎡2 0 0 0⎤
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>⎡2 0 0 0⎤
 </span><span>⎢0 2 0 0⎥
 </span><span>⎢0 0 2 0⎥
 </span><span>⎣0 0 0 1⎦
 </span></code></pre>
 <p>You should be thinking of it as serving the same purpose of a polynomial function f(x). This particular matrix scales up any vector in 3D space to make it twice as large and is analogous to f(x) = 2x.</p>
 <p>And when you see matrix multiplication like this:</p>
-<pre style="background-color:#272822;color:#f8f8f2;"><code><span>⎡1 0 0 0⎤   ⎡2 0 0 0⎤
+<pre style="background-color:#1e1e1e;color:#dcdcdc;"><code><span>⎡1 0 0 0⎤   ⎡2 0 0 0⎤
 </span><span>⎢0 1 0 0⎥ * ⎢0 2 0 0⎥
 </span><span>⎢0 0 1 0⎥   ⎢0 0 2 0⎥
 </span><span>⎣0 0 0 1⎦   ⎣0 0 0 1⎦
@@ -78,59 +78,59 @@
 <p>Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix's values to change.</p>
 <img src="/images/model.gif" alt="model" style="width: 100%;" />
 <p>In the demo application, values for translation, scaling, and rotation in the x, y, and z directions are stored in a global variable.</p>
-<pre data-lang="C" style="background-color:#272822;color:#f8f8f2;" class="language-C "><code class="language-C" data-lang="C"><span style="font-style:italic;color:#66d9ef;">struct </span><span>orientation
+<pre data-lang="C" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-C "><code class="language-C" data-lang="C"><span style="color:#569cd6;">struct </span><span>orientation
 </span><span>{
-</span><span>    </span><span style="color:#75715e;">// translation
-</span><span>    </span><span style="font-style:italic;color:#66d9ef;">float</span><span> tx; </span><span style="font-style:italic;color:#66d9ef;">float</span><span> ty; </span><span style="font-style:italic;color:#66d9ef;">float</span><span> tz;
-</span><span>    </span><span style="color:#75715e;">// scaling
-</span><span>    </span><span style="font-style:italic;color:#66d9ef;">float</span><span> sx; </span><span style="font-style:italic;color:#66d9ef;">float</span><span> sy; </span><span style="font-style:italic;color:#66d9ef;">float</span><span> sz;
-</span><span>    </span><span style="color:#75715e;">// rotation
-</span><span>    </span><span style="font-style:italic;color:#66d9ef;">float</span><span> rx; </span><span style="font-style:italic;color:#66d9ef;">float</span><span> ry; </span><span style="font-style:italic;color:#66d9ef;">float</span><span> rz;
+</span><span>    </span><span style="color:#608b4e;">// translation
+</span><span>    </span><span style="color:#569cd6;">float</span><span> tx; </span><span style="color:#569cd6;">float</span><span> ty; </span><span style="color:#569cd6;">float</span><span> tz;
+</span><span>    </span><span style="color:#608b4e;">// scaling
+</span><span>    </span><span style="color:#569cd6;">float</span><span> sx; </span><span style="color:#569cd6;">float</span><span> sy; </span><span style="color:#569cd6;">float</span><span> sz;
+</span><span>    </span><span style="color:#608b4e;">// rotation
+</span><span>    </span><span style="color:#569cd6;">float</span><span> rx; </span><span style="color:#569cd6;">float</span><span> ry; </span><span style="color:#569cd6;">float</span><span> rz;
 </span><span>};
-</span><span style="color:#f92672;">...
-</span><span style="color:#f92672;">static </span><span style="font-style:italic;color:#66d9ef;">struct</span><span> orientation cube_transform;
+</span><span style="color:#569cd6;">...
+</span><span style="color:#569cd6;">static struct</span><span> orientation cube_transform;
 </span></code></pre>
 <p>Eventually, these get wired up to the UI with a slider.</p>
-<pre data-lang="C" style="background-color:#272822;color:#f8f8f2;" class="language-C "><code class="language-C" data-lang="C"><span>nk_layout_row_dynamic(ctx, </span><span style="color:#ae81ff;">32</span><span>, </span><span style="color:#ae81ff;">2</span><span>);
-</span><span>nk_label(ctx, </span><span style="color:#e6db74;">&quot;Scale x&quot;</span><span>, NK_TEXT_ALIGN_LEFT </span><span style="color:#f92672;">|</span><span> NK_TEXT_ALIGN_MIDDLE);
-</span><span>nk_slider_float(ctx, </span><span style="color:#ae81ff;">0</span><span>, </span><span style="color:#f92672;">&amp;</span><span>cube_transform.sx, </span><span style="color:#ae81ff;">5.0</span><span style="font-style:italic;color:#66d9ef;">f</span><span>, </span><span style="color:#ae81ff;">0.01</span><span style="font-style:italic;color:#66d9ef;">f</span><span>);
+<pre data-lang="C" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-C "><code class="language-C" data-lang="C"><span>nk_layout_row_dynamic(ctx, </span><span style="color:#b5cea8;">32</span><span>, </span><span style="color:#b5cea8;">2</span><span>);
+</span><span>nk_label(ctx, </span><span style="color:#d69d85;">&quot;Scale x&quot;</span><span>, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+</span><span>nk_slider_float(ctx, </span><span style="color:#b5cea8;">0</span><span>, </span><span style="color:#569cd6;">&amp;</span><span>cube_transform.sx, </span><span style="color:#b5cea8;">5.0</span><span style="color:#569cd6;">f</span><span>, </span><span style="color:#b5cea8;">0.01</span><span style="color:#569cd6;">f</span><span>);
 </span></code></pre>
 <p>The vector and matrix math used in the application uses <a href="https://github.com/HandmadeMath/HandmadeMath">Handmade Math</a>, which supports matrix and vector multiplication.</p>
 <h2 id="view-matrix">View Matrix</h2>
 <p>A view matrix in 3D rendering is a mathematical representation of the position and orientation of the virtual camera in the 3D scene. It defines the position and orientation of the camera in relation to the 3D world, and is used in conjunction with the model and projection matrices to transform the vertices of an object into the 2D screen space of the rendering engine. This allows the object to be accurately rendered on the screen from the perspective of the virtual camera.</p>
 <p>Changing the 3D position of the camera (sometimes referred to as the "eye"), or changing the direction the camera is looking (sometimes referred to as the "center") is done by modifying 3D vectors which are parameters to the function that build the view matrix. In <code>HandmadeMath</code>, this is <code>HMM_LookAt</code>:</p>
-<pre data-lang="C" style="background-color:#272822;color:#f8f8f2;" class="language-C "><code class="language-C" data-lang="C"><span>COVERAGE(HMM_LookAt, </span><span style="color:#ae81ff;">1</span><span>)
-</span><span>HMM_INLINE hmm_mat4 </span><span style="color:#a6e22e;">HMM_PREFIX</span><span>(</span><span style="font-style:italic;color:#fd971f;">LookAt</span><span>)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up)
+<pre data-lang="C" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-C "><code class="language-C" data-lang="C"><span>COVERAGE(HMM_LookAt, </span><span style="color:#b5cea8;">1</span><span>)
+</span><span>HMM_INLINE hmm_mat4 HMM_PREFIX(LookAt)(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up)
 </span><span>{
 </span><span>    ASSERT_COVERED(HMM_LookAt);
 </span><span>
 </span><span>    hmm_mat4 Result;
 </span><span>
-</span><span>    hmm_vec3 F </span><span style="color:#f92672;">= </span><span>HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(SubtractVec3)(Center, Eye));
-</span><span>    hmm_vec3 S </span><span style="color:#f92672;">= </span><span>HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(Cross)(F, Up));
-</span><span>    hmm_vec3 U </span><span style="color:#f92672;">= </span><span>HMM_PREFIX(Cross)(S, F);
+</span><span>    hmm_vec3 F = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(SubtractVec3)(Center, Eye));
+</span><span>    hmm_vec3 S = HMM_PREFIX(NormalizeVec3)(HMM_PREFIX(Cross)(F, Up));
+</span><span>    hmm_vec3 U = HMM_PREFIX(Cross)(S, F);
 </span><span>
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">0</span><span>][</span><span style="color:#ae81ff;">0</span><span>] </span><span style="color:#f92672;">=</span><span> S.X;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">0</span><span>][</span><span style="color:#ae81ff;">1</span><span>] </span><span style="color:#f92672;">=</span><span> U.X;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">0</span><span>][</span><span style="color:#ae81ff;">2</span><span>] </span><span style="color:#f92672;">= -</span><span>F.X;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">0</span><span>][</span><span style="color:#ae81ff;">3</span><span>] </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">0.0</span><span style="font-style:italic;color:#66d9ef;">f</span><span>;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">0</span><span>] = S.X;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">1</span><span>] = U.X;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">2</span><span>] = -F.X;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">0</span><span>][</span><span style="color:#b5cea8;">3</span><span>] = </span><span style="color:#b5cea8;">0.0</span><span style="color:#569cd6;">f</span><span>;
 </span><span>
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">1</span><span>][</span><span style="color:#ae81ff;">0</span><span>] </span><span style="color:#f92672;">=</span><span> S.Y;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">1</span><span>][</span><span style="color:#ae81ff;">1</span><span>] </span><span style="color:#f92672;">=</span><span> U.Y;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">1</span><span>][</span><span style="color:#ae81ff;">2</span><span>] </span><span style="color:#f92672;">= -</span><span>F.Y;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">1</span><span>][</span><span style="color:#ae81ff;">3</span><span>] </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">0.0</span><span style="font-style:italic;color:#66d9ef;">f</span><span>;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">0</span><span>] = S.Y;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">1</span><span>] = U.Y;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">2</span><span>] = -F.Y;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">1</span><span>][</span><span style="color:#b5cea8;">3</span><span>] = </span><span style="color:#b5cea8;">0.0</span><span style="color:#569cd6;">f</span><span>;
 </span><span>
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">2</span><span>][</span><span style="color:#ae81ff;">0</span><span>] </span><span style="color:#f92672;">=</span><span> S.Z;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">2</span><span>][</span><span style="color:#ae81ff;">1</span><span>] </span><span style="color:#f92672;">=</span><span> U.Z;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">2</span><span>][</span><span style="color:#ae81ff;">2</span><span>] </span><span style="color:#f92672;">= -</span><span>F.Z;
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">2</span><span>][</span><span style="color:#ae81ff;">3</span><span>] </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">0.0</span><span style="font-style:italic;color:#66d9ef;">f</span><span>;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">2</span><span>][</span><span style="color:#b5cea8;">0</span><span>] = S.Z;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">2</span><span>][</span><span style="color:#b5cea8;">1</span><span>] = U.Z;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">2</span><span>][</span><span style="color:#b5cea8;">2</span><span>] = -F.Z;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">2</span><span>][</span><span style="color:#b5cea8;">3</span><span>] = </span><span style="color:#b5cea8;">0.0</span><span style="color:#569cd6;">f</span><span>;
 </span><span>
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">3</span><span>][</span><span style="color:#ae81ff;">0</span><span>] </span><span style="color:#f92672;">= -</span><span>HMM_PREFIX(DotVec3)(S, Eye);
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">3</span><span>][</span><span style="color:#ae81ff;">1</span><span>] </span><span style="color:#f92672;">= -</span><span>HMM_PREFIX(DotVec3)(U, Eye);
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">3</span><span>][</span><span style="color:#ae81ff;">2</span><span>] </span><span style="color:#f92672;">= </span><span>HMM_PREFIX(DotVec3)(F, Eye);
-</span><span>    Result.Elements[</span><span style="color:#ae81ff;">3</span><span>][</span><span style="color:#ae81ff;">3</span><span>] </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">1.0</span><span style="font-style:italic;color:#66d9ef;">f</span><span>;
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">3</span><span>][</span><span style="color:#b5cea8;">0</span><span>] = -HMM_PREFIX(DotVec3)(S, Eye);
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">3</span><span>][</span><span style="color:#b5cea8;">1</span><span>] = -HMM_PREFIX(DotVec3)(U, Eye);
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">3</span><span>][</span><span style="color:#b5cea8;">2</span><span>] = HMM_PREFIX(DotVec3)(F, Eye);
+</span><span>    Result.Elements[</span><span style="color:#b5cea8;">3</span><span>][</span><span style="color:#b5cea8;">3</span><span>] = </span><span style="color:#b5cea8;">1.0</span><span style="color:#569cd6;">f</span><span>;
 </span><span>
-</span><span>    </span><span style="color:#f92672;">return </span><span>(Result);
+</span><span>    </span><span style="color:#569cd6;">return </span><span>(Result);
 </span><span>}
 </span><span>
 </span></code></pre>
@@ -146,18 +146,18 @@
 <p>To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you'll see they often conditionally use <a href="https://www.intel.com/content/www/us/en/support/articles/000005779/processors.html">instruction set extensions</a> when the user's hardware supports them to calculate the transformation more quickly and efficiently.</p>
 <p>The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.</p>
 <p>The programmer utilizes it by creating a shader program, such as the one below, that sits in GPU memory and is executed on the GPU every frame.</p>
-<pre data-lang="C" style="background-color:#272822;color:#f8f8f2;" class="language-C "><code class="language-C" data-lang="C"><span style="color:#f92672;">static const </span><span style="font-style:italic;color:#66d9ef;">char
-</span><span>frustum_vert_shader[] </span><span style="color:#f92672;">=
-</span><span>    </span><span style="color:#e6db74;">&quot;precision mediump float;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;uniform mat4 mvp;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;attribute vec4 a_position;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;attribute vec4 a_color;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;varying vec4 v_color;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;void main()&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;{&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;gl_Position = mvp * a_position;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;v_color = a_color;&quot;
-</span><span>    </span><span style="color:#e6db74;">&quot;}&quot;</span><span>;
+<pre data-lang="C" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-C "><code class="language-C" data-lang="C"><span style="color:#569cd6;">static const char
+</span><span>frustum_vert_shader[] =
+</span><span>    </span><span style="color:#d69d85;">&quot;precision mediump float;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;uniform mat4 mvp;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;attribute vec4 a_position;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;attribute vec4 a_color;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;varying vec4 v_color;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;void main()&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;{&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;gl_Position = mvp * a_position;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;v_color = a_color;&quot;
+</span><span>    </span><span style="color:#d69d85;">&quot;}&quot;</span><span>;
 </span></code></pre>
 <p>Hope this helps somebody!</p>
 <h2 id="additional-resources">Additional Resources</h2>
