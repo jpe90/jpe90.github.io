@@ -28,12 +28,12 @@
   <p><em>This is a WIP early draft that I'm sharing to get feedback as I write it. If you have any, please <a href="mailto:eskinjp@gmail.com">shoot me an email</a>.</em></p>
 <h2 id="introduction">Introduction</h2>
 <p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to perform text classification tasks. The idea was that they could  enable automation of more complex tasks that are otherwise not automatable.</p>
-<p>I came up with an experiment involving categorizing messages sent from customers to an online store. Messages belong to one of three distinct categories: refund requests, order inquiries, or general feedback. Inputs were strings of text such as the following:</p>
+<p>My experimental task was to classify messages sent from customers to an online store. Messages were classified as either refund requests, order inquiries, or general feedback.</p>
 <table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
   <thead>
     <tr style="background-color: #f2f2f2;">
-      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Text</th>
-      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Classification</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Message</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Label</th>
     </tr>
   </thead>
   <tbody>
@@ -51,7 +51,7 @@
     </tr>
   </tbody>
 </table>
-<p>In that post, I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. This is a relatively small model, much smaller than the one that runs ChatGPT, and is capable of running on pretty much any consumer hardware. With careful prompts I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong>.</p>
+<p>In that post, I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. This is a relatively small model, much smaller than the one that runs ChatGPT, and is capable of running on pretty much any consumer hardware. By directly prompting the base model I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong> (retrying invalid responses).</p>
 <p>The results seemed okay, but a general purpose instruction model didn't really seem ideal for a specific task like this. I wanted to explore other options that might be more efficient or have better performance.</p>
 <p>I considered training a model from scratch but decided against it due to the enormous amount of data required. To handle freeform natural language prompts effectively, I suspected I would need a huge amount of training data for the model to avoid struggling with unusual phrasings or context-dependent meanings. I decided not to pursue this option because I didn't want building training data to be the primary focus of this mini-project.</p>
 <p>Instead, I looked at fine-tuning a smaller existing model. You can perform inference on Llama 3 8B on consumer hardware, but fine-tuning an 8B parameter model is too computationally expensive to be feasible on most home computers. To find model that's small enough to fine-tune, I read through a few whitepapers describing smaller models which discussed fine-tuning on downsteam tasks. Some interesting models included BERT, introduced by Google in October 2018, and its smaller variant DistilBERT. With just 66 million parameters, DistilBERT preserves 95% of BERT's performance while using 40% fewer parameters and running 60% faster. For comparison, it is less than 1% of the size of Llama 3 8B.</p>
