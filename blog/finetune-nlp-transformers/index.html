@@ -165,7 +165,7 @@
 <p>The function performs gradient descent. At a high level, this refers to a process where the model makes a "forward pass" where it makes guesses and checks its answers. Then it makes a "backward pass" where it nudges its weights in a direction that it believes will make a better guess next time.</p>
 <p>Calling <code>model</code> in this manner is the PyTorch idiom for doing a forward pass (this has always been a strange design choice to me).</p>
 <p>The backward pass is done by a call to <code>loss.backward()</code> where it computes the direction and amount to nudge its parameters and <code>optimizer.step()</code> where it makes those parameter updates.</p>
-<p>Most of the actual number crunching is carried out by PyTorch's autograd code. The attention mechanics are implemented in <code>DistilBertForSequenceClassification</code> class of the <code>transformers</code> library. This library also provides <code>AdamW</code>'s ability to perform parameter updates (with additional optimizations, in AdamW's case).</p>
+<p>Most of the actual number crunching is carried out by PyTorch's autograd code. The attention mechanics are implemented in <code>DistilBertForSequenceClassification</code> class of the Hugging Face <code>transformers</code> library. This library also provides <code>AdamW</code>'s ability to perform parameter updates (with additional optimizations, in AdamW's case).</p>
 <p>As you can see, there isn't really a defined API for gradient descent. It's on you to know what steps need to be done and do them.</p>
 <h4 id="model-configuration-and-training">Model Configuration and Training</h4>
 <p>The model configuration and training takes place in the program's main method, separate from the above helper methods.</p>
