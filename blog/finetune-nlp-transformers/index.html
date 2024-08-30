@@ -54,9 +54,9 @@
 </table>
 <p>In that post, I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. This is a relatively small model, much smaller than the one that runs ChatGPT, and is capable of running on pretty much any consumer hardware. By directly prompting the base model I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong> (retrying invalid responses).</p>
 <p>The results seemed okay, but a general purpose instruction model didn't really seem ideal for a specific task like this. I wanted to explore other options that might be more efficient or have better performance.</p>
-<p>Two possible approaches to creating a task-specific model would be to either fine-tune a an existing model or to train a smaller, specialized model from scratch.</p>
+<p>Two possible approaches to creating a task-specific model would be to either fine-tune an existing model or to train a smaller, specialized model from scratch.</p>
 <p>Training a model from scratch would be extremely interesting, but it would also require a huge amount of data and computing power. On the other hand, fine-tuning is a technique that adapts pre-trained language models to specific tasks by further training on a smaller, task-specific dataset. This allows you to leverage the data and compute that went into the original pre-training of the model.</p>
-<h2 id="fine-tuning-model-selection">Fine Tuning - Model selection</h2>
+<h2 id="model-selection">Model selection</h2>
 <p>My first naive idea was to try to fine-tune Llama 3 itself. Models such as GPT or Llama are primarily designed for text generation. Mechanically, they are trained using masked self-attention, where each token can only attend to context to its left. Lets look at what that means.</p>
 <p>Consider the sentence <strong>Live free or die hard</strong>. GPT will take this whole sentence and simultaneously learn to make the following predictions:</p>
 <table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
