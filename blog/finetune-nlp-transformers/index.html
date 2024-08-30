@@ -58,12 +58,12 @@
 <p>Training a model from scratch would be extremely interesting, but it would also require a huge amount of data and computing power. On the other hand, fine-tuning is a technique that adapts pre-trained language models to specific tasks by further training on a smaller, task-specific dataset. This allows you to leverage the data and compute that went into the original pre-training of the model.</p>
 <h2 id="model-selection">Model selection</h2>
 <p>My first naive idea was to try to fine-tune Llama 3 itself. Models such as GPT or Llama are primarily designed for text generation. Mechanically, they are trained using masked self-attention, where each token can only attend to context to its left. Lets look at what that means.</p>
-<p>Consider the sentence <strong>Live free or die hard</strong>. GPT will take this whole sentence and simultaneously learn to predict each label given the input:</p>
+<p>Consider the sentence <strong>Live free or die hard</strong>. GPT will take this whole sentence and simultaneously learn to predict the next word given the input:</p>
 <table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
   <thead>
     <tr style="background-color: #f2f2f2;">
       <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Input</th>
-      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Label</th>
+      <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Next Word</th>
     </tr>
   </thead>
   <tbody>
