@@ -85,7 +85,7 @@
     </tr>
   </tbody>
 </table>
-<p>This approach allows the model to turn every sentence in the input into a collection of next-word prediction tasks to learn from. But this goal doesn't really align with what we're trying to do - we're more interested in looking at an entire chunk of text and <em>classifying</em> it. It turns out there's better ways to achieve this.</p>
+<p>This makes perfect sense if you're training a model to generate text, but it doesn't really align with what we're trying to do. We're more interested in looking at an entire chunk of text and <em>classifying</em> it. It turns out there's better ways to achieve this.</p>
 <p>Another way to learn from this sequence is a mechanism called <strong>bidirectional self-attention</strong>. With this approach, the model relates each token to every other token in the sequence and learns to make inferences about the text as a whole. This makes more sense if you're trying to perform sentiment analysis, named entity recognition, or text classification. In those cases, you wouldn't want all of the machinery associated with next-token prediction, because it would be dead weight.</p>
 <h2 id="bert">BERT</h2>
 <p>A model that uses bidirectional self-attention is <a href="https://arxiv.org/abs/1810.04805">Bidirectional Encoder Representations from Transformers (BERT)</a>. Introduced by Google in 2018, BERT is pre-trained on two specialized tasks: <strong>Masked Language Modeling (MLM)</strong> and <strong>Next Sentence Prediction (NSP)</strong>.</p>
