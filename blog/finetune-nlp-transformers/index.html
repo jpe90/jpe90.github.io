@@ -52,7 +52,7 @@
     </tr>
   </tbody>
 </table>
-<p>In that post, I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. Arhitecturally, this is works like a tiny ChatGPT, and is capable of running on pretty much any consumer hardware. By directly prompting the base model I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong> (retrying invalid responses).</p>
+<p>In that post, I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. Architecturally, this is works like a tiny ChatGPT, and is capable of running on pretty much any consumer hardware. By directly prompting the base model I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong> (retrying invalid responses).</p>
 <p>The results seemed okay, but a general purpose instruction model didn't really seem ideal for a specific task like this. I wanted to explore other options that might be more efficient or have better performance.</p>
 <p>Two possible approaches to creating a task-specific model would be to either fine-tune an existing model or to train a smaller, specialized model from scratch.</p>
 <p>Training a model from scratch would be extremely interesting, but it would also require a huge amount of data and computing power. On the other hand, fine-tuning is a technique that adapts pre-trained language models to specific tasks by further training on a smaller, task-specific dataset. This allows you to leverage the data and compute that went into the original pre-training of the model.</p>
