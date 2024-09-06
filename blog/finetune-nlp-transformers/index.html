@@ -26,8 +26,7 @@
   Fine-Tuning NLP Transformers for Task Automation
 </h1>
 <div class="post-content">
-  <p><em>This is a WIP early draft that I'm sharing to get feedback as I write it. If you have any, please <a href="mailto:eskinjp@gmail.com">shoot me an email</a>.</em></p>
-<h2 id="introduction">Introduction</h2>
+  <h2 id="introduction">Introduction</h2>
 <p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to perform text classification tasks. The idea was that they could enable automation of more complex tasks that are otherwise not automatable. Many people just use a model like ChatGPT for this, but after learning a bit about how they work, I was getting the sense that other approaches might be more efficient and accurate.</p>
 <p>My experimental task was to classify messages sent from customers to an online store. Messages were classified as either refund requests, order inquiries, or general feedback.</p>
 <table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
@@ -95,8 +94,7 @@
 <p>My guess was that a model like this would be a better starting point for my use case.</p>
 <h2 id="distilbert">DistilBERT</h2>
 <p>In 2019, Hugging Face released a smaller, distilled version of BERT called <a href="https://arxiv.org/abs/1910.01108">DistilBERT</a>. It preserves 95% of BERT's performance while using 40% fewer parameters and running 60% faster. For comparison, it is less than 1% of the size of Llama 3 8B.</p>
-<p>DistilBERT achieves this efficiency through a process called knowledge distillation, where a smaller model (the student) is trained to mimic the behavior of a larger model (the teacher). This results in a more compact model that can still perform well on a wide range of tasks, making it an excellent choice for fine-tuning on specific applications, especially when computational resources are limited.</p>
-<p>Given these characteristics, I chose to use DistilBERT for my text classification task. Its balance of performance and efficiency makes it well-suited for fine-tuning on a modest dataset, while still leveraging the power of pre-training on large-scale language understanding tasks.</p>
+<p>DistilBERT achieves this efficiency through a process called knowledge distillation, where a smaller model (the student) is trained to mimic the behavior of a larger model (the teacher). This results in a more compact model that can still perform well on a wide range of tasks, making it well-suited for fine-tuning on specific applications, especially when computational resources are limited.</p>
 <h3 id="distilbert-architecture-overview">DistilBERT Architecture Overview</h3>
 <p>DistilBERT is based on the Transformer architecture. The model consists of several key components that work together to process and understand text. Text input is first passed through an <strong>embedding layer</strong>. This layer is responsible for converting input tokens (which are essentially words or parts of words) into dense vector representations. These vectors contain floating point numbers that encode the semantic meaning of the words in a format that the model can work with. The values of the vectors change throughout training as the model iterates on its semantic understanding.</p>
 <p>The embedding layer learns that words like "dog" and "cat" are semantically closer to each other than to words like "car" or "building". It captures subtle relationships, such as understanding that "king" is to "man" as "queen" is to "woman", or that certain adjectives tend to precede certain types of nouns (like "delicious" often appearing before food-related words).</p>
@@ -267,7 +265,6 @@
 <p>The task was designed to be easy enough that a network could handle it, so the performance met my expectations. The 100% accuracy of the test set includes the entirety of the tasks that <strong>Llama 3 8B only achieved 92% accuracy</strong> on, with additional test data added in. And just for kicks, I later tried coming up with weird and contrived strings of text to try to confuse the model. I could not get it to incorrectly classify anything.</p>
 <p>After the fine-tuned DistilBERT model was trained on learning the distinctions between the three specific categories (refund requests, order inquiries, and general feedback), <strong>the fine-tuned model outperformed base Llama 3 for this specialized task at roughly 0.8% of its size</strong>.  Llama 3 8B is subject to the variability of a general purpose instruction model, so it makes sense that it gets tripped up on even simple tasks from time to time.</p>
 <p>I came away completely sold on the idea of fine-tuning small models for repetitive, special purpose tasks. It is inevitable that many suitable tasks will instead be run on models that are hundreds of billions of parameters or larger via commercial APIs. This presents a huge opportunity for cost savings and efficiency that will only grow over time.</p>
-<p><em>Note: At this point, I'm still validating the approach here. I may be overfitting, or I might need to train on more data. I'm doing some additional learning and will probably update this post over time.</em></p>
 <p><em>The source code for this project is <a href="https://github.com/jpe90/fine-tuned-distilbert-classifier">available on GitHub</a>.</em></p>
 
 </div>
