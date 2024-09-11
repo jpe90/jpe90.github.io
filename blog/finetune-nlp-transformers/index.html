@@ -42,11 +42,11 @@
       <td style="padding: 12px; border: 1px solid #ddd;">General Feedback</td>
     </tr>
     <tr style="background-color: #f9f9f9;">
-      <td style="padding: 12px; border: 1px solid #ddd;">"Can you tell me when my package will arrive? Order #1337"</td>
+      <td style="padding: 12px; border: 1px solid #ddd;">"Why did you send me a cactus? I ordered a dishwasher."</td>
       <td style="padding: 12px; border: 1px solid #ddd;">Order Inquiry</td>
     </tr>
     <tr>
-      <td style="padding: 12px; border: 1px solid #ddd;">"I received the wrong item. How do I return it for a refund?"</td>
+      <td style="padding: 12px; border: 1px solid #ddd;">"I proposed, but my partner said no. I would like my money back."</td>
       <td style="padding: 12px; border: 1px solid #ddd;">Refund Request</td>
     </tr>
   </tbody>
@@ -226,8 +226,7 @@
 <p>Next, the model is moved to the appropriate device. A check is made if Apple's Metal Performance Shaders (MPS) are available, which can accelerate training on compatible Mac hardware (this was only run on a Mac; this line would need to be changed if it were to be run optimally on different hardware).</p>
 <pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>optimizer = AdamW(model.parameters(), lr=</span><span style="color:#b5cea8;">2e-5</span><span>)
 </span></code></pre>
-<p>Neural networks rely on nonlinear activation functions to model complex relationships in data. These functions, like <strong>tanh</strong> or <strong>ReLU</strong>, work best when their inputs are well-distributed across their operating range. For instance, a tanh function, which maps inputs to outputs between -1 and 1, is most effective when its inputs span this entire range rather than being concentrated at the extremes.</p>
-<p>Ensuring this ideal distribution of inputs became a significant challenge as networks grew deeper. In 2015, researchers introduced Batch Normalization as a solution. This technique normalizes the inputs to each layer, improving the flow of data through the network. This worked, but it also introduced complexities. Eventually, this approach was superseded by adaptive learning rate methods like <strong>Adam (Adaptive Moment Estimation)</strong> and later the variant <strong>AdamW</strong>.</p>
+<p><strong>AdamW</strong> is an optimization algorithm for training neural networks. It features adaptive learning rates for each parameter and implements decoupled weight decay regularization. Weight decay is a regularization technique that encourages smaller parameter values in the model. It does this by adding a penalty term to the loss function based on the magnitude of the weights. The primary goal of weight decay is to prevent overfitting by discouraging the model from relying too heavily on any individual feature or learning overly complex patterns that may not generalize well to new data.</p>
 <p>A <strong>learning rate</strong> of 2e-5 (0.00002) is used here. It was selected by manually tuning the learning rate and number of epochs and evaluating network performance. It's small enough to allow for fine adjustments to the pre-trained weights without causing drastic changes that could destroy the model's pre-trained knowledge. Too high, and the model might overshoot optimal solutions; too low, and the model might train too slowly or get stuck in suboptimal solutions. This learning rate is much lower than what you would use for training a network from scratch, which is usually around 1e-3.</p>
 <pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>num_epochs = </span><span style="color:#b5cea8;">3
 </span><span style="color:#569cd6;">for </span><span>epoch </span><span style="color:#569cd6;">in </span><span>range(num_epochs):
