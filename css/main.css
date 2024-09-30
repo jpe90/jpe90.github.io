@@ -39,13 +39,16 @@ header {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0 1em;
   background-color: #333;
-  padding: 10px 0;
+  color: #fff;
+  height: 30px;
 }
 
-header a, footer a {
+header a {
   color: #fff;
   margin: 0 10px;
+  font-size: 14px;
 }
 
 footer {
