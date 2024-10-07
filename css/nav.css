@@ -14,10 +14,10 @@ header a {
   white-space: nowrap;
 }
 
-header a:hover {
-  background-color: #444;
-  border-radius: 5px;
-}
+/*header a:hover {*/
+/*  background-color: #444;*/
+/*  border-radius: 5px;*/
+/*}*/
 
 @media (max-width: 600px) {
   header {
