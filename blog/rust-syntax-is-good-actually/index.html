@@ -58,7 +58,7 @@
 </span></code></pre>
 <p>My early reaction to Rust code was to find the question marks, Result wrapping of the return type, and "OK" to be a lot of unfamiliar visual noise. These are some of are Rust's way of forcing the programmer to acknowledge the potential failure points in their code. For a single developer who is continuously working on a codebase, you could argue this is not a big deal. Similarly, you could argue that it would create a burden for a small team of like-minded and extremely talented developers that is more trouble than its worth.</p>
 <p>But the value quickly compounds when you consider other scenarios. If you ever want to onboard more junior developers, it is immensely helpful for them to be forced to understand where landmines are in software. If you walk away from the codebase for some period of time, or software development entirely, and some of those details will slip. Having a strict compiler enforcing hygeine is immensely beneficial for compensating for human error. The code is noisy because the task at hand is noisy.</p>
-<p>Still, it would be nice if Rust could maintain its strictness with cleaner syntax. FP nerds probably recognize that the function is moving the input tensor through a Monadic context, and if the library existed in Haskell, it would probably look like this:</p>
+<p>Still, it would be nice if Rust could maintain its strictness with cleaner syntax. FP nerds probably recognize that the function is moving the input tensor through a Monadic context, and if the library existed in Haskell, it would be able to drop some of the noise with it's "do notation", like this:</p>
 <pre data-lang="Haskell" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Haskell "><code class="language-Haskell" data-lang="Haskell"><span>normalizeL2 </span><span style="color:#569cd6;">:: Tensor -&gt; Either Error Tensor
 </span><span>normalizeL2 v </span><span style="color:#569cd6;">= do
 </span><span>  squared </span><span style="color:#569cd6;">&lt;-</span><span> sqr v
@@ -66,7 +66,7 @@
 </span><span>  norms </span><span style="color:#569cd6;">&lt;-</span><span> sqrt summed
 </span><span>  broadcastDiv v norms
 </span></code></pre>
-<p>Rust adopted many of ML-style language's ideas, but it cannot take Haskell's "do notation" without giving up imperative control flow like FP languages often do, which would be at odds with it goal of being a systems programming language. If you are forced to give up either explicitness, speed, or elegance, I think Rust makes a good compromise.</p>
+<p>Rust adopted many of ML-style language's ideas, but I don't think anyone has figured out how to let it take Haskell's "do" without giving up imperative control flow like FP languages often do, which would be at odds with it goal of being a systems programming language. If you are forced to give up either explicitness, speed, or elegance, I think Rust makes a good compromise.</p>
 <p><em>Thanks to Matt for turning me into "that guy that keeps bringing Rust into the conversation"</em></p>
 
 </div>
