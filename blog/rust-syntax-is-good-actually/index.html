@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jon Eskin's Blog</title>
+  
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="https://jeskin.net/rss.xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://jeskin.net/css/main.css">
+  <link rel="stylesheet" href="https://jeskin.net/css/nav.css">
+  
+  
+</head>
+<body>
+  <header>
+    <a class="rss-button" href="https://jeskin.net/atom.xml">RSS</a>
+    <a href="https://jeskin.net/index.html">Home</a>
+    <a href="https://jeskin.net/about">About</a>
+    <a href="https://github.com/jpe90">Projects</a>
+  </header>
+  <section class="section">
+    <div class="container">
+      
+<link rel="stylesheet" href="https://jeskin.net/css/main.css">
+<h1 class="title">
+  Maybe Rust&#x27;s Syntax is Good, Actually
+</h1>
+<div class="post-content">
+  <h1 id="introduction">Introduction</h1>
+<p>In a <a href="https://github.com/jpe90/candle-pytorch-parity-testing">recent project</a>, I compared output from HuggingFace's <a href="https://github.com/huggingface/candle">Candle</a> with <a href="https://github.com/pytorch/pytorch">PyTorch</a> equivalents to make sure that embeddings and calculations involving them are behaving as expected.</p>
+<p>This led to comparing Python snippets that look like this:</p>
+<pre data-lang="Python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Python "><code class="language-Python" data-lang="Python"><span style="color:#569cd6;">def </span><span>normalize_l2(embeddings):
+</span><span>    </span><span style="color:#569cd6;">return </span><span>F.normalize(embeddings, p=</span><span style="color:#b5cea8;">2</span><span>, dim=</span><span style="color:#b5cea8;">1</span><span>)
+</span></code></pre>
+<p>to Rust that looks like this:</p>
+<pre data-lang="Rust" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Rust "><code class="language-Rust" data-lang="Rust"><span style="color:#569cd6;">pub fn </span><span>normalize_l2(v: </span><span style="color:#569cd6;">&amp;</span><span>Tensor) -&gt; Result&lt;Tensor&gt; {
+</span><span>    Ok(v.broadcast_div(</span><span style="color:#569cd6;">&amp;</span><span>v.sqr()</span><span style="color:#569cd6;">?</span><span>.sum_keepdim(</span><span style="color:#b5cea8;">1</span><span>)</span><span style="color:#569cd6;">?</span><span>.sqrt()</span><span style="color:#569cd6;">?</span><span>)</span><span style="color:#569cd6;">?</span><span>)
+</span><span>}
+</span></code></pre>
+<p>You might think this isn't a fair comparison, because the normalization is hand-rolled in Rust and just tucked away in a function call in the Python equivalent. But that's besides the point; even a hand-rolled Python equivalent would not be this noisy. PyTorch semantics are fraught with unintuitive behavior behind primitive operators. As a matter of fact, I wrote an <a href="https://jeskin.net/blog/pytorch-broadcasting-mechanics/">earlier post</a> about getting confused by buggy PyTorch code which is similarly intended to normalize a tensor. Can you spot the problem?</p>
+<pre data-lang="Python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Python "><code class="language-Python" data-lang="Python"><span>P = N.float()
+</span><span>P /= P.sum(</span><span style="color:#b5cea8;">1</span><span>)
+</span></code></pre>
+<h2 id="favoring-explicitness-over-implicitness">Favoring Explicitness over Implicitness</h2>
+<p>One problem I've always had with the PyTorch ecosystem is its tendency to hide complexity behind convenient abstractions. While this makes for clean-looking code, there's lots of magic going on under the covers which create several issues:</p>
+<ul>
+<li>Failures often occur silently and cause calculations to have incorrect results, sometimes subtly. This is worst kind of failure that you can have in software.</li>
+<li>There's a notable absence of a type system that could catch logic failures and serve as documentation.</li>
+</ul>
+<p>Here is how I felt about it while learning PyTorch last September:</p>
+<p><img src="/images/complaining.png" alt="complaining" /></p>
+<p>When I was complaining about all this, I vividly wanted exactly what the Candle API provides: having Tensor (and especially broadcasting behavior) explicitly defined by types and enforced by the compiler. This code will remain fully readable months and years after walking away, and new developers will be able to understand exactly what it does without requiring arcane knowledge of framework internals.</p>
+<h2 id="forcing-the-issues">Forcing the Issues</h2>
+<p>The parts of Rust's syntax which I used to perceive as noise - in the case of <code>normalize_l2</code> above would be the question marks, Result wrapping of the return type, and the peppering of question marks - are Rust's way of forcing the programmer to acknowledge the potential failure points in their code.</p>
+<p>It would be nice if Rust could maintain its strictness with cleaner syntax. FP nerds probably recognize that the function is moving the input tensor through a Monadic context, and if the library existed in Haskell, it would probably look like this:</p>
+<pre data-lang="Haskell" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Haskell "><code class="language-Haskell" data-lang="Haskell"><span>normalizeL2 </span><span style="color:#569cd6;">:: Tensor -&gt; Either Error Tensor
+</span><span>normalizeL2 v </span><span style="color:#569cd6;">= do
+</span><span>  squared </span><span style="color:#569cd6;">&lt;-</span><span> sqr v
+</span><span>  summed </span><span style="color:#569cd6;">&lt;-</span><span> sumKeepDim </span><span style="color:#b5cea8;">1</span><span> squared
+</span><span>  norms </span><span style="color:#569cd6;">&lt;-</span><span> sqrt summed
+</span><span>  broadcastDiv v norms
+</span></code></pre>
+<p>Rust adopted many of ML-style language's ideas, but it cannot take Haskell's "do notation" without giving up imperative control flow like FP languages often do, which would conflict with its goals of being a systems programming language. I think it's worth the tradeoff.</p>
+<p><em>Thanks to Matt for turning me into "that guy that keeps bringing Rust into the conversation"</em></p>
+
+</div>
+
+    </div>
+  </section>
+</body>
+</html>
