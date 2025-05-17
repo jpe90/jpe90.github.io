@@ -42,14 +42,14 @@
 </span><span>P /= P.sum(</span><span style="color:#b5cea8;">1</span><span>)
 </span></code></pre>
 <h2 id="favoring-explicitness-over-implicitness">Favoring Explicitness over Implicitness</h2>
-<p>A pain point I had while learning bits of PyTorch (and I suppose NumPy, by extension) was that I felt that it shoved complexity and unintuitive behavior behind convenient abstractions.</p>
+<p>When I was learning PyTorch (and I suppose NumPy, by extension), I found that I would often struggle to understand code that I read, because there were a lot of implicit interactions going on that I wasn't aware of:</p>
 <p><img src="/images/complaining.png" alt="complaining" /></p>
-<p>While their approach makes for clean-looking code, there's lots of magic going on under the covers which create several issues:</p>
+<p>While these make for clean-looking code, it creates issues:</p>
 <ul>
 <li>Failures often occur silently and cause calculations to have incorrect results, sometimes subtly. This is worst kind of failure that you can have in software.</li>
 <li>There's a notable absence of a type system that could catch logic failures and serve as documentation.</li>
 </ul>
-<p>When I was learning, I found myself wishing that these operations were explicitly spelled out and enforced by a compiler. This code will remain fully readable months and years after walking away, and new developers could quickly understand what is actually happening in code, rather than relying on someone (or more accurately documentation of inconsistent quality) to explain behavior that is not always very intuitive. It is always an option to determine this behavior by reading the source code, but unfortunately large projects such as PyTorch become extremely cumbersome to navigate once they grow past a certain size and complexity.</p>
+<p>When I was learning, I found myself wishing that these operations were explicitly spelled out and enforced by a compiler. Without this, new developers must rely on someone (or more commonly, on documentation of inconsistent quality) to explain behavior that is not always very intuitive. It is always an option to determine this behavior by reading the source code, but unfortunately large projects such as PyTorch become extremely cumbersome to navigate once they grow past a certain size and complexity.</p>
 <h2 id="forcing-the-issues">Forcing the Issues</h2>
 <p>The parts of Rust's syntax which I used to perceive as noise. Let me paste in <code>normalize_l2</code> again:</p>
 <pre data-lang="Rust" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-Rust "><code class="language-Rust" data-lang="Rust"><span style="color:#569cd6;">pub fn </span><span>normalize_l2(v: </span><span style="color:#569cd6;">&amp;</span><span>Tensor) -&gt; Result&lt;Tensor&gt; {
