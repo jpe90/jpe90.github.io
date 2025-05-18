@@ -26,7 +26,8 @@
   Pytorch broadcasting mechanics
 </h1>
 <div class="post-content">
-  <p>In the video <a href="https://www.youtube.com/watch?v=PaCmpygFfXo">The spelled-out intro to language modeling: building makemore</a>, Andrej Karpathy briefly mentioned a bug that can occur when broadcasting tensors during mathematical operations.</p>
+  <p><em>Update 2025-05-18: Looking back, this post is a little embarassing, but I'll leave it up in case any other learners stumble across it and find it helpful.</em></p>
+<p>In the video <a href="https://www.youtube.com/watch?v=PaCmpygFfXo">The spelled-out intro to language modeling: building makemore</a>, Andrej Karpathy briefly mentioned a bug that can occur when broadcasting tensors during mathematical operations.</p>
 <p>In the lines below, N is a 27x27 tensor. The code is trying to normalize the rows of the tensor by dividing each row by the sum of the row.</p>
 <p>Here is the incorrect calculation:</p>
 <pre data-lang="python" style="background-color:#1e1e1e;color:#dcdcdc;" class="language-python "><code class="language-python" data-lang="python"><span>P = N.float()
