@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Getting started with VR in C++ on Meta Quest</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Getting started with VR in C++ on Meta Quest</h1>
+            <article>
+    <section class="header">
+        Posted on November 26, 2023
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <p>Meta Quest headsets let you write 3D programs in C or C++, using OpenGL ES or Vulkan as a rendering backend, and deploy them using the <a href="https://developer.oculus.com/downloads/package/oculus-openxr-mobile-sdk/">XR Mobile SDK</a>.</p>
+<p>I bought a Quest 3 at launch, and I’ve benefited a lot from studying the SDK and experimenting with the sample programs:</p>
+<ol type="1">
+<li>It gave me a thorough understanding of the OpenXR specification, from its design intent to the low-level details of how it is implemented on the hardware.</li>
+<li>It significantly improved my understanding of OpenGL ES. I’ve skirted by with much less knowledge when writing other 3D programs in the past, but it was impossible for me to modify the SDK examples and get them to actually run correctly without filling in many knowledge gaps.</li>
+<li>I learned a lot about how to structure programs in C and C-flavored C++ from the simple &amp; readable SDK example programs, which were written by extremely talented graphics programmers.</li>
+<li>It was a lot of fun! The best projects are the ones you’re motivated to work on, and bringing your programs to life in VR is such a cool experience.</li>
+</ol>
+<p>Given how powerful these devices are, and how much fun they are to hack on, it’s kind of crazy to me how little community or discourse there is online surrounding them.</p>
+<p>In this blog post I’ll introduce how developing on Quest devices works. I’ll touch on the inner workings of the SDK, cover the structure of sample projects, and go over a small set of changes I made to one of them.</p>
+<h2 id="meta-xr-mobile-sdk">Meta XR Mobile SDK</h2>
+<p>The SDK includes a collection of small programs, each consisting of an NDK project that focuses on a particular capability of the device.</p>
+<center>
+<figure>
+<video width="75%" controls autoplay>
+<source src="../videos/xrkeyboard.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<figcaption>
+Building a working virtual keyboard from scratch
+</figcaption>
+</figure>
+</center>
+<center>
+<figure>
+<video width="75%" controls autoplay>
+<source src="../videos/xrpassthrough.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<figcaption>
+Manipulating passthrough
+</figcaption>
+</figure>
+</center>
+<center>
+<figure>
+<video width="75%" controls autoplay>
+<source src="../videos/spatial1.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<figcaption>
+Placing spatial anchors
+</figcaption>
+</figure>
+</center>
+<p>In total, you’ll find 18 such projects in the SDK.</p>
+<p>For people who are curious about VR development, enjoy low-level programming, and have at least glanced at the core topics covered by OpenGL tutorials that are floating around online (<a href="https://learnopengl.com/Getting-started/OpenGL">1</a>,<a href="https://www.opengl-tutorial.org/">2</a>), these devices are a slam dunk for hands-on learning.</p>
+<h3 id="meta-quest-android-beefy-gpu-sensors">Meta Quest = Android + Beefy GPU + Sensors</h3>
+<p>Meta Quest devices run a modified version of Android operating system. I think it’s helpful to build an understanding of how graphics work in the Android ecosystem at large to gain a deeper understanding of how Quest devices work.</p>
+<p>There are three ways you can draw to the screen in Android-land: with the <a href="https://source.android.com/docs/core/graphics/arch-sh#canvas">Canvas API</a>, <a href="https://source.android.com/docs/core/graphics/arch-egl-opengl">OpenGL ES</a>, and <a href="https://source.android.com/docs/core/graphics/arch-vulkan">Vulkan</a>.</p>
+<p>The Canvas API is built upon the <a href="https://skia.org/">Skia Graphics Library</a>, a cross-platform rendering engine. Android programs that use the Canvas API typically use the official SDK or a cross-platform toolkit like Flutter.</p>
+<p>Such toolkits offer pre-built UI components that facilitate basic 2D rendering. They offer solutions for simple graphics, text rendering, and basic animations.</p>
+<p>Instead of using the Canvas, you can opt to draw by directly calling into the OpenGL ES and Vulkan runtimes on the device. If you want this level of control over drawing, you probably want to use the “Native Development Kit” or NDK.</p>
+<p>Unlike with the traditional SDK, the NDK has you write application code in C or C++ and bridge to it with a very small amount of boilerplate; basically a single Java entry point and a handful of config files. This is the approach taken by the Mobile XR SDK.</p>
+<h2 id="minimal-complexity">Minimal Complexity</h2>
+<p>The example projects make minimal use of C++ language features. You won’t find elaborate abstractions, excessive indirection, or extensive use of templates.</p>
+<p>For each sample project, you get the impression that the developer knew exactly what they wanted to make and just wrote out a common sense implementation of that thing. Older projects are largely self-contained, while later ones started to factor out re-used code into libraries external to their respective projects.</p>
+<p>The resulting code mostly takes the form of structs and functions and that favor clarity and readability. You can tell what things do by looking at them.</p>
+<p>A benefit of this readability is that you end up build a lot of intuition on “how VR works” by making superficial observations. Take for example the following code from the main render loop of one of the samples.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> XrPosef <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    XrQuaternionf    orientation<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    XrVector3f       position<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> XrPosef<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>XrPosef xfLocalFromEye<span class="op">[</span>NUM_EYES<span class="op">];</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> eye <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> eye <span class="op">&lt;</span> NUM_EYES<span class="op">;</span> eye<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// LOG_POSE( &quot;viewTransform&quot;, &amp;projectionInfo.projections[eye].viewTransform );</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    XrPosef xfHeadFromEye <span class="op">=</span> projections<span class="op">[</span>eye<span class="op">].</span>pose<span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    XrPosef_Multiply<span class="op">(&amp;</span>xfLocalFromEye<span class="op">[</span>eye<span class="op">],</span> <span class="op">&amp;</span>xfLocalFromHead<span class="op">,</span> <span class="op">&amp;</span>xfHeadFromEye<span class="op">);</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    XrPosef xfEyeFromLocal <span class="op">=</span> XrPosef_Inverse<span class="op">(</span>xfLocalFromEye<span class="op">[</span>eye<span class="op">]);</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    XrMatrix4x4f viewMat<span class="op">{};</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    XrMatrix4x4f_CreateFromRigidTransform<span class="op">(&amp;</span>viewMat<span class="op">,</span> <span class="op">&amp;</span>xfEyeFromLocal<span class="op">);</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> XrFovf fov <span class="op">=</span> projections<span class="op">[</span>eye<span class="op">].</span>fov<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    XrMatrix4x4f projMat<span class="op">;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    XrMatrix4x4f_CreateProjectionFov<span class="op">(&amp;</span>projMat<span class="op">,</span> GRAPHICS_OPENGL_ES<span class="op">,</span> fov<span class="op">,</span> <span class="fl">0.1</span><span class="bu">f</span><span class="op">,</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">);</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    frameIn<span class="op">.</span>View<span class="op">[</span>eye<span class="op">]</span> <span class="op">=</span> OvrFromXr<span class="op">(</span>viewMat<span class="op">);</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    frameIn<span class="op">.</span>Proj<span class="op">[</span>eye<span class="op">]</span> <span class="op">=</span> OvrFromXr<span class="op">(</span>projMat<span class="op">);</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>It becomes immediately clear when reading the above that the position for each eye is independently tracked, and as you might guess, independent frames are rendered for each eye.</p>
+<p>You can verify this by looking at that project’s vertex shader (seen below) and note that each eye gets its own matrix transforms:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode glsl"><code class="sourceCode glsl"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define NUM_VIEWS 2</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define VIEW_ID gl_ViewID_OVR</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#extension GL_OVR_multiview2 : require</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">layout</span><span class="op">(</span>num_views<span class="op">=</span>NUM_VIEWS<span class="op">)</span> <span class="dt">in</span><span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">in</span> <span class="dt">vec3</span> vertexPosition<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">in</span> <span class="dt">vec4</span> vertexColor<span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">uniform</span> <span class="dt">mat4</span> ModelMatrix<span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">uniform</span> <span class="dt">vec4</span> ColorScale<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">uniform</span> <span class="dt">vec4</span> ColorBias<span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">uniform</span> SceneMatrices</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">uniform</span> <span class="dt">mat4</span> ViewMatrix<span class="op">[</span>NUM_VIEWS<span class="op">];</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">uniform</span> <span class="dt">mat4</span> ProjectionMatrix<span class="op">[</span>NUM_VIEWS<span class="op">];</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> sm<span class="op">;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="dt">out</span> <span class="dt">vec4</span> fragmentColor<span class="op">;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">main</span><span class="op">()</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">gl_Position</span> <span class="op">=</span> sm<span class="op">.</span><span class="fu">ProjectionMatrix</span><span class="op">[</span>VIEW_ID<span class="op">]</span> <span class="op">*</span> <span class="op">(</span> sm<span class="op">.</span><span class="fu">ViewMatrix</span><span class="op">[</span>VIEW_ID<span class="op">]</span> <span class="op">*</span> <span class="op">(</span> ModelMatrix <span class="op">*</span> <span class="dt">vec4</span><span class="op">(</span> vertexPosition<span class="op">,</span> <span class="fl">1.0</span> <span class="op">)</span> <span class="op">)</span> <span class="op">);</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    fragmentColor <span class="op">=</span> vertexColor <span class="op">*</span> ColorScale <span class="op">+</span> ColorBias<span class="op">;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>In hindsight, it should be obvious that this is something you do for VR, but I hadn’t really thought about it. I find that the code conveys the concept more clearly and completely than words.</p>
+<h2 id="structure-of-sample-projects">Structure of Sample Projects</h2>
+<p>Below is an overview of some representative files of a sample project. To build one of the same projects, you can grab a copy of Android Studio Bumblebee (2021.1.1) or earlier, and open settings.gradle. I ran projects in that IDE and worked on them in a separate text editor.</p>
+<pre><code>XrVirtualKeyboard
+├── Projects
+│   └── Android
+│       ├── AndroidManifest.xml
+│       ├── build
+│       ├── build.bat
+│       ├── build.gradle
+│       ├── build.py
+│       ├── jni
+│       │   ├── Android.mk
+│       │   └── Application.mk
+│       ├── local.properties
+│       └── settings.gradle
+├── Src
+│   ├── VirtualKeyboardModelRenderer.cpp
+│   ├── VirtualKeyboardModelRenderer.h
+│   ├── XrHandHelper.h
+│   ├── XrHelper.h
+│   ├── XrRenderModelHelper.cpp
+│   ├── XrRenderModelHelper.h
+│   ├── XrVirtualKeyboardHelper.cpp
+│   ├── XrVirtualKeyboardHelper.h
+│   └── main.cpp
+├── assets
+│   └── panel.ktx
+├── java
+│   └── MainActivity.java
+└── res
+    └── values
+        └── strings.xml</code></pre>
+<p>Android.mk contains the Makefile that you’ll be the most interested in. When you add source code or libraries, you’ll be changing this file. They generally look like this:</p>
+<pre><code>LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := xrvirtualkeyboard
+
+include ../../../../cflags.mk
+
+LOCAL_C_INCLUDES := \
+                    $(LOCAL_PATH)/../../../../../SampleCommon/Src \
+                    $(LOCAL_PATH)/../../../../../SampleXrFramework/Src \
+                    $(LOCAL_PATH)/../../../../../1stParty/OVR/Include \
+                    $(LOCAL_PATH)/../../../../../1stParty/utilities/include \
+                    $(LOCAL_PATH)/../../../../../3rdParty/stb/src \
+                    $(LOCAL_PATH)/../../../../../3rdParty/khronos/openxr/OpenXR-SDK/include \
+                    $(LOCAL_PATH)/../../../../../3rdParty/khronos/openxr/OpenXR-SDK/src/common
+
+#
+LOCAL_SRC_FILES     :=  ../../../Src/main.cpp \
+                        ../../../Src/VirtualKeyboardModelRenderer.cpp \
+                        ../../../Src/XrRenderModelHelper.cpp \
+                        ../../../Src/XrVirtualKeyboardHelper.cpp \
+
+# include default libraries
+LOCAL_LDLIBS            := -llog -landroid -lGLESv3 -lEGL
+LOCAL_STATIC_LIBRARIES  := samplexrframework
+LOCAL_SHARED_LIBRARIES  := openxr_loader
+
+include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,SampleXrFramework/Projects/Android/jni)
+$(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)</code></pre>
+<p>The entry point of each project contains OpenGL and OXR initialization before entering the event loop.</p>
+<p>Graphics initialization is done with EGL in the same manner as on other embedded systems (or the desktop):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> ovrEgl <span class="op">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> Clear<span class="op">();</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> CreateContext<span class="op">(</span><span class="at">const</span> ovrEgl<span class="op">*</span> shareEgl<span class="op">);</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> DestroyContext<span class="op">();</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    EGLint MajorVersion<span class="op">;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    EGLint MinorVersion<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    EGLDisplay Display<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    EGLConfig Config<span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    EGLSurface TinySurface<span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    EGLSurface MainSurface<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    EGLContext Context<span class="op">;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#elif defined(XR_USE_GRAPHICS_API_OPENGL)</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    HDC hDC<span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    HGLRC hGLRC<span class="op">;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">//</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="pp">#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> ovrEgl<span class="op">::</span>CreateContext<span class="op">(</span><span class="at">const</span> ovrEgl<span class="op">*</span> shareEgl<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>Display <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    Display <span class="op">=</span> eglGetDisplay<span class="op">(</span>EGL_DEFAULT_DISPLAY<span class="op">);</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    ALOGV<span class="op">(</span><span class="st">&quot;        eglInitialize( Display, &amp;MajorVersion, &amp;MinorVersion )&quot;</span><span class="op">);</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    eglInitialize<span class="op">(</span>Display<span class="op">,</span> <span class="op">&amp;</span>MajorVersion<span class="op">,</span> <span class="op">&amp;</span>MinorVersion<span class="op">);</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// flags in eglChooseConfig if the user has selected the &quot;force 4x MSAA&quot; option in</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// settings, and that is completely wasted for our warp target.</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> MAX_CONFIGS <span class="op">=</span> <span class="dv">1024</span><span class="op">;</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    EGLConfig configs<span class="op">[</span>MAX_CONFIGS<span class="op">];</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    EGLint numConfigs <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>eglGetConfigs<span class="op">(</span>Display<span class="op">,</span> configs<span class="op">,</span> MAX_CONFIGS<span class="op">,</span> <span class="op">&amp;</span>numConfigs<span class="op">)</span> <span class="op">==</span> EGL_FALSE<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        ALOGE<span class="op">(</span><span class="st">&quot;        eglGetConfigs() failed: </span><span class="sc">%s</span><span class="st">&quot;</span><span class="op">,</span> EglErrorString<span class="op">(</span>eglGetError<span class="op">()));</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// blah blah</span></span></code></pre></div>
+<p>Logging is done with a macro that delegates to NDK’s provided logging facilities when the code is running on Android, otherwise it just falls back on printf.</p>
+<pre><code>ALOGV(&quot;Creating passthrough layer&quot;);</code></pre>
+<p>And OpenGL function calls use the common idiom of being wrapped in a macro that executes the OpenGL function, checks the global error message after execution, and prints an error message if an error flag is set after the line executes.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ARRAY_BUFFER<span class="op">,</span> VertexBuffer<span class="op">));</span></span></code></pre></div>
+<p>Code that calls into OXR functionality work similar to OpenGL in a few ways.</p>
+<p><code>OXR</code> is an error checking macro that behaves in the same manner as <code>GL</code>.</p>
+<p>And like with OpenGL, functions from the OpenXR specification are are dynamically linked to at runtime. This means you won’t find their implementation in the SDK; they are running in their own address space outside of the program and are available to all applications on the device.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>OXR<span class="op">(</span>xrLocateViews<span class="op">(</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    app<span class="op">.</span>Session<span class="op">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>projectionInfo<span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>viewState<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    projectionCapacityInput<span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span>projectionCountOutput<span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    projections<span class="op">));</span></span></code></pre></div>
+<h2 id="making-modifications-to-sample-projects">Making Modifications to Sample Projects</h2>
+<p>Some codebases can be very daunting, and it can take a long time before you feel comfortable making changes.</p>
+<p>In this case, after skimming the code for a few of the samples, I was able to dive in and start poking at stuff.</p>
+<p>One of the first things I did was to modify the spatial anchors project shown above to change the dimensions of the anchors and to draw a texture on one side of the cube.</p>
+<center>
+<figure>
+<video width="75%" controls autoplay>
+<source src="../videos/spatial2.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+</figure>
+</center>
+<p>Here are what the changes to make this work look like:</p>
+<p>The dimensions and colors were single line changes in the event loop.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="st">- persistedCube.Model *= OVR::Matrix4f::Scaling(0.01f, 0.01f, 0.05f);</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="va">+ persistedCube.Model *= OVR::Matrix4f::Scaling(0.05f, 0.05f, 0.005f);</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="st">- persistedCube.ColorBias = OVR::Vector4f(1, 0.5, 0, 1); // Orange</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="va">+ persistedCube.ColorBias = OVR::Vector4f(0.3, 0.2, 0.1, 1); // Brown</span></span></code></pre></div>
+<p>I dropped stb_image.h into the project and added some code that loads textures from images on the device and maintains a pool of the loaded textures which is cycled through during rendering.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;TexturePool.h&quot;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;android/log.h&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_IMAGE_IMPLEMENTATION</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;stb_image.h&quot;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;android/asset_manager_jni.h&gt;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;android/asset_manager.h&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">&gt;</span> texture_filenames <span class="op">=</span> <span class="op">{</span><span class="st">&quot;NASA1.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA2.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA3.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA4.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA5.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA6.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA7.jpg&quot;</span><span class="op">,</span> <span class="st">&quot;NASA8.jpg&quot;</span>  <span class="op">};</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> texture_pointer <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span>GLuint<span class="op">&gt;</span> texture_ids<span class="op">;</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> texture_pool_init<span class="op">(</span><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">&gt;</span> filenames<span class="op">,</span> AAssetManager <span class="op">*</span>amgr<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>	<span class="cf">for</span> <span class="op">(</span><span class="bu">std::</span>string filename <span class="op">:</span> filenames<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        GLuint texture_id<span class="op">;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glGenTextures<span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="op">&amp;</span>texture_id<span class="op">));</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        texture_ids<span class="op">.</span>push_back<span class="op">(</span>texture_id<span class="op">);</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glBindTexture<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> texture_id<span class="op">));</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glTexParameteri<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> GL_TEXTURE_MIN_FILTER<span class="op">,</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>                           GL_LINEAR_MIPMAP_LINEAR<span class="op">));</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glTexParameteri<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> GL_TEXTURE_MAG_FILTER<span class="op">,</span> GL_LINEAR<span class="op">));</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glTexParameteri<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> GL_TEXTURE_WRAP_S<span class="op">,</span> GL_REPEAT<span class="op">));</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glTexParameteri<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> GL_TEXTURE_WRAP_T<span class="op">,</span> GL_REPEAT<span class="op">));</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        GLenum format<span class="op">;</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>		AAsset<span class="op">*</span> asset <span class="op">=</span> AAssetManager_open<span class="op">(</span>amgr<span class="op">,</span> filename<span class="op">.</span>c_str<span class="op">(),</span> AASSET_MODE_BUFFER<span class="op">);</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> <span class="op">(</span>asset <span class="op">==</span> NULL<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>			ALOGE<span class="op">(</span><span class="st">&quot;Failed to open </span><span class="sc">%s</span><span class="st">&quot;</span><span class="op">,</span> filename<span class="op">.</span>c_str<span class="op">());</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>			ALOGV<span class="op">(</span><span class="st">&quot;opened file </span><span class="sc">%s</span><span class="st">&quot;</span><span class="op">,</span> filename<span class="op">.</span>c_str<span class="op">());</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>		<span class="dt">int</span> width<span class="op">,</span> height<span class="op">,</span> channels<span class="op">;</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>        stbi_set_flip_vertically_on_load<span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>		<span class="dt">void</span> <span class="op">*</span>data <span class="op">=</span> stbi_load_from_memory<span class="op">((</span><span class="dt">unsigned</span> <span class="dt">char</span><span class="op">*)</span>AAsset_getBuffer<span class="op">(</span>asset<span class="op">),</span> AAsset_getLength<span class="op">(</span>asset<span class="op">),</span> <span class="op">&amp;</span>width<span class="op">,</span> <span class="op">&amp;</span>height<span class="op">,</span> <span class="op">&amp;</span>channels<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> <span class="op">(</span>data <span class="op">==</span> NULL<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>			ALOGE<span class="op">(</span><span class="st">&quot;Failed to load </span><span class="sc">%s</span><span class="st">&quot;</span><span class="op">,</span> filename<span class="op">.</span>c_str<span class="op">());</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>			ALOGV<span class="op">(</span><span class="st">&quot;loaded file </span><span class="sc">%s</span><span class="st">&quot;</span><span class="op">,</span> filename<span class="op">.</span>c_str<span class="op">());</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>channels <span class="op">==</span> <span class="dv">3</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>            format <span class="op">=</span> GL_RGB<span class="op">;</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> <span class="op">(</span>channels <span class="op">==</span> <span class="dv">4</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>            format <span class="op">=</span> GL_RGBA<span class="op">;</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>            fprintf<span class="op">(</span>stderr<span class="op">,</span> <span class="st">&quot;Unsupported number of channels: </span><span class="sc">%d\n</span><span class="st">&quot;</span><span class="op">,</span> channels<span class="op">);</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>            exit<span class="op">(</span>EXIT_FAILURE<span class="op">);</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glTexImage2D<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> GL_RGB<span class="op">,</span> width<span class="op">,</span> height<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> format<span class="op">,</span> GL_UNSIGNED_BYTE<span class="op">,</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>                        data<span class="op">));</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glGenerateMipmap<span class="op">(</span>GL_TEXTURE_2D<span class="op">));</span></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>        stbi_image_free<span class="op">(</span>data<span class="op">);</span></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>	<span class="op">}</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="co">// reset at the start of each frame to keep the same rendering order</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> reset_texture_pointer<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>    ALOGV<span class="op">(</span><span class="st">&quot;resetting texture from </span><span class="sc">%u</span><span class="st"> to 0&quot;</span><span class="op">,</span>texture_pointer<span class="op">);</span></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>    texture_pointer <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a><span class="co">// if more textures are requested than are available, wrap around</span></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>GLuint next_texture<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> last_texture_idx <span class="op">=</span> texture_pointer<span class="op">;</span></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> next_texture_idx <span class="op">=</span> <span class="op">(</span>texture_pointer <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">%</span> texture_ids<span class="op">.</span>size<span class="op">();</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>    texture_pointer <span class="op">=</span> next_texture_idx<span class="op">;</span></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> texture_ids<span class="op">[</span>last_texture_idx<span class="op">];</span></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>I added UVs to the stored vertices, and split out the indices into two groups: one group to be rendered with the a set of shaders that use colors, and another group to be rendered using a set of shaders that use textures.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> ovrGeometry<span class="op">::</span>CreateCube<span class="op">()</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> ovrCubeVertices</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">signed</span> <span class="dt">char</span> positions<span class="op">[</span><span class="dv">8</span><span class="op">][</span><span class="dv">4</span><span class="op">];</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">unsigned</span> <span class="dt">char</span> colors<span class="op">[</span><span class="dv">8</span><span class="op">][</span><span class="dv">4</span><span class="op">];</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> uvs<span class="op">[</span><span class="dv">8</span><span class="op">][</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="at">const</span> ovrCubeVertices cubeVertices <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// positions</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>            <span class="op">{-</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>            <span class="op">{+</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>            <span class="op">{-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>            <span class="op">{+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>            <span class="op">{-</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>            <span class="op">{+</span><span class="dv">127</span><span class="op">,</span> <span class="op">-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>            <span class="op">{-</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">},</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>            <span class="op">{+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">,</span> <span class="op">+</span><span class="dv">127</span><span class="op">}},</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">// colors</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0x00</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0xff</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0x00</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0xff</span><span class="op">,</span> <span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0x00</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">},</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">,</span> <span class="bn">0xff</span><span class="op">}},</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        <span class="co">// uvs</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">0.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Bottom back left corner</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Bottom back right corner</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">0.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Top back left corner</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Top back right corner</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">0.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Bottom front left corner</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Bottom front right corner</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">0.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Top front left corner</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="fl">1.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">},</span> <span class="co">// Top front right corner</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="at">const</span> <span class="dt">unsigned</span> <span class="dt">short</span> cube_indices<span class="op">[</span><span class="dv">30</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="co">// back</span></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>        <span class="dv">6</span><span class="op">,</span> <span class="dv">7</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">7</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="co">// top</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>        <span class="dv">4</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">5</span><span class="op">,</span> <span class="dv">5</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="co">// bottom</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span><span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">6</span><span class="op">,</span> <span class="co">// left</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>        <span class="dv">5</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">7</span><span class="op">,</span> <span class="dv">7</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">3</span>  <span class="co">// right</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="at">const</span> <span class="dt">unsigned</span> <span class="dt">short</span> tex_indices<span class="op">[</span><span class="dv">6</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>        <span class="dv">4</span><span class="op">,</span> <span class="dv">5</span><span class="op">,</span> <span class="dv">6</span><span class="op">,</span> <span class="dv">6</span><span class="op">,</span> <span class="dv">5</span><span class="op">,</span> <span class="dv">7</span><span class="op">,</span> <span class="co">// front</span></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>    VertexCount <span class="op">=</span> <span class="dv">8</span><span class="op">;</span></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>    ColorIndexCount <span class="op">=</span> <span class="dv">30</span><span class="op">;</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>    TextureIndexCount <span class="op">=</span> <span class="dv">6</span><span class="op">;</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>    IndexCount <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">0</span><span class="op">].</span>Index <span class="op">=</span> VERTEX_ATTRIBUTE_LOCATION_POSITION<span class="op">;</span></span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">0</span><span class="op">].</span>Size <span class="op">=</span> <span class="dv">4</span><span class="op">;</span></span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">0</span><span class="op">].</span>Type <span class="op">=</span> GL_BYTE<span class="op">;</span></span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">0</span><span class="op">].</span>Normalized <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">0</span><span class="op">].</span>Stride <span class="op">=</span> <span class="kw">sizeof</span><span class="op">(</span>cubeVertices<span class="op">.</span>positions<span class="op">[</span><span class="dv">0</span><span class="op">]);</span></span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">0</span><span class="op">].</span>Pointer <span class="op">=</span> <span class="op">(</span><span class="at">const</span> GLvoid <span class="op">*)</span>offsetof<span class="op">(</span>ovrCubeVertices<span class="op">,</span> positions<span class="op">);</span></span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">1</span><span class="op">].</span>Index <span class="op">=</span> VERTEX_ATTRIBUTE_LOCATION_COLOR<span class="op">;</span></span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">1</span><span class="op">].</span>Size <span class="op">=</span> <span class="dv">4</span><span class="op">;</span></span>
+<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">1</span><span class="op">].</span>Type <span class="op">=</span> GL_UNSIGNED_BYTE<span class="op">;</span></span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">1</span><span class="op">].</span>Normalized <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">1</span><span class="op">].</span>Stride <span class="op">=</span> <span class="kw">sizeof</span><span class="op">(</span>cubeVertices<span class="op">.</span>colors<span class="op">[</span><span class="dv">0</span><span class="op">]);</span></span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">1</span><span class="op">].</span>Pointer <span class="op">=</span> <span class="op">(</span><span class="at">const</span> GLvoid <span class="op">*)</span>offsetof<span class="op">(</span>ovrCubeVertices<span class="op">,</span> colors<span class="op">);</span></span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">2</span><span class="op">].</span>Index <span class="op">=</span> VERTEX_ATTRIBUTE_LOCATION_UV<span class="op">;</span> <span class="co">// UV attribute</span></span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">2</span><span class="op">].</span>Size <span class="op">=</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">2</span><span class="op">].</span>Type <span class="op">=</span> GL_FLOAT<span class="op">;</span></span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">2</span><span class="op">].</span>Normalized <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">2</span><span class="op">].</span>Stride <span class="op">=</span> <span class="kw">sizeof</span><span class="op">(</span>cubeVertices<span class="op">.</span>uvs<span class="op">[</span><span class="dv">0</span><span class="op">]);</span></span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a>    VertexAttribs<span class="op">[</span><span class="dv">2</span><span class="op">].</span>Pointer <span class="op">=</span> <span class="op">(</span><span class="at">const</span> GLvoid <span class="op">*)</span>offsetof<span class="op">(</span>ovrCubeVertices<span class="op">,</span> uvs<span class="op">);</span></span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glGenBuffers<span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="op">&amp;</span>VertexBuffer<span class="op">));</span></span>
+<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ARRAY_BUFFER<span class="op">,</span> VertexBuffer<span class="op">));</span></span>
+<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBufferData<span class="op">(</span>GL_ARRAY_BUFFER<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>cubeVertices<span class="op">),</span> <span class="op">&amp;</span>cubeVertices<span class="op">,</span> GL_STATIC_DRAW<span class="op">));</span></span>
+<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ARRAY_BUFFER<span class="op">,</span> <span class="dv">0</span><span class="op">));</span></span>
+<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glGenBuffers<span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="op">&amp;</span>ColorIndexBuffer<span class="op">));</span></span>
+<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> ColorIndexBuffer<span class="op">));</span></span>
+<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBufferData<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>cube_indices<span class="op">),</span> cube_indices<span class="op">,</span> GL_STATIC_DRAW<span class="op">));</span></span>
+<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> <span class="dv">0</span><span class="op">));</span></span>
+<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glGenBuffers<span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="op">&amp;</span>TextureIndexBuffer<span class="op">));</span></span>
+<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> TextureIndexBuffer<span class="op">));</span></span>
+<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBufferData<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span>tex_indices<span class="op">),</span> tex_indices<span class="op">,</span> GL_STATIC_DRAW<span class="op">));</span></span>
+<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> <span class="dv">0</span><span class="op">));</span></span>
+<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>I re-used the existing color shaders and added new ones for the texture face:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">char</span> CUBE_TEX_VERTEX_SHADER<span class="op">[]</span> <span class="op">=</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">R&quot;GLSL(</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="vs">        #define NUM_VIEWS 2</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="vs">        #define VIEW_ID gl_ViewID_OVR</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="vs">        #extension GL_OVR_multiview2 : require</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="vs">        layout(num_views=NUM_VIEWS) in;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="vs">        in vec3 vertexPosition;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="vs">        in vec2 vertexUv;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="vs">        uniform mat4 ModelMatrix;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="vs">        uniform SceneMatrices</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="vs">        {</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="vs">            uniform mat4 ViewMatrix[NUM_VIEWS];</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="vs">            uniform mat4 ProjectionMatrix[NUM_VIEWS];</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="vs">        } sm;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="vs">        out vec2 UV;</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="vs">        void main()</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="vs">        {</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="vs">            gl_Position = sm.ProjectionMatrix[VIEW_ID] * ( sm.ViewMatrix[VIEW_ID] * ( ModelMatrix * vec4( vertexPosition, 1.0 ) ) );</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="vs">            UV = vertexUv;</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="st">)GLSL&quot;</span><span class="op">;</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">char</span> CUBE_TEX_FRAGMENT_SHADER<span class="op">[]</span> <span class="op">=</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">R&quot;GLSL(</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="vs">        in vec2 UV;</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="vs">        out vec4 color;</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="vs">        uniform sampler2D Texture0;</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="vs">        void main()</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="vs">        {</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="vs">            color = vec4(texture( Texture0, UV ).rgb, 1.0);</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span><span class="st">)GLSL&quot;</span><span class="op">;</span></span></code></pre></div>
+<p>The main other substantive change was to add a new section to the frame rendering code to loop over the cubes and draw the texture faces:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glUseProgram<span class="op">(</span>Scene<span class="op">.</span>TextureProgram<span class="op">.</span>Program<span class="op">));</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindBufferBase<span class="op">(</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>           GL_UNIFORM_BUFFER<span class="op">,</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>           Scene<span class="op">.</span>TextureProgram<span class="op">.</span>UniformBinding<span class="op">[</span>ovrUniform<span class="op">::</span>Index<span class="op">::</span>SCENE_MATRICES<span class="op">],</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>           Scene<span class="op">.</span>SceneMatrices<span class="op">));</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>Scene<span class="op">.</span>TextureProgram<span class="op">.</span>UniformLocation<span class="op">[</span>ovrUniform<span class="op">::</span>Index<span class="op">::</span>VIEW_ID<span class="op">]</span> <span class="op">&gt;=</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span><span class="op">)</span> <span class="co">// </span><span class="al">NOTE</span><span class="co">: will not be present when multiview path is enabled.</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glUniform1i<span class="op">(</span>Scene<span class="op">.</span>TextureProgram<span class="op">.</span>UniformLocation<span class="op">[</span>ovrUniform<span class="op">::</span>Index<span class="op">::</span>VIEW_ID<span class="op">],</span> <span class="dv">0</span><span class="op">));</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> c <span class="op">:</span> Scene<span class="op">.</span>CubeData<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glBindVertexArray<span class="op">(</span>Scene<span class="op">.</span>Cube<span class="op">.</span>VertexArrayObject<span class="op">));</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        GLint loc <span class="op">=</span> Scene<span class="op">.</span>TextureProgram<span class="op">.</span>UniformLocation<span class="op">[</span>ovrUniform<span class="op">::</span>Index<span class="op">::</span>MODEL_MATRIX<span class="op">];</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>loc <span class="op">&gt;=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>            GL<span class="op">(</span>glUniformMatrix4fv<span class="op">(</span>loc<span class="op">,</span> <span class="dv">1</span><span class="op">,</span> GL_TRUE<span class="op">,</span> <span class="op">&amp;</span>c<span class="op">.</span>Model<span class="op">.</span>M<span class="op">[</span><span class="dv">0</span><span class="op">][</span><span class="dv">0</span><span class="op">]));</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glBindBuffer<span class="op">(</span>GL_ELEMENT_ARRAY_BUFFER<span class="op">,</span> Scene<span class="op">.</span>Cube<span class="op">.</span>TextureIndexBuffer<span class="op">));</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glActiveTexture<span class="op">(</span>GL_TEXTURE0<span class="op">));</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glBindTexture<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> c<span class="op">.</span>KaiTextureID<span class="op">));</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        GL<span class="op">(</span>glDrawElements<span class="op">(</span>GL_TRIANGLES<span class="op">,</span> Scene<span class="op">.</span>Cube<span class="op">.</span>TextureIndexCount<span class="op">,</span> GL_UNSIGNED_SHORT<span class="op">,</span> <span class="kw">nullptr</span><span class="op">));</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    glBindTexture<span class="op">(</span>GL_TEXTURE_2D<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glBindVertexArray<span class="op">(</span><span class="dv">0</span><span class="op">));</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    GL<span class="op">(</span>glUseProgram<span class="op">(</span><span class="dv">0</span><span class="op">));</span></span></code></pre></div>
+<p>What I’m trying to illustrate is that the code you’re working with in this SDK looks and behaves very similarly to run of the mill OpenGL rendering code. For the fancy stuff, like per-eye matrix transforms, the sample programs give you a strong foundation to build on rather than you having to implement them from scratch.</p>
+<p>In addition to the above changes to rendering spatial anchors, I also had fun messing around with XR controls. You call into the OpenXR bindings to do so, but it feels largely the same as dealing with game controller inputs, although these are more varied and much cooler.</p>
+<p>There’s a lot of overlap between the APIs, libraries, build systems used both in these projects and in other OpenGL code that has been authored over the last several decades - tutorials, example projects, open source games, and more. When you read those projects and learn from them, you eventually reach a plateau where it’s unclear what to do next to continue learning. The answer here is just to continue getting exposure to more code and to continue building and thinking critically about what you write. This is the point where developing with Meta Quest becomes an extremely appealing.</p>
+<p>I found it personally extremely cool to see how much is accomplished with code that is this simple. The code samples are doing interfacing with numerous sensors and 3D rendering on a tight frame budget, while maintaining at a high frame rate, on constrained hardware, using a less performant graphics backend for demonstrative purposes (using Vulkan would cause a large portion of the surface area of these programs to be dedicated to setup and bookkeeping).</p>
+<p>You probably already know if you would enjoy hacking on one. If so, I’d definitely recommend picking one up. Quest 2’s are pretty cheap these days, and you’ve always got the return period if you’re not feeling it.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Getting started with VR in C++ on Meta Quest">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

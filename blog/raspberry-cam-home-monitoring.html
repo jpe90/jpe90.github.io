@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Home monitoring with raspberry pis and USB webcams</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Home monitoring with raspberry pis and USB webcams</h1>
+            <article>
+    <section class="header">
+        Posted on December 28, 2022
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h1 id="introduction">Introduction</h1>
+<p>This year I took a couple Raspberry Pis and usb webcams I had laying around and set up a DIY home security system using <a href="https://motion-project.github.io">motion</a>.</p>
+<p>In this blog post, I’ll show how my setup lets me check a livestream of the cameras, save pictures when the camera detects movement, and creates off-site backups when new pictures are saved.</p>
+<p>I’ll start by giving some background on the software I used, followed by a walkthrough of the steps I took to get it all running.</p>
+<p><img src="../images/vnc.png" alt="vnc" width="100%" /></p>
+<h1 id="motion">Motion</h1>
+<p>Motion is a program written in C that monitors the video signal from a connected camera device. When it detects motion, it records pictures and/or video and writes them to disk.</p>
+<p>Motion detection works by comparing subsequent images from the camera device. It performs noise filtering, masking, despeckling, and labelling on images before counting the number of pixels which differ. When the count passes a threshold, the camera has detected motion and the program takes additional actions.</p>
+<p>By default, it will start writing images to <code>/var/lib/motion</code>, and uses a configuration file in <code>/etc/motion/motion.conf</code>.</p>
+<p>Motion has a number of shell hooks such as <a href="https://motion-project.github.io/motion_config.html#on_picture_save">on_picture_save</a> that let you add in additional functionality.</p>
+<p>It also provides a streaming option which lets you view the live camera feed over the web, which I’ll cover below.</p>
+<h1 id="live-streaming-camera-feed">Live-Streaming Camera Feed</h1>
+<p>By default, the stream is only viewable on your local network. If you want to view it from the outside world, there’s a few ways to do so.</p>
+<p>One option is to disable the default restriction stream only on localhost and configure your router to route external connections to the stream port. I was able to get this working, but I’m not confident enough in my security precautions to write about it. Luckily there’s a safer option that’s easier to set up. I’ll cover it in the next section.</p>
+<h2 id="vnc">VNC</h2>
+<p>Raspberry Pis have support for <a href="https://en.wikipedia.org/wiki/Virtual_Network_Computing">Virtual Network Computing (VNC)</a>, which allow remote GUI access to the device.</p>
+<p>You can use VNC from outside your local network with a program named <a href="https://www.realvnc.com/en/">RealVNC</a>. RealVNC is proprietary, but it’s free for non-commercial use, is easy to setup and use, and is recommended in Raspberry Pi’s <a href="https://www.raspberrypi.com/documentation/computers/remote-access.html#vnc">official documentation</a>.</p>
+<p>It involves installing a server program on your Raspberry Pi and a client program on an external device. RealVNC manages an end-to-end encrypted cloud connection between the devices which takes care of a number of network security concerns for you.</p>
+<p>To do this, I open realvnc-viewer on my travel computer, which presents a nice little web interface that I use to tunnel in to the GUI of one of my Raspberry Pis. From there I just open a web browser and navigate to the local IP address or hostname (determined from my router) and port of the motion web server (determined from the Motion configuration file).</p>
+<p><img src="../images/vnc1.png" alt="vnc" width="100%" /></p>
+<p><em>Side Note: I haven’t explored free software alternatives to could be substituted for RealVNC, but if you know of any <a href="mailto:~eskin/public-inbox@lists.sr.ht">please let me know</a>!</em></p>
+<h1 id="installation">Installation</h1>
+<p>Here’s what I did on both my Raspberry Pis to get up and running. The following pertains to an installation and motion 4.3.2 on the <code>bullseye</code> release of Raspberry Pi OS.</p>
+<h2 id="motion-1">Motion</h2>
+<p>First, I installed <code>motion</code> on my Pis with <code>sudo apt install motion</code>.</p>
+<p>This is all that was needed to run <code>motion</code> from the command line. The default behavior is to record videos when motion is detected, but I wanted to save pictures instead, so I made a couple changes in <code>/etc/motion/motion.conf</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -110,7 +110,7 @@ post_capture 0</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a> ############################################################</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a> # Output pictures when motion is detected</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">-picture_output off</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="va">+picture_output on</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a> # File name(without extension) for pictures relative to target directory</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a> picture_filename %Y%m%d%H%M%S-%q</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -120,7 +120,7 @@ picture_filename %Y%m%d%H%M%S-%q</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a> ############################################################</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a> # Create movies of motion events.</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">-movie_output on</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="va">+movie_output off</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a> # Maximum length of movie in seconds.</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a> movie_max_time 60</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -155,7 +155,7 @@ webcontrol_parms 0</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a> stream_port 8081</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a> # Restrict stream connections to the localhost.</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="st">-stream_localhost on</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="va">+stream_localhost off</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a> ##############################################################</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a> # Camera config files - One for each camera.</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -169,3 +169,4 @@ stream_localhost on</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a> # Directory to read '.conf' files for cameras.</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a> ##############################################################</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a> ; camera_dir /usr/etc/motion/conf.d</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span></code></pre></div>
+<h3 id="tweaking-motion-sensitivity">Tweaking Motion Sensitivity</h3>
+<p>The default settings are extremely sensitive to motion, so I dialed them back a bit.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -72,7 +72,7 @@ text_right %Y-%m-%d\n%T-%q</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> emulate_motion off</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a> # Threshold for number of changed pixels that triggers motion.</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">-threshold 1500</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">+threshold 3000</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a> # Noise threshold for the motion detection.</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a> ; noise_level 32</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -81,7 +81,7 @@ threshold 1500</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a> despeckle_filter EedDl</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a> # Number of images that must contain motion to trigger an event.</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">-minimum_motion_frames 1</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="va">+minimum_motion_frames 5</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a> # Gap in seconds of no motion detected that triggers the end of an event.</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a> event_gap 60</span></code></pre></div>
+<h3 id="running-motion-as-a-systemd-service">Running Motion as a Systemd Service</h3>
+<p>Distribution packages of motion for Raspberry OS, Debian, and Ubuntu include systemd services for running motion. However, the permissions for this won’t work out of the box.</p>
+<p>As of writing, if you try to run <code>systemctl start motion</code>, you’ll get an error:</p>
+<pre><code>motion[3326]: [0:motion] [EMG] [ALL] motion_startup: Exit motion, cannot create log file /var/log/motion/motion.log: Permission denied</code></pre>
+<p>To address this, I decided to have motion write logs and images to <code>/home/pi/motion</code> with permissions set to the <code>motion</code> user.</p>
+<pre><code>mkdir -p /home/pi/motion/pictures
+sudo chown -R motion:motion /home/pi/motion</code></pre>
+<p>Then I changed the config file to point to these locations.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -22,13 +22,13 @@ setup_mode off</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> ; pid_file value</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a> # File to write logs messages into.  If not defined stderr and syslog is used.</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">-log_file /var/log/motion/motion.log</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="va">+log_file /home/pi/motion/motion.log</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a> # Level of log messages [1..9] (EMG, ALR, CRT, ERR, WRN, NTC, INF, DBG, ALL).</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a> log_level 6</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a> # Target directory for pictures, snapshots and movies</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="st">-target_dir /var/lib/motion</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="va">+target_dir /home/pi/motion/pictures</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a> # Video device (e.g. /dev/video0) to be used for capturing.</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a> videodevice /dev/video0</span></code></pre></div>
+<h3 id="copying-images-offsite">Copying Images Offsite</h3>
+<p>To copy pictures off-site as they were written, I invoked shell hook <code>on-picture-save</code> to scp them to my VPS.</p>
+<p>To demonstrate how this is done, here’s a script I saved to <code>/home/pi/test.sh</code> that copies every created image to <code>/home/pi/test</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the filename of the saved picture from the first argument</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">filename</span><span class="op">=</span><span class="va">$1</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy the file to the specified directory</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="st">&quot;</span><span class="va">$filename</span><span class="st">&quot;</span> /home/pi/test</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternatively you could scp to another device on your network, or to a VPS, or</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># email the images to yourself, etc</span></span></code></pre></div>
+<p>You need to make these scripts executable, and if you want to use systemd, they need the right permissions:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chmod u+x /home/pi/test.sh</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chown motion:motion /home/pi/test.sh</span></code></pre></div>
+<p>And here’s how you wire it up in the config file:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -101,6 +101,7 @@ post_capture 0</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a> # Command to be executed when an event ends.</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a> ; on_event_end value</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="va">+on_picture_save /home/pi/test.sh %f</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a> # Command to be executed when a movie file is closed.</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a> ; on_movie_end value</span></code></pre></div>
+<h2 id="realvnc">RealVNC</h2>
+<p>To set up RealVNC server on my Raspberry Pis and the client on my external devices, I followed the following guide:</p>
+<p><a href="https://help.realvnc.com/hc/en-us/articles/360002249917-VNC-Connect-and-Raspberry-Pi#establishing-a-cloud-connection-0-3">https://help.realvnc.com/hc/en-us/articles/360002249917-VNC-Connect-and-Raspberry-Pi#establishing-a-cloud-connection-0-3</a></p>
+<p>It’s very thorough and I had no issues, so I won’t re-hash what they wrote here.</p>
+<p>When I needed to troubleshoot motion on the go, or if I wanted to glance at the camera livestream, I ran VNC viewer on a laptop and used a terminal and a web browser remotely from the GUI.</p>
+<hr />
+<p>This isn’t an indulstrial grade home monitoring solution, but raspberry pis are handy in a pinch, and can serve nicely to let you know that your house hasn’t flooded or gotten trashed while you’re away.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Home monitoring with raspberry pis and USB webcams">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

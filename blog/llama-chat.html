@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Building llama chat in Go and Clojure</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Building llama chat in Go and Clojure</h1>
+            <article>
+    <section class="header">
+        Posted on June 20, 2024
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <p><code>ollama</code> is a software project which makes it easy to run LLMs on your local machine. Running <code>ollama run llama3</code> downloaded a 4-bit quantized model that could run on my Macbook M2, and then dropped me into a CLI where I could enter prompts and responses stream into my terminal.</p>
+<center>
+<video width="75%" controls autoplay>
+<source src="../videos/LlamaTerminal.m4v" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+</center>
+<p>In the above clip, I’m running Meta’s latest open source model <a href="https://ai.meta.com/blog/meta-llama-3/">Llama 3</a>. These models are less powerful than OpenAI’s models - which are mainly GPT-4o, GPT-4, and GPT-3.5 Turbo as of writing, but they pack a serious punch. The fact that a model that can run on a laptop can get within throwing distance of GPT-3.5, which powered all of ChatGPT not long ago is pretty insane.</p>
+<p>There’s a number of reasons you would want to run your own local AI instead of something like ChatGPT:</p>
+<ol type="1">
+<li>Privacy. With ChatGPT, OpenAI has access to every query and response you send. When someone else controls your data, despite their best intentions, sometimes it will leak. In OpenAI’s case, <a href="https://www.pluralsight.com/blog/security-professional/chatgpt-data-breach">it already has already happened</a> at least once. Depending on the sensitivity of your prompts, this may be more or less of a concern.</li>
+<li>Flexibility. Using your own models allows you to use special purpose models better suited for individual tasks. You can also fine-tune open source models on your own hardware, which might be incredibly useful if you have a lot of organizational data you would like the model to recognize.</li>
+</ol>
+<p>The project’s README shows some of its capabilities:</p>
+<hr />
+<h2 id="rest-api">REST API</h2>
+<p>Ollama has a REST API for running and managing models.</p>
+<h3 id="generate-a-response">Generate a response</h3>
+<pre><code>curl http://localhost:11434/api/generate -d '{
+  &quot;model&quot;: &quot;llama3&quot;,
+  &quot;prompt&quot;:&quot;Why is the sky blue?&quot;
+}'</code></pre>
+<h3 id="chat-with-a-model">Chat with a model</h3>
+<pre><code>curl http://localhost:11434/api/chat -d '{
+  &quot;model&quot;: &quot;llama3&quot;,
+  &quot;messages&quot;: [
+    { &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;why is the sky blue?&quot; }
+  ]
+}'</code></pre>
+<p>See the <a href="./docs/api.md">API documentation</a> for all endpoints.</p>
+<hr />
+<p>We can try one of those curl commands and see what the responses look like:</p>
+<pre><code>{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.629748Z&quot;,&quot;response&quot;:&quot;The&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.662856Z&quot;,&quot;response&quot;:&quot; sky&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.695868Z&quot;,&quot;response&quot;:&quot; appears&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.729704Z&quot;,&quot;response&quot;:&quot; blue&quot;,&quot;done&quot;:false}
+{&quot;model&quot;:&quot;llama3&quot;,&quot;created_at&quot;:&quot;2024-06-20T00:25:35.763045Z&quot;,&quot;response&quot;:&quot; because&quot;,&quot;done&quot;:false}
+...</code></pre>
+<p>These stream in over time instead of being dumped out when the message is complete. Here’s the code from ollama that’s generating the stream:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> streamResponse<span class="op">(</span>c <span class="op">*</span>gin<span class="op">.</span>Context<span class="op">,</span> ch <span class="kw">chan</span> <span class="dt">any</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>	c<span class="op">.</span>Header<span class="op">(</span><span class="st">&quot;Content-Type&quot;</span><span class="op">,</span> <span class="st">&quot;application/x-ndjson&quot;</span><span class="op">)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>	c<span class="op">.</span>Stream<span class="op">(</span><span class="kw">func</span><span class="op">(</span>w io<span class="op">.</span>Writer<span class="op">)</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>		val<span class="op">,</span> ok <span class="op">:=</span> <span class="op">&lt;-</span>ch</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> <span class="op">!</span>ok <span class="op">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>			<span class="cf">return</span> <span class="ot">false</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>		bts<span class="op">,</span> err <span class="op">:=</span> json<span class="op">.</span>Marshal<span class="op">(</span>val<span class="op">)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>			slog<span class="op">.</span>Info<span class="op">(</span>fmt<span class="op">.</span>Sprintf<span class="op">(</span><span class="st">&quot;streamResponse: json.Marshal failed with %s&quot;</span><span class="op">,</span> err<span class="op">))</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>			<span class="cf">return</span> <span class="ot">false</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>		<span class="co">// Delineate chunks with new-line delimiter</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>		bts <span class="op">=</span> <span class="bu">append</span><span class="op">(</span>bts<span class="op">,</span> <span class="ch">'\n'</span><span class="op">)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> _<span class="op">,</span> err <span class="op">:=</span> w<span class="op">.</span>Write<span class="op">(</span>bts<span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>			slog<span class="op">.</span>Info<span class="op">(</span>fmt<span class="op">.</span>Sprintf<span class="op">(</span><span class="st">&quot;streamResponse: w.Write failed with %s&quot;</span><span class="op">,</span> err<span class="op">))</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>			<span class="cf">return</span> <span class="ot">false</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>		<span class="cf">return</span> <span class="ot">true</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>	<span class="op">})</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><code>application/x-ndjson</code> means “Newline delimited JSON”. This detail makes it easier to delineate between messages. Since you know they are broken on newlines, you know you can use line-reading functionality that’s present in many languages to process them.</p>
+<h1 id="a-simple-chatgpt-clone">A Simple ChatGPT Clone</h1>
+<p>For fun, we can build a simple ChatGPT-style web application on top of this API with a few components:</p>
+<ul>
+<li>an HTML page that presents a form to collect a prompt with a button for submission, and javascript to send the prompt, listens for a response, and writes the responses to the page as they stream in</li>
+<li>a server with two endpoints:
+<ul>
+<li>one rendering the page above,</li>
+<li>one handling receiving a prompt, marshalling it to ollama, and streaming the response to the client.</li>
+</ul></li>
+</ul>
+<p>With that in mind, let’s get to work!</p>
+<h1 id="go-implementation">Go Implementation</h1>
+<p>We can do everything in Go using just the standard library.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">package</span> main</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="op">(</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;bytes&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;encoding/json&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;fmt&quot;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;html/template&quot;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;io&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;log&quot;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>	<span class="st">&quot;net/http&quot;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">)</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>	tmpl <span class="op">:=</span> template<span class="op">.</span>Must<span class="op">(</span>template<span class="op">.</span>ParseFiles<span class="op">(</span><span class="st">&quot;index.html&quot;</span><span class="op">))</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>	http<span class="op">.</span>HandleFunc<span class="op">(</span><span class="st">&quot;/&quot;</span><span class="op">,</span> <span class="kw">func</span><span class="op">(</span>w http<span class="op">.</span>ResponseWriter<span class="op">,</span> r <span class="op">*</span>http<span class="op">.</span>Request<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> err <span class="op">:=</span> tmpl<span class="op">.</span>Execute<span class="op">(</span>w<span class="op">,</span> <span class="ot">nil</span><span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>			http<span class="op">.</span>Error<span class="op">(</span>w<span class="op">,</span> err<span class="op">.</span>Error<span class="op">(),</span> http<span class="op">.</span>StatusInternalServerError<span class="op">)</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>	<span class="op">})</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>	http<span class="op">.</span>HandleFunc<span class="op">(</span><span class="st">&quot;/api/generate&quot;</span><span class="op">,</span> <span class="kw">func</span><span class="op">(</span>w http<span class="op">.</span>ResponseWriter<span class="op">,</span> r <span class="op">*</span>http<span class="op">.</span>Request<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>		<span class="kw">var</span> request <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>			Model  <span class="dt">string</span> <span class="st">`json:&quot;model&quot;`</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>			Prompt <span class="dt">string</span> <span class="st">`json:&quot;prompt&quot;`</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> err <span class="op">:=</span> json<span class="op">.</span>NewDecoder<span class="op">(</span>r<span class="op">.</span>Body<span class="op">).</span>Decode<span class="op">(&amp;</span>request<span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>			http<span class="op">.</span>Error<span class="op">(</span>w<span class="op">,</span> err<span class="op">.</span>Error<span class="op">(),</span> http<span class="op">.</span>StatusBadRequest<span class="op">)</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>			<span class="cf">return</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>		payload <span class="op">:=</span> <span class="kw">map</span><span class="op">[</span><span class="dt">string</span><span class="op">]</span><span class="dt">string</span><span class="op">{</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>			<span class="st">&quot;model&quot;</span><span class="op">:</span>  request<span class="op">.</span>Model<span class="op">,</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>			<span class="st">&quot;prompt&quot;</span><span class="op">:</span> request<span class="op">.</span>Prompt<span class="op">,</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>		payloadBytes<span class="op">,</span> err <span class="op">:=</span> json<span class="op">.</span>Marshal<span class="op">(</span>payload<span class="op">)</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>			http<span class="op">.</span>Error<span class="op">(</span>w<span class="op">,</span> err<span class="op">.</span>Error<span class="op">(),</span> http<span class="op">.</span>StatusInternalServerError<span class="op">)</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>			<span class="cf">return</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>		resp<span class="op">,</span> err <span class="op">:=</span> http<span class="op">.</span>Post<span class="op">(</span><span class="st">&quot;http://localhost:11434/api/generate&quot;</span><span class="op">,</span> <span class="st">&quot;application/json&quot;</span><span class="op">,</span> bytes<span class="op">.</span>NewBuffer<span class="op">(</span>payloadBytes<span class="op">))</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>		<span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>			http<span class="op">.</span>Error<span class="op">(</span>w<span class="op">,</span> err<span class="op">.</span>Error<span class="op">(),</span> http<span class="op">.</span>StatusInternalServerError<span class="op">)</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>			<span class="cf">return</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>		<span class="cf">defer</span> resp<span class="op">.</span>Body<span class="op">.</span>Close<span class="op">()</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>		w<span class="op">.</span>Header<span class="op">().</span>Set<span class="op">(</span><span class="st">&quot;Content-Type&quot;</span><span class="op">,</span> <span class="st">&quot;application/json&quot;</span><span class="op">)</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>		w<span class="op">.</span>WriteHeader<span class="op">(</span>http<span class="op">.</span>StatusOK<span class="op">)</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>		decoder <span class="op">:=</span> json<span class="op">.</span>NewDecoder<span class="op">(</span>resp<span class="op">.</span>Body<span class="op">)</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>		<span class="cf">for</span> <span class="op">{</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>			<span class="kw">var</span> response <span class="kw">map</span><span class="op">[</span><span class="dt">string</span><span class="op">]</span><span class="kw">interface</span><span class="op">{}</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>			<span class="cf">if</span> err <span class="op">:=</span> decoder<span class="op">.</span>Decode<span class="op">(&amp;</span>response<span class="op">);</span> err <span class="op">==</span> io<span class="op">.</span>EOF <span class="op">{</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>				<span class="cf">break</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>			<span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>				http<span class="op">.</span>Error<span class="op">(</span>w<span class="op">,</span> err<span class="op">.</span>Error<span class="op">(),</span> http<span class="op">.</span>StatusInternalServerError<span class="op">)</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>				<span class="cf">return</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>			<span class="op">}</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>			<span class="cf">if</span> err <span class="op">:=</span> json<span class="op">.</span>NewEncoder<span class="op">(</span>w<span class="op">).</span>Encode<span class="op">(</span>response<span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>				http<span class="op">.</span>Error<span class="op">(</span>w<span class="op">,</span> err<span class="op">.</span>Error<span class="op">(),</span> http<span class="op">.</span>StatusInternalServerError<span class="op">)</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>				<span class="cf">return</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>			<span class="op">}</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>			w<span class="op">.(</span>http<span class="op">.</span>Flusher<span class="op">).</span>Flush<span class="op">()</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>		<span class="op">}</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>	<span class="op">})</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>	fmt<span class="op">.</span>Println<span class="op">(</span><span class="st">&quot;Server is running on http://localhost:8080&quot;</span><span class="op">)</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>	log<span class="op">.</span>Fatal<span class="op">(</span>http<span class="op">.</span>ListenAndServe<span class="op">(</span><span class="st">&quot;:8080&quot;</span><span class="op">,</span> <span class="ot">nil</span><span class="op">))</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Handling the chunked JSON is done in that last block with the decoder. The decoder is a state machine that handles its own buffering. The <code>for</code> loop checks for error conditions, and if they aren’t found, will flush the buffer contents to the client, which in this case is a javascript program running inside the browser. As the Javascript program receives those messages, it writes them on the page.</p>
+<p>Decoding and immediately re-encoding the result looks a little silly, we could have just pointed the client directly to ollama and left all of this out of the server. But in a more realistic deployment, we would not want clients interacting directly with the model - it would be important for the server to sit in between and manage the process.</p>
+<center>
+<figure>
+<video width="75%" controls autoplay>
+<source src="../videos/LlamaWebapp.m4v" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<figcaption>
+How the webapp looks while running
+</figcaption>
+</figure>
+</center>
+<p>That was all it took to build the Go implementation! I like how skimming the docs for standard library modules that sounded like what you’re looking for is all it really takes to get up and running in the language. The fact that I can do that when I’m not very experienced in the language is a testament to the skill of its design.</p>
+<p>The rest of this post will cover building this same functionality in Clojure instead of Go.</p>
+<h1 id="clojure---http-kit-implementation">Clojure - HTTP kit Implementation</h1>
+<p>Unlike Go, Clojure does not have a production grade HTTP server and client available in the standard library.</p>
+<p>I used <a href="https://http-kit.github.io">http-kit</a> for this task because it was the smallest library I knew of which could single handedly meet my requirements - it has an synchronous/asynchronous http clients as well as synchronous/asynchronous Ring-compliant web servers. I also chose it because of its reputation of being small and focused with minimal dependencies.</p>
+<p>In Clojure, Ring-compliant HTTP server’s use handlers that are maps containing keys for various http constructs such as <code>:status</code>, <code>:headers</code>, and <code>:body</code>. I used this as a starting point and built a run of the mill synchronous handler that serves the same page as the Go app above.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> read-html-template </span>[]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">println</span> <span class="st">&quot;fetching html template&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">slurp</span> (io/resource <span class="st">&quot;index.html&quot;</span>)))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> index-handler </span>[req]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">println</span> <span class="st">&quot;in index handler&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:status</span>  <span class="dv">200</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>   <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;text/html&quot;</span>}</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:body</span>    (read-html-template)})</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> not-found-handler </span>[req]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:status</span>  <span class="dv">404</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>   <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;text/plain&quot;</span>}</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>   <span class="at">:body</span>    <span class="st">&quot;Page not found.&quot;</span>})</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> app </span>[req]</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [uri (<span class="at">:uri</span> req)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        method (<span class="at">:request-method</span> req)]</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">cond</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">and</span> (<span class="kw">=</span> uri <span class="st">&quot;/&quot;</span>) (<span class="kw">=</span> method <span class="at">:get</span>)) (index-handler req)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">:else</span> (not-found-handler req)))) </span></code></pre></div>
+<p>That all works because you can pass any arbitrary string as your response body and set its content type to text/html, it will render correctly.</p>
+<p>At this point, the client has a javascript programming that wants to pass a prompt and listen for the streaming response. We will want an asynchronous handler to do this, so we’ll use http-kit’s <code>as-channel</code> function. It’s not covered in the project’s main documentation, but the docstring in the source itself has enough to get started with. Let’s use it and wire it up.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> clients</span>_ (<span class="kw">atom</span> #{}))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> my-async-handler </span>[ring-req]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  (http/as-channel ring-req</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>              {<span class="at">:on-open</span> (<span class="kw">fn</span> [ch]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">println</span> <span class="st">&quot;conn open!&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">println</span> ring-req)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">swap!</span> clients_ <span class="kw">conj</span> ch))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">:on-close</span> (<span class="kw">fn</span> [ch]</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                           (<span class="kw">println</span> <span class="st">&quot;conn close!&quot;</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                           (<span class="kw">swap!</span> clients_ <span class="kw">disj</span> ch))}))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> app </span>[req]</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [uri (<span class="at">:uri</span> req)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        method (<span class="at">:request-method</span> req)]</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">cond</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">and</span> (<span class="kw">=</span> uri <span class="st">&quot;/&quot;</span>) (<span class="kw">=</span> method <span class="at">:get</span>)) (index-handler req)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">and</span> (<span class="kw">=</span> uri <span class="st">&quot;/api/generate&quot;</span>) (<span class="kw">=</span> method <span class="at">:post</span>)) (my-async-handler req)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">:else</span> (not-found-handler req))))</span></code></pre></div>
+<p>When I evaluate these forms, switch back to my browser, and hit the “Submit” buttton, I see the print statements fire. When I evaliate <code>clients_</code>, I see it now has a new client.</p>
+<p>To get the actual messages, we can start writing a function to send a POST request to the ollama server. After that, we want to find a way to access messages as they stream in and send them to the client.</p>
+<p>In typical asynchronous programming, this kind of message passage is done with callbacks. http-kit has its own concept of channels that is separate from core.async with its own semantics. When we get a message, we will want to send it to the client like this:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(http/send! ch {<span class="at">:status</span> <span class="dv">200</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>}</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">:body</span> json-encoded}</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>            <span class="va">false</span>)</span></code></pre></div>
+<p>To kick off the HTTP request to ollama with the prompt, we want to use http-kit’s client functionality. There is documentation on making asynchronous requests with callbacks:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">;fire and forget, returns immediately[1], returned promise is ignored</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>(http/get <span class="st">&quot;http://host.com/path&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> options </span>{<span class="at">:timeout</span> <span class="dv">200</span>             <span class="co">; ms</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">:basic-auth</span> [<span class="st">&quot;user&quot;</span> <span class="st">&quot;pass&quot;</span>]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">:query-params</span> {<span class="at">:param</span> <span class="st">&quot;value&quot;</span> <span class="at">:param2</span> [<span class="st">&quot;value1&quot;</span> <span class="st">&quot;value2&quot;</span>]}</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">:user-agent</span> <span class="st">&quot;User-Agent-string&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">:headers</span> {<span class="st">&quot;X-Header&quot;</span> <span class="st">&quot;Value&quot;</span>}})</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>(http/get <span class="st">&quot;http://host.com/path&quot;</span> options</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">fn</span> [{<span class="at">:keys</span> [status headers body error]}] <span class="co">;; asynchronous response handling</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            (<span class="kw">if</span> error</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>              (<span class="kw">println</span> <span class="st">&quot;Failed, exception is &quot;</span> error)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>              (<span class="kw">println</span> <span class="st">&quot;Async HTTP GET: &quot;</span> status))))</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a> <span class="co">; [1] may not always true, since DNS lookup maybe slow</span></span></code></pre></div>
+<p>This will kind of work, but it will fire the promise once all the messages are received. We’re looking for some way to access the messages as the stream in.</p>
+<p>I looked at the source for help and found the following. Without guidance from the documentation, the <code>:stream</code> option sounded like a good option to try.</p>
+<pre><code>   Returned body type is controlled by `:as` option:
+
+    Without automatic unzipping:
+      `:none`           - org.httpkit.DynamicBytes
+      `:raw-byte-array` - bytes[]
+
+    With automatic unzipping:
+      `:byte-array`     - bytes[]
+      `:stream`         - ByteInputStream
+      `:text`           - String (charset based on Content-Type header)
+      `:auto`           - As `:text` or `:stream` (based on Content-Type header)</code></pre>
+<p>There’s no further mention of how to use a ByteInputStream in the docs, so we can check the source for that.</p>
+<pre><code>package org.httpkit;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+/**
+ * No synchronization, better toString
+ */
+public class BytesInputStream extends InputStream {
+    private final byte[] buf;
+    private final int count;
+    private int mark = 0;
+
+    private int pos;
+
+    public BytesInputStream(byte[] data, int length) {
+        this.buf = data;
+        this.count = length;
+        this.pos = 0;
+    }
+
+    /**
+     * get the underlying bytes, copied
+     *
+     * @return
+     */
+    public byte[] bytes() {
+        return Arrays.copyOf(buf, count);
+    }
+
+    public int read() throws IOException {
+        return (pos &lt; count) ? (buf[pos++] &amp; 0xff) : -1;
+    }
+...</code></pre>
+<p>Since this class subclasses InputStream, it can be read by an <a href="https://docs.oracle.com/javase%2F8%2Fdocs%2Fapi%2F%2F/java/io/InputStreamReader.html">InputStreamReader</a>.</p>
+<p>The docs for InputStreamReader recommend wrapping with a BufferedReader, so let’s do that. We want to take inputs line by line</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> send-prompt-to-ollama </span>[ch prompt]</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [url <span class="st">&quot;http://localhost:11434/api/generate&quot;</span>]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    (client/post url</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                 {<span class="at">:as</span> <span class="at">:stream</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>}</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                  <span class="at">:body</span> (json/write-str {<span class="at">:model</span> <span class="st">&quot;llama3&quot;</span> <span class="at">:prompt</span> prompt})}</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                 (<span class="kw">fn</span> [{<span class="at">:keys</span> [status headers body error]}]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                   (<span class="kw">if</span> error</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                     (<span class="kw">do</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                       (http/send! ch {<span class="at">:status</span> <span class="dv">500</span> <span class="at">:body</span> (<span class="kw">str</span> <span class="st">&quot;Internal Server Error: &quot;</span> error)})</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                       (http/close ch))</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                     (<span class="kw">let</span> [stream ^java.io.InputStream body</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                           reader (java.io.BufferedReader. (java.io.InputStreamReader. stream <span class="st">&quot;UTF-8&quot;</span>))]</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                       (<span class="kw">loop</span> []</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                         (<span class="kw">let</span> [line (.readLine reader)]</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                           (<span class="kw">if</span> (<span class="kw">nil?</span> line)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                             (<span class="kw">do</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                               (.close reader)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>                               (http/close ch))</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>                             (<span class="kw">do</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                               (<span class="kw">let</span> [response (<span class="at">:response</span> (json/read-json line))</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>                                     json-encoded (json/write-str {<span class="at">:response</span> response})]</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>                                 (http/send! ch {<span class="at">:status</span> <span class="dv">200</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>                                                 <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>}</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>                                                 <span class="at">:body</span> json-encoded}</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>                                             <span class="va">false</span>))</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>                               (<span class="kw">recur</span>)))))))))))</span></code></pre></div>
+<p>Unfortunately, after writing this up, I observed the same behavior as earlier: responses were not streamed in, but rather returned all at once.</p>
+<p>It turns out this appears to be a <a href="https://github.com/http-kit/http-kit/issues/90">known limitation</a> of http-kit’s client functionality. The comment thread mentioned that clj-http works for this use case, but part of the reason I went with http-kit in the first place was to minimize dependencies.</p>
+<p>Another option to try without introducing a new dependency is to interop with <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html">java.net.http.HttpClient</a>, which has been included with the JDK since Java 11.</p>
+<p>Here’s how I initially got that working:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">import</span> (java.net.http HttpClient HttpRequest HttpResponse HttpResponse$BodyHandlers HttpRequest$BodyPublishers)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>        (java.net URI)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        (java.nio.charset StandardCharsets)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        (java.io InputStreamReader BufferedReader)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        (java.util.concurrent CompletableFuture))</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> handle-response </span>[ch response]</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">with-open</span> [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">loop</span> []</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">let</span> [line (.readLine reader)]</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">if</span> (<span class="kw">nil?</span> line)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">do</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>            (.close reader)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>            (http/close ch))</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">do</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>            (<span class="kw">println</span> <span class="st">&quot;got line&quot;</span> line)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>            (<span class="kw">let</span> [response (<span class="at">:response</span> (json/read-json line))</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>                  json-encoded (json/write-str {<span class="at">:response</span> response})]</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>              (<span class="kw">println</span> <span class="st">&quot;sending response&quot;</span> response)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>              (http/send! ch {<span class="at">:status</span> <span class="dv">200</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>                              <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>}</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>                              <span class="at">:body</span> json-encoded}</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>                          <span class="va">false</span>))</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>            (<span class="kw">recur</span>)))))))</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> send-async-request </span>[ch model prompt]</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [client (HttpClient/newHttpClient)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>        body (<span class="kw">str</span> <span class="st">&quot;{</span><span class="sc">\&quot;</span><span class="st">model</span><span class="sc">\&quot;</span><span class="st">:</span><span class="sc">\&quot;</span><span class="st">&quot;</span> model <span class="st">&quot;</span><span class="sc">\&quot;</span><span class="st">, </span><span class="sc">\&quot;</span><span class="st">prompt</span><span class="sc">\&quot;</span><span class="st">:</span><span class="sc">\&quot;</span><span class="st">&quot;</span> prompt <span class="st">&quot;</span><span class="sc">\&quot;</span><span class="st">}&quot;</span>)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>        request (<span class="kw">-&gt;</span> (HttpRequest/newBuilder)</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>                    (.uri (URI/create <span class="st">&quot;http://localhost:11434/api/generate&quot;</span>))</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>                    (.header <span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>                    (.POST (HttpRequest$BodyPublishers/ofString body))</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>                     (.build))]</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">-&gt;</span> (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>        (.thenAccept (<span class="kw">reify</span> java.util.function.Consumer</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>                       (accept [_ response]</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>                         (handle-response ch response))))</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        (.exceptionally (<span class="kw">reify</span> java.util.function.Function</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>                          (<span class="kw">apply</span> [_ error]</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>                            (<span class="kw">println</span> (<span class="kw">str</span> <span class="st">&quot;Request failed: &quot;</span> error))</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>                            <span class="va">nil</span>))))))</span></code></pre></div>
+<p>This gave me the behavior I was looking for: responses were sent to the client as soon as they come in.</p>
+<p>The code is a little noisy because the library uses Java idioms that were introduced after Clojure was created.</p>
+<p>Luckily, Clojure’s maintainers recently introduced language changes that make using these features less painful. From the release notes of Clojure 1.12.0-alpha12:</p>
+<pre><code>Functional interfaces
+
+Java programs define &quot;functions&quot; with Java functional interfaces (marked with the @FunctionalInterface annotation), which have a single method.
+
+Clojure developers can now invoke Java methods taking functional interfaces by passing functions with matching arity. The Clojure compiler implicitly converts Clojure functions to the required functional interface by constructing a lambda adapter. You can explicitly coerce a Clojure function to a functional interface by hinting the binding name in a let binding, e.g. to avoid repeated adapter construction in a loop.
+
+See: CLJ-2799
+</code></pre>
+<p>To take advantage of these changes, we can use a preview build of the language by updating the language version in <code>deps.edn</code>:</p>
+<pre><code>org.clojure/clojure       {:mvn/version &quot;1.12.0-beta1&quot;}</code></pre>
+<p>After doing so, we can change the above functions to this:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> handle-response </span>[ch response]</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">with-open</span> [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">loop</span> []</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">let</span> [line (.readLine reader)]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">if</span> (<span class="kw">nil?</span> line)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">do</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>            (.close reader)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>            (http/close ch))</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">let</span> [response (<span class="at">:response</span> (json/read-json line))</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                json-encoded (json/write-str {<span class="at">:response</span> response})]</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>            (http/send! ch {<span class="at">:status</span> <span class="dv">200</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>}</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">:body</span> json-encoded}</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                        <span class="va">false</span>))</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">recur</span>))))))</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> send-async-request </span>[ch model prompt]</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [client (HttpClient/newHttpClient)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        body (<span class="kw">str</span> <span class="st">&quot;{</span><span class="sc">\&quot;</span><span class="st">model</span><span class="sc">\&quot;</span><span class="st">:</span><span class="sc">\&quot;</span><span class="st">&quot;</span> model <span class="st">&quot;</span><span class="sc">\&quot;</span><span class="st">, </span><span class="sc">\&quot;</span><span class="st">prompt</span><span class="sc">\&quot;</span><span class="st">:</span><span class="sc">\&quot;</span><span class="st">&quot;</span> prompt <span class="st">&quot;</span><span class="sc">\&quot;</span><span class="st">}&quot;</span>)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        request (<span class="kw">-&gt;</span> (HttpRequest/newBuilder)</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>                    (.uri (URI/create <span class="st">&quot;http://localhost:11434/api/generate&quot;</span>))</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>                    (.header <span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>                    (.POST (HttpRequest$BodyPublishers/ofString body))</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>                    (.build))]</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">-&gt;</span> (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        (.thenAccept (<span class="kw">fn</span> [response] (handle-response ch response)))</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        (.exceptionally (<span class="kw">fn</span> [error] (<span class="kw">println</span> (<span class="kw">str</span> <span class="st">&quot;Request failed: &quot;</span> error)))))))</span></code></pre></div>
+<p>From here, I just needed to wire up the request logic to my async handler and then update my main handler to route to it.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> my-async-handler </span>[ring-req]</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [body (<span class="kw">slurp</span> (<span class="at">:body</span> ring-req))</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        prompt (<span class="kw">try</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                 (<span class="at">:prompt</span> (json/read-json body))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                 (<span class="kw">catch</span> Exception <span class="kw">e</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                   (<span class="kw">println</span> <span class="st">&quot;Error parsing request body:&quot;</span> <span class="kw">e</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                   <span class="va">nil</span>))]</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">if</span> prompt</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>      (http/as-channel ring-req</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                       {<span class="at">:on-open</span> (<span class="kw">fn</span> [ch]</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                                   (<span class="kw">println</span> <span class="st">&quot;conn open!&quot;</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>                                   (<span class="kw">swap!</span> clients_ <span class="kw">conj</span> ch)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>                                   (send-async-request ch <span class="st">&quot;llama3&quot;</span> prompt))</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:on-close</span> (<span class="kw">fn</span> [ch]</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>                                    (<span class="kw">println</span> <span class="st">&quot;conn close!&quot;</span>)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>                                    (<span class="kw">swap!</span> clients_ <span class="kw">disj</span> ch))})</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>      {<span class="at">:status</span> <span class="dv">400</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">:headers</span> {<span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>}</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">:body</span> (json/write-str {<span class="at">:error</span> <span class="st">&quot;Invalid request&quot;</span>})})))</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> app </span>[req]</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [uri (<span class="at">:uri</span> req)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        method (<span class="at">:request-method</span> req)]</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">cond</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">and</span> (<span class="kw">=</span> uri <span class="st">&quot;/&quot;</span>) (<span class="kw">=</span> method <span class="at">:get</span>)) (index-handler req)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">and</span> (<span class="kw">=</span> uri <span class="st">&quot;/api/generate&quot;</span>) (<span class="kw">=</span> method <span class="at">:post</span>)) (<span class="va">#'my-async-handler</span> req)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">:else</span> (not-found-handler req))))</span></code></pre></div>
+<h1 id="clojure---pedestal-implementation">Clojure - Pedestal Implementation</h1>
+<p>I was hoping this project would be a good place to use core.async, which I just started recently using, but realized while working through the previous implementation that http-kit has its own semantics for channels. It didn’t really make sense to use core.async there.</p>
+<p>I heard that <a href="http://pedestal.io/pedestal/0.7/index.html">Pedestal</a> was built with core.async in mind, so I ended up throwing together another implementation with it.</p>
+<p>In this version, my request function sends a request with the user’s prompt and returns a channel that has the messages queued.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> handle-response </span>[response-ch ^HttpResponse response]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [reader (BufferedReader. (InputStreamReader. (.body response) StandardCharsets/UTF_8))]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    (go-loop []</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">if-let</span> [line (.readLine reader)]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">do</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">println</span> line)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>          (a/&gt;! response-ch line)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">recur</span>))</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        (a/close! response-ch)))))</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> send-async-request </span>[model prompt]</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [client (HttpClient/newHttpClient)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>        body (generate-string {<span class="at">:model</span> model <span class="at">:prompt</span> prompt})</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        request (<span class="kw">-&gt;</span> (HttpRequest/newBuilder)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                    (.uri (URI/create <span class="st">&quot;http://localhost:11434/api/generate&quot;</span>))</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                    (.header <span class="st">&quot;Content-Type&quot;</span> <span class="st">&quot;application/json&quot;</span>)</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>                    (.POST (HttpRequest$BodyPublishers/ofString body))</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>                    (.build))</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>        response-ch (a/chan)]</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">-&gt;</span> (.sendAsync client request (HttpResponse$BodyHandlers/ofInputStream))</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>        (.thenAccept (<span class="kw">fn</span> [response] (handle-response response-ch response)))</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>        (.exceptionally (<span class="kw">fn</span> [error] (<span class="kw">println</span> (<span class="kw">str</span> <span class="st">&quot;Request failed: &quot;</span> error)))))</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    response-ch))</span></code></pre></div>
+<p>I used Pedestal’s <a href="http://pedestal.io/pedestal/0.6/reference/server-sent-events.html">Server Sent Events</a> functionality to make it work. The json interceptor is necessary to get access to the json params sent from the client to the asynchronous endpoint.</p>
+<p><code>start-event-stream</code> returns an interceptor and a function to call which takes a channel as an argument - you’ll put messages on it to send them to the client. The channel’s buffer is maintained by the library. In my callback function, I pop messages off the request channel and put them onto the request channel.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> stream-ready </span>[event-ch ctx]</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [{<span class="at">:keys</span> [model prompt] <span class="at">:as</span> raw} (<span class="kw">-&gt;</span> ctx <span class="at">:request</span> <span class="at">:json-params</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        response-chan (send-async-request model prompt)]</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    (go-loop []</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">if-let</span> [msg (&lt;! response-chan)]</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">do</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>          (a/put! event-ch (generate-string {<span class="at">:response</span> msg}))</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">recur</span>))</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        (a/close! event-ch)))))</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-json-interceptor</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:name</span>  <span class="at">::my-json-interceptor</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>   <span class="at">:enter</span> (<span class="kw">fn</span> [{<span class="at">:keys</span> [request] <span class="at">:as</span> ctx}]</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>            (<span class="kw">if</span> (#{<span class="at">:post</span> <span class="at">:put</span>} (<span class="at">:request-method</span> request))</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>              (<span class="kw">let</span> [raw-body-str (<span class="kw">slurp</span> (<span class="at">:body</span> request))</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>                    json-params (parse-string raw-body-str <span class="va">true</span>)]</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>                (<span class="kw">assoc-in</span> (<span class="kw">assoc-in</span> ctx [<span class="at">:request</span> <span class="at">:json-params</span>] json-params)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>                          [<span class="at">:request</span> <span class="at">:raw-body-str</span>] raw-body-str))</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>              ctx))})</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> routes</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  #{[<span class="st">&quot;/&quot;</span> <span class="at">:get</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>     [index-handler]</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">:route-name</span> <span class="at">:index</span>]</span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>    [<span class="st">&quot;/api/generate&quot;</span> <span class="at">:post</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>     [my-json-interceptor (sse/start-event-stream stream-ready)]</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>     <span class="at">:route-name</span> <span class="at">:stream</span>]})</span></code></pre></div>
+<p>I think it makes a lot of sense to use Pedestal for async apps considering both core.async and Pedestal are maintained by the same folks (and I believe they use both libraries extensively in-house). That way you can passively benefit from any improvements or updates to core.async over time - plus it seems like there’s a lot of cool stuff you can do with core.async in general. It can be difficult to use, so you are pretty much required to be willing to read the source and ask for help on Clojurians slack when needed.</p>
+<p>For a project as small as this, Go was way easier to work with. I’ve written Clojure on and off over the last few years and I still spent 10-20x longer getting those implementations working. With Go, it’s really easy to just pick the first dumb implementation that pops into your head and it will work. And of course, trivial deployment is always a relief.</p>
+<p>I do still reach for Clojure from time to time, both because I enjoy the development process of building projects in small pieces without ceremony - i.e., you don’t have to create mini-projects or something similar to experiment with new ideas, you just immediately try them out from whatever file you’re currently working in. I also find it much easier to maintain a bird’s eye view of your codebase I’m working on. Clojure code tends to be much higher level and I find it easier to reason about when I’m focused, provided I’ve kept everything logically organized and somewhat tidy.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Building llama chat in Go and Clojure">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

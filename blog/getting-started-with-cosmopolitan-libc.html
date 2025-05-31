@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Getting started with cosmopolitan libc</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Getting started with cosmopolitan libc</h1>
+            <article>
+    <section class="header">
+        Posted on September  4, 2022
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <p>I recently learned a little bit about <a href="https://justine.lol/cosmopolitan/index.html">Cosmopolitan Libc</a> in order to make a portable executable of <a href="https://jeskin.net/blog/clp/">clp</a>, a small program written for POSIX systems.</p>
+<p>I had a little bit of trouble getting started at first, so I thought it might be useful to write up what I learned.</p>
+<p>In this blog post I’ll share some of my notes on the basics of Cosmopolitan and demonstrate a couple approaches to building software with it.</p>
+<h3 id="introduction-to-cosmopolitan-libc">Introduction to Cosmopolitan Libc</h3>
+<p>Cosmopolitan is a C library. When you compile your C program and link it, your executable will be:</p>
+<ul>
+<li><p><strong>Runnable anywhere</strong>: it can be moved to a Linux, Mac OS X, Windows NT, FreeBSD, OpenBSD, and NetBSD and it will run.</p></li>
+<li><p><strong>Single-file</strong>: Cosmo can package up everything your program needs to run inside a single executable zip file. You won’t need to script installers to move files to platform-specific locations.</p></li>
+<li><p><strong>Statically linked</strong>: all dependencies including libc are self contained in each executable.</p></li>
+</ul>
+<p>Cosmo’s <strong>executables are tiny</strong>- far smaller than you’d see for comparable from Rust or Go.</p>
+<p>Binaries currently <strong>only target x86</strong>. They also run out of the box on Apple Silicon and Windows ARM thanks to their built in x86_64 emulation, and you can use explicit x86_64 emulation elsewhere.</p>
+<p>GUI programs are not in a workable state or even an officially stated goal, although they are <a href="https://github.com/jart/cosmopolitan/issues/35">being explored</a>.</p>
+<p>Build-once run-anywhere is achieved by the <strong>Actually Portable Executable (APE)</strong> format. Executables built by Cosmopolitan are interpreted by Windows as <a href="https://en.wikipedia.org/wiki/Portable_Executable">Portable Executables</a>, and on Unix they are interpreted as a shell script without a shebang line.</p>
+<p>Now let’s take a look at how we can use Cosmopolitan to build programs.</p>
+<h3 id="building-programs-with-the-prebuilt-amalgamation">Building Programs with the Prebuilt Amalgamation</h3>
+<p>The simplest way to build APE programs is to use GCC and link the <a href="https://justine.lol/cosmopolitan/cosmopolitan.zip">prebuilt library</a>.</p>
+<p>An example of this approach can be seen in <a href="https://github.com/jpe90/hello-cosmo">this makefile project</a> consisting of a “hello world source file”:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;hello world</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>And a Makefile, which, which grabs Cosmopolitan libs and compiles the program with it:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode makefile"><code class="sourceCode makefile"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">CC</span><span class="ch">=</span><span class="st">gcc</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">OBJCOPY</span><span class="ch">=</span><span class="st">objcopy</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">BASEURL</span><span class="ch">=</span><span class="st">https://worker.jart.workers.dev</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">AMALGAMATION</span><span class="ch">=</span><span class="st">cosmopolitan-amalgamation-2.0.zip</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">LIBCOSMO_SHA256_EXPECTED</span><span class="ch">=\</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">2228cd5924c001b2d8c8efcc9ddacaab354ba4c99a3e0c8858098e2c3f2e3fdb</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dv">hello.com:</span><span class="dt"> libcosmo hello.c</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>	<span class="ch">$(</span><span class="dt">CC</span><span class="ch">)</span> -g -Os -static -fno-pie -no-pie -nostdlib -nostdinc                  <span class="ch">\</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>		-fno-omit-frame-pointer -pg -mnop-mcount -mno-tls-direct-seg-refs -o   <span class="ch">\</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld=bfd -Wl,--gc-sections <span class="ch">\</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>		-Wl,-T,libcosmo/ape.lds -include libcosmo/cosmopolitan.h         <span class="ch">\</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>		libcosmo/crt.o libcosmo/ape-no-modify-self.o                     <span class="ch">\</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>		libcosmo/cosmopolitan.a</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>	<span class="ch">$(</span><span class="dt">OBJCOPY</span><span class="ch">)</span> -S -O binary hello.com.dbg hello.com</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dv">libcosmo:</span><span class="dt"> </span><span class="ch">$(</span><span class="dt">AMALGAMATION</span><span class="ch">)</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>	<span class="ch">@</span><span class="fu">libcosmo_sha256_actual=`sha256sum </span><span class="ch">$(</span><span class="dt">AMALGAMATION</span><span class="ch">)</span><span class="fu"> | cut -d </span><span class="st">' '</span><span class="fu"> -f 1`; </span><span class="ch">\</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">echo </span><span class="st">&quot;expected sha256sum: </span><span class="ch">$(</span><span class="dt">LIBCOSMO_SHA256_EXPECTED</span><span class="ch">)</span><span class="st">&quot;</span><span class="fu"> &amp;&amp; echo </span><span class="ch">\</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;actual   sha256sum: </span><span class="ch">$$</span><span class="st">libcosmo_sha256_actual&quot;</span><span class="fu">; if	 </span><span class="ch">\</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">[ </span><span class="st">&quot;</span><span class="ch">$$</span><span class="st">libcosmo_sha256_actual&quot;</span><span class="fu"> = </span><span class="st">&quot;</span><span class="ch">$(</span><span class="dt">LIBCOSMO_SHA256_EXPECTED</span><span class="ch">)</span><span class="st">&quot;</span><span class="fu"> ]; then echo </span><span class="ch">\</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;checksums match&quot;</span><span class="fu">; else echo </span><span class="st">&quot;checksums don't match, aborting&quot;</span><span class="fu"> &amp;&amp; exit 1; fi;</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>	unzip -d libcosmo <span class="ch">$(</span><span class="dt">AMALGAMATION</span><span class="ch">)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="dv">$(AMALGAMATION):</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>	wget <span class="st">&quot;</span><span class="ch">$(</span><span class="dt">BASEURL</span><span class="ch">)</span><span class="st">/</span><span class="ch">$(</span><span class="dt">AMALGAMATION</span><span class="ch">)</span><span class="st">&quot;</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="dv">clean:</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>	rm -f hello.com.dbg hello.com</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="dv">distclean:</span><span class="dt"> clean</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>	rm -rf cosmopolitan* libcosmo</span></code></pre></div>
+<p>You might notice that hello.c does not contain a <code>#include &lt;stdio.h&gt;</code> line to provide the header for printf. Ordinarily, the c compiler would search the system headers for this file, which would provide the function declaration for <code>printf</code>, and then the linker would find the definition in the system standard library.</p>
+<p>In this case, the Makefile does not search the system headers because of the <code>-nostdinc</code> flag, and it doesn’t link the system standard library because of the <code>-nostdlib</code> flag.</p>
+<p>Instead, the makefile specifies an include for <code>cosmopolitan.h</code>, which provides declarations for all libc functions including <code>printf</code>, while the function definitions are provided by <code>cosmopolitan.a</code>.</p>
+<p>Because of the <code>-nostdinc</code> flag, if we added the include line to <code>hello.c</code>, we would get an error:</p>
+<pre><code>hello.c:1:19: error: no include path in which to search for stdio.h
+    1 | #include &lt;stdio.h&gt;</code></pre>
+<p>As you might imagine, this will cause issues when you’re trying to port existing code written against the standard library. In some cases, there’s quite a few of them- too many to remove by hand. And we can’t just remove the <code>-nostdinc</code> flag, otherwise the compiler would find conflicting function declarations.</p>
+<p>A workaround is to create a folder in your project, fill it empty files that have names of all the system headers your code is looking for, and include that folder in the build path.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> Makefile             | 2 +-</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> header_stubs/stdio.h | 0</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a> hello.c              | 2 ++</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> 3 files changed, 3 insertions(+), 1 deletion(-)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a> create mode 100644 header_stubs/stdio.h</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">diff --git a/Makefile b/Makefile</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>index 4bd867d..f7d3623 100644</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">--- a/Makefile</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">+++ b/Makefile</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -10,7 +10,7 @@ hello.com: libcosmo hello.c</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a> 		hello.com.dbg hello.c -Wl,--gc-sections -fuse-ld=bfd -Wl,--gc-sections \</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a> 		-Wl,-T,libcosmo/ape.lds -include libcosmo/cosmopolitan.h         \</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a> 		libcosmo/crt.o libcosmo/ape-no-modify-self.o                     \</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="st">-		libcosmo/cosmopolitan.a</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="va">+		libcosmo/cosmopolitan.a -Iheader_stubs/</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a> 	$(OBJCOPY) -S -O binary hello.com.dbg hello.com</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a> libcosmo: $(AMALGAMATION)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">diff --git a/header_stubs/stdio.h b/header_stubs/stdio.h</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>new file mode 100644</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>index 0000000..e69de29</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="kw">diff --git a/hello.c b/hello.c</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>index d07c467..11f7c99 100644</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="dt">--- a/hello.c</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="dt">+++ b/hello.c</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ -1,3 +1,5 @@</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="va">+#include &lt;stdio.h&gt;</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a> int main() {</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>     printf(&quot;hello world\n&quot;);</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a> }</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="st">--</span></span></code></pre></div>
+<p>This way the includes specified by the source code are found, but they’re replaced with empty content during preprocessing. This is what you want, since the declarations that the includes usually contain are already provided by <code>cosmopolitan.h</code>.</p>
+<p>I think building with the prebuilt amalgamation makes sense for small projects with few dependencies. It keeps the size of the source repository small and builds quickly.</p>
+<p>I was able to build <code>clp</code> with this approach by forking <a href="https://github.com/ahgamut/lua/tree/cosmopolitan">another project</a> which built Lua using the amalgamation prior to its inclusion in the hermetic monorepo. You can see the result <a href="https://github.com/jpe90/clp-prebuilt-cosmo/tree/clp">here</a>.</p>
+<p>Without that fork existing, I wouldn’t have been able to compile clp this way. If your projects require non-trivial external dependencies, you’ll really need to know what you’re doing to get it to build.</p>
+<p>Luckily for me, there’s a different option that provides additional batteries.</p>
+<h3 id="building-programs-inside-the-hermetic-monorepo">Building Programs Inside the Hermetic Monorepo</h3>
+<p>Another way to build APE programs is to use the <a href="https://github.com/jart/cosmopolitan">hermetic monorepo</a>. You’ll only need make installed on your system to build it; it uses a vendored GCC to bootstrap itself.</p>
+<p>The repository is managed with an interconnected system of makefiles which is documented <a href="https://github.com/jart/cosmopolitan/blob/master/Makefile#L99-L230">within the main Makefile</a> that you use for building.</p>
+<p>In addition to providing core system functionality, the repository contains many programs, utilities, libraries, including the <a href="https://redbean.dev">redbean single file web server</a>, a <a href="https://justine.lol/blinkenlights/">command line debugger</a>, an <a href="https://justine.lol/nesemu1.html">nes emulator that runs in a terminal</a>, implementations of sed, awk, and make, and much more. The code in all these projects is tailored to Cosmopolitan, which is nice because it makes it easier to yoink from them compared to external code that might need some finangling.</p>
+<p>For quick and dirty programs, you can drop a C file inside <a href="https://github.com/jart/cosmopolitan/tree/master/examples">the examples folder</a> and it’ll get picked up and built inside <code>o/examples</code>. That can be nice for trying out ideas or getting up and running quickly.</p>
+<p>For more involved projects, or for adding re-usable libraries, you will probably want to add a third_party module.</p>
+<p>Third_party modules follow repository-wide conventions where they include Makefiles that declare their source files, header files, dependencies on other packages, and more.</p>
+<p>To add a third_party module, you’ll want to study the <a href="https://github.com/jart/cosmopolitan/tree/master/examples/package">example library package</a> and some of the programs packaged in the repository. You can also check out <a href="https://github.com/jpe90/cosmopolitan/tree/clp">my fork</a>, where I added a clp third_party.</p>
+<p>I’d love to give a detailed breakdown of how to properly write a makefile for a third party, but I pretty much just copied sed’s, changed stuff, and hacked in some extras.</p>
+<p>Maintaining a personal fork of the monorepo and adding your own packages to it looks like a good way to manage projects. The repository appears designed to be modular and extensible, so upstream changes seem unlikely to break your code. If you want to core parts of the monorepo for a single package, you could always do so on another branch.</p>
+<p>Using the hermetic monorepo might seem like overkill for a tiny program. It’s pretty big repository, and the initial build can be kind of long. On the other hand, the executables it produces are tiny, iterative builds are quick, it gives nice options for tuning build output, and in general it makes maintainence easier.</p>
+<p>There’s another option for building software that I think is worth mentioning.</p>
+<h3 id="shortcut-for-portable-lua-programs">Shortcut for Portable Lua Programs</h3>
+<p>Here’s a quick demonstration of how to package portable Lua programs. In this section we’ll build the Lua interpreter, copy it to the base of the repository, zip up a lua file into the executable, and configure it to run the lua file when the file is run.</p>
+<p>First, grab the monorepo if you haven’t already.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/jart/cosmopolitan.git</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> cosmopolitan</span></code></pre></div>
+<p>From this point on, all commands should be run from the base of the repository.</p>
+<p>Build the Lua interpreter, and copy it to the base of the repo.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">build/bootstrap/make.com</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span> o//third_party/lua</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> o//third_party/lua/lua.com .</span></code></pre></div>
+<p>Next, make a <code>.lua</code> folder and build the <code>zip.com</code> program.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> .lua</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">build/bootstrap/make.com</span> <span class="at">-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span> o//third_party/zip</span></code></pre></div>
+<p>Now create a file <code>mymodule.lua</code> inside <code>.lua</code> by pasting the following text into your shell.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">printf</span> %s <span class="st">'local mymodule = {}</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">function mymodule.hello()</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">   print(&quot;Hello World!&quot;)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">end</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">return mymodule'</span> <span class="op">&gt;</span> .lua/mymodule.lua</span></code></pre></div>
+<p>Next create a file <code>.args</code> in the base of the repository by again pasting the following text into your shell.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">printf</span> %s <span class="st">'-l</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">mymodule</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">-e</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">require&quot;mymodule&quot;.hello()'</span> <span class="op">&gt;</span> .args</span></code></pre></div>
+<p>This file will tell be loaded by the modified interpreter and the arguments will be presented to the interpreter as if they came from the command line.</p>
+<p>Finally, we’ll use the <code>zip.com</code> program to load a <code>.lua</code> directory containing your lua files and the <code>.args</code> file which launches your program into the Lua interpreter binary.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./o/third_party/zip/zip.com</span> <span class="at">-r</span> lua.com .lua/</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./o/third_party/zip/zip.com</span> <span class="at">-r</span> lua.com .args</span></code></pre></div>
+<p>Now if you run <code>lua.com</code>, the program will run the lua file and print “Hello World!” as if you had run it with <code>lua.com -l mymodule -e 'require"mymodule".hello()'</code>.</p>
+<p>You can read more about these in the <code>/.args</code> and the <code>/.lua/...</code> sections of <a href="https://redbean.dev/#specials">redbean’s documenation</a>; just be aware that not all of redbean’s functionality is available to the Lua interpreter out of the box.</p>
+<hr />
+<p>That covers most of what I figured out on my own while playing around with Cosmopolitan.</p>
+<p>If you want to see what other people have done, check out some of the projects here: https://github.com/shmup/awesome-cosmopolitan</p>
+<p><em>Thanks to Justine Tunney for guidance on porting to Cosmo!</em></p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Getting started with cosmopolitan libc">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

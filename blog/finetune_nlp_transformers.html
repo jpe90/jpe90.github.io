@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Fine-tuning NLP transformers for task automation</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Fine-tuning NLP transformers for task automation</h1>
+            <article>
+    <section class="header">
+        Posted on August 12, 2024
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>In a <a href="https://jeskin.net/blog/leveraging-local-ai-for-task-automation/">previous post</a>, I explored using LLMs to perform text classification tasks. The idea was that they could enable automation of more complex tasks that are otherwise not automatable. Many people just use a model like ChatGPT for this, but after learning a bit about how they work, I was getting the sense that other approaches might be more efficient and accurate.</p>
+<p>My experimental task was to classify messages sent from customers to an online store. Messages were classified as either refund requests, order inquiries, or general feedback.</p>
+<table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
+<thead>
+<tr style="background-color: #f2f2f2;">
+<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">
+Message
+</th>
+<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">
+Label
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 12px; border: 1px solid #ddd;">
+“The feedback submission form took a long time to load.”
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+General Feedback
+</td>
+</tr>
+<tr style="background-color: #f9f9f9;">
+<td style="padding: 12px; border: 1px solid #ddd;">
+“Why did you send me a cactus? I ordered a dishwasher.”
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+Order Inquiry
+</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #ddd;">
+“I purchased a time machine, but it only goes forward at regular speed. I’d like a refund.”
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+Refund Request
+</td>
+</tr>
+</tbody>
+</table>
+<p>In that post, I used a wrapper around llama.cpp, running inference on the 8B parameter, 4-bit quantized version of Llama 3. Architecturally, this is works like a tiny ChatGPT, and is capable of running on pretty much any consumer hardware. By directly prompting the base model I achieved <strong>~92% accuracy out of the box</strong>, improving to <strong>~95% with post-processing</strong> (retrying invalid responses).</p>
+<p>The results seemed okay, but a general purpose instruction model didn’t really seem ideal for a specific task like this. I wanted to explore other options that might be more efficient or have better performance.</p>
+<p>Two possible approaches to creating a task-specific model would be to either fine-tune an existing model or to train a smaller, specialized model from scratch.</p>
+<p>Training a model from scratch would be extremely interesting, but it would also require a huge amount of data and computing power. On the other hand, fine-tuning is a technique that adapts pre-trained language models to specific tasks by further training on a smaller, task-specific dataset. This allows you to leverage the data and compute that went into the original pre-training of the model.</p>
+<h2 id="model-selection">Model selection</h2>
+<p>My first naive idea was to try to fine-tune Llama 3 itself. Models such as GPT or Llama are primarily designed for text generation. Mechanically, they are trained to predict the next token in a sequence using masked self-attention, where each token can only attend to context to its left. What this means is that the neural network is <em>only considering</em> the words that appear before the token it is trying to predict. Lets look at an example.</p>
+<p>Consider the sentence <strong>Live free or die hard</strong>. GPT/Llama will take this whole sentence and simultaneously learn to predict the next word given the input:</p>
+<table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
+<thead>
+<tr style="background-color: #f2f2f2;">
+<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">
+Input
+</th>
+<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">
+Target
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 12px; border: 1px solid #ddd;">
+Live
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+free
+</td>
+</tr>
+<tr style="background-color: #f9f9f9;">
+<td style="padding: 12px; border: 1px solid #ddd;">
+Live free
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+or
+</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #ddd;">
+Live free or
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+die
+</td>
+</tr>
+<tr style="background-color: #f9f9f9;">
+<td style="padding: 12px; border: 1px solid #ddd;">
+Live free or die
+</td>
+<td style="padding: 12px; border: 1px solid #ddd;">
+hard
+</td>
+</tr>
+</tbody>
+</table>
+<p>This makes perfect sense if you’re training a model to generate text, but it doesn’t really align with what we’re trying to do. We’re more interested in looking at an entire chunk of text and <em>classifying</em> it. It turns out there’s better ways to achieve this.</p>
+<p>Other models learn other types of tasks, such as <strong>Masked Language Modeling</strong> and <strong>Next Sentence Prediction</strong>. In Masked Language Modeling, the model is tasked with predicting the missing words in a sentence. For example, given the sentence “The [MASK] jumped over the fence,” the model would try to predict the masked word (likely “dog” or “cat”).</p>
+<p>In Next Sentence Prediction, the model is tasked with determining if two sentences are adjacent in a text. For instance, given the sentences “I love ice cream” and “It’s my favorite dessert”, the model would determine that these sentences are relatively likely to be adjacent. For “The sky is blue” and “Elephants have trunks”, the model would determine that these sentences relatively unlikely to be adjacent.</p>
+<p>These approaches can be implemented through a mechanism called <strong>bidirectional self-attention</strong>. Unlike with masked-self attention, the model does not restrict itself to only consider tokens before something it is trying to predict. Instead, it considers all the tokens in the input and takes a stab at its task. This makes more sense if you’re trying to perform sentiment analysis, named entity recognition, or text classification. In those cases, you wouldn’t want all of the machinery associated with next-token prediction, because it would be dead weight.</p>
+<h2 id="bert">BERT</h2>
+<p>A model that uses bidirectional self-attention is <a href="https://arxiv.org/abs/1810.04805">Bidirectional Encoder Representations from Transformers (BERT)</a>. Introduced by Google in 2018, BERT is pre-trained on Masked Language Modeling and Next Sentence Prediction described above.</p>
+<p>These pre-training tasks equip BERT with a strong grasp of language structure and context. From the words of the authors, <em>…the pre-trained BERT model can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task-specific architecture modifications.</em></p>
+<p>My guess was that a model like this would be a better starting point for my use case.</p>
+<h2 id="distilbert">DistilBERT</h2>
+<p>In 2019, Hugging Face released a smaller, distilled version of BERT called <a href="https://arxiv.org/abs/1910.01108">DistilBERT</a>. It preserves 95% of BERT’s performance while using 40% fewer parameters and running 60% faster. For comparison, it is less than 1% of the size of Llama 3 8B.</p>
+<p>DistilBERT achieves this efficiency through a process called knowledge distillation, where a smaller model (the student) is trained to mimic the behavior of a larger model (the teacher). This results in a more compact model that can still perform well on a wide range of tasks, making it well-suited for fine-tuning on specific applications, especially when computational resources are limited.</p>
+<h3 id="distilbert-architecture-overview">DistilBERT Architecture Overview</h3>
+<p>DistilBERT is based on the Transformer architecture. The model consists of several key components that work together to process and understand text. Text input is first passed through an <strong>embedding layer</strong>. This layer is responsible for converting input tokens (which are essentially words or parts of words) into dense vector representations. These vectors contain floating point numbers that encode the semantic meaning of the words in a format that the model can work with. The values of the vectors change throughout training as the model iterates on its semantic understanding.</p>
+<p>The embedding layer learns that words like “dog” and “cat” are semantically closer to each other than to words like “car” or “building”. It captures subtle relationships, such as understanding that “king” is to “man” as “queen” is to “woman”, or that certain adjectives tend to precede certain types of nouns (like “delicious” often appearing before food-related words).</p>
+<p>Once the text is embedded, it passes through multiple <strong>Transformer blocks</strong>. These blocks contain layers of self-attention and feed-forward neural networks. The self-attention mechanism allows the model to weigh the importance of different words in the input. This means the model can understand context and relationships between words, much like how we understand language by considering words in relation to each other. After the self-attention layer, feed-forward neural networks further process the attention output, allowing the model to capture complex patterns in the data.</p>
+<p>Consider the sentence “The man who crossed the street was hit by a car.” Self-attention allows the model to understand that “hit” is more strongly related to both “man” and “car” than to “crossed” or “street”. This helps the model correctly interpret who was hit (the man) and what hit him (the car), even though these words are not adjacent in the sentence. The feed-forward networks then process this contextual information, potentially learning higher-level concepts like “traffic accidents” or “pedestrian safety” from such examples.</p>
+<p>These layers represent different relationships that sub-word tokens can have with each other. As it learns, the model updates its understanding of both of these relationships at the same time. And during inference, it will consider what it has learned about both of these relationships when it predicts the next most likely token to occur.</p>
+<h3 id="fine-tuning-process">Fine-tuning Process</h3>
+<p>The fine-tuning process involves adjusting the pre-trained DistilBERT model to our specific classification task.</p>
+<p>The code below is implemented using Hugging Face’s <code>Transformers</code> library, which provides a high-level interface for working with DistilBERT and other transformer models. This interface includes pre-built model architectures, tokenizers, and data processing utilities. The library offers components like <code>DistilBertTokenizer</code> for text tokenization and <code>DistilBertForSequenceClassification</code> for the actual model architecture. It also provides <code>Dataset</code> and <code>DataLoader</code> classes for efficient data handling and batching.</p>
+<p>These high-level components abstract away much of the complexity involved in working with transformer models. The tokenizer handles the task of converting raw text into a format the model can understand, including subword tokenization and special token management. The model class encapsulates DistilBERT’s architecture, including the self-attention mechanisms and feed-forward networks, exposing simple methods for forward passes and loss computation.</p>
+<p><code>Transformers</code> delegates the numerical computations to <a href="https://pytorch.org/">PyTorch</a>, a deep learning framework that handles low-level operations. PyTorch manages tensor operations, automatic differentiation for backpropagation, and GPU acceleration. It provides the foundation for defining and training neural networks, offering classes like <code>torch.nn</code> for neural network layers and <code>torch.optim</code> for optimization algorithms.</p>
+<h4 id="data-preparation">Data Preparation</h4>
+<p>The process begins by loading the labeled data. It consisted of three files, one for each category, each containing several hundred customer messages.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_data(file_path):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(file_path, <span class="st">'r'</span>) <span class="im">as</span> f:</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> [line.strip() <span class="cf">for</span> line <span class="kw">in</span> f]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>feedback <span class="op">=</span> load_data(<span class="st">'data/feedback.txt'</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>inquiries <span class="op">=</span> load_data(<span class="st">'data/inquiries.txt'</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>refunds <span class="op">=</span> load_data(<span class="st">'data/refunds.txt'</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>all_texts <span class="op">=</span> feedback <span class="op">+</span> inquiries <span class="op">+</span> refunds</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>all_labels <span class="op">=</span> [<span class="dv">0</span>] <span class="op">*</span> <span class="bu">len</span>(feedback) <span class="op">+</span> [<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(inquiries) <span class="op">+</span> [<span class="dv">2</span>] <span class="op">*</span> <span class="bu">len</span>(refunds)</span></code></pre></div>
+<p>This code loads the text strings and assigns numerical labels to each. In neural networks, labels refer to “the right answer” and are used during training to check the model’s guesses.</p>
+<h4 id="dataset-and-dataloader">Dataset and DataLoader</h4>
+<p>A custom dataset class is created to handle tokenization:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TextClassificationDataset(Dataset):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, texts, labels, tokenizer, max_len):</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.texts <span class="op">=</span> texts</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.labels <span class="op">=</span> labels</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.tokenizer <span class="op">=</span> tokenizer</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_len <span class="op">=</span> max_len</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, item):</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        text <span class="op">=</span> <span class="bu">str</span>(<span class="va">self</span>.texts[item])</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> <span class="va">self</span>.labels[item]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        encoding <span class="op">=</span> <span class="va">self</span>.tokenizer.encode_plus(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>            text,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>            add_special_tokens<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>            max_length<span class="op">=</span><span class="va">self</span>.max_len,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>            return_token_type_ids<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>            padding<span class="op">=</span><span class="st">'max_length'</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>            truncation<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>            return_attention_mask<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>            return_tensors<span class="op">=</span><span class="st">'pt'</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>            <span class="st">'text'</span>: text,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>            <span class="st">'input_ids'</span>: encoding[<span class="st">'input_ids'</span>].flatten(),</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>            <span class="st">'attention_mask'</span>: encoding[<span class="st">'attention_mask'</span>].flatten(),</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>            <span class="st">'labels'</span>: torch.tensor(label, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        }</span></code></pre></div>
+<p>A <strong>tokenizer</strong> is a tool that breaks down text into smaller units called tokens. These could be words, parts of words, or even punctuation. The tokenizer also handles converting these tokens into numbers that the model can understand. The <strong>DistilBertTokenizer</strong> is used because the same tokenizer that the model was trained with is desired. Under the hood, it uses <a href="https://huggingface.co/learn/nlp-course/en/chapter6/6">WordPiece subword segmentation</a>.</p>
+<p>The <code>encode_plus</code> method of this tokenizer is used. This method does several things: It tokenizes the input text, adds special tokens that DistilBERT expects (like [CLS] at the start and [SEP] at the end), pads or truncates the input to a specified maximum length, and creates an “attention mask” which tells the model which tokens are actual input and which are padding.</p>
+<p>The <strong>torch Dataset</strong> is a PyTorch class that represents a dataset. By inheriting from this class, a custom dataset that PyTorch can easily work with is created. The <code>__getitem__</code> method is called when an item from the dataset needs to be accessed.</p>
+<p>PyTorch’s DataLoader is used to efficiently batch and shuffle the data:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>train_dataloader <span class="op">=</span> DataLoader(train_dataset, batch_size<span class="op">=</span><span class="dv">16</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>test_dataloader <span class="op">=</span> DataLoader(test_dataset, batch_size<span class="op">=</span><span class="dv">16</span>)</span></code></pre></div>
+<p>The DataLoader is a PyTorch utility that helps manage batching of data and provides an iterable over the Dataset. For the training data, <code>shuffle=True</code> is set, which means it will randomly shuffle the data at the start of each epoch. This shuffling helps prevent the model from learning any unintended patterns based on the order of the training data.</p>
+<p>A batch size of 16 is used, meaning the DataLoader will yield batches of 16 examples at a time. This batch size is a balance between memory usage and training speed. For the test data, shuffling is not needed, so the <code>shuffle</code> parameter is omitted.</p>
+<p>During training and evaluation, these DataLoaders will be iterated over, which will give batches of data in the format the model expects. This abstraction simplifies the training loop and makes it easier to work with large datasets that might not fit into memory all at once.</p>
+<h4 id="train-test-split">Train-Test Split</h4>
+<p>Before training begins, the data is split into training and testing sets:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_test_split(data, test_size<span class="op">=</span><span class="fl">0.1</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    split_index <span class="op">=</span> <span class="bu">int</span>(<span class="bu">len</span>(data) <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> test_size))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> data[:split_index], data[split_index:]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>train_data, test_data <span class="op">=</span> train_test_split(<span class="bu">list</span>(<span class="bu">zip</span>(all_texts, all_labels)))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>train_texts, train_labels <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>train_data)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>test_texts, test_labels <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>test_data)</span></code></pre></div>
+<p>A manual split is used where the first 90% of the data is used for training and the last 10% for testing. This approach was chosen to make it easy for me to place all of the samples evaluated in the previous blog post into the test set. That way, performance could be more directly compared, because none of those samples would have been seen by any either model during training. More on that later.</p>
+<h4 id="training-loop">Training Loop</h4>
+<p>The training process involves iterating over the data multiple times and updating the model’s parameters to minimize the classification error.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_epoch(model, data_loader, optimizer, device):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    model.train()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    total_loss <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    total_correct <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    total_samples <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> batch <span class="kw">in</span> data_loader:</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        input_ids <span class="op">=</span> batch[<span class="st">'input_ids'</span>].to(device)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        attention_mask <span class="op">=</span> batch[<span class="st">'attention_mask'</span>].to(device)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> batch[<span class="st">'labels'</span>].to(device)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        outputs <span class="op">=</span> model(input_ids, attention_mask<span class="op">=</span>attention_mask, labels<span class="op">=</span>labels)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> outputs.loss</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> outputs.logits</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        _, predicted <span class="op">=</span> torch.<span class="bu">max</span>(logits, <span class="dv">1</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        total_correct <span class="op">+=</span> (predicted <span class="op">==</span> labels).<span class="bu">sum</span>().item()</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        total_samples <span class="op">+=</span> labels.size(<span class="dv">0</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        total_loss <span class="op">+=</span> loss.item()</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    avg_loss <span class="op">=</span> total_loss <span class="op">/</span> <span class="bu">len</span>(data_loader)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    accuracy <span class="op">=</span> total_correct <span class="op">/</span> total_samples</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> avg_loss, accuracy</span></code></pre></div>
+<p>It isn’t shown here, but <code>model</code> passed in to this function is an instance of the <code>DistilBertForSequenceClassification</code> class. <code>input_ids</code>, <code>attention mask</code>, and <code>labels</code> are determined during dataset preparation outside of this function call. The <code>input_id</code>s represent the tokenized input text, while <code>attention_mask</code> indicates which tokens should be attended to. <code>labels</code> represent the correct answers, while <code>predicted</code> represents the guesses.</p>
+<p>The function performs optimization - the process where the model adjusts its parameters to minimize the loss and iteratively improve its performance on the task. This involves a “forward pass” where the model processes the input and makes predictions. The loss is then calculated by comparing these predictions to the correct labels. Next, a “backward pass” (backpropagation) computes the gradients. Finally, the optimizer uses these gradients to update the model’s parameters, adjusting weights to reduce the loss.</p>
+<p>Calling <code>model</code> in this manner is the PyTorch idiom for doing a forward pass (this has always been a strange design choice to me).</p>
+<p>The backward pass is done by a call to <code>loss.backward()</code> where it computes the direction and amount to nudge its parameters and <code>optimizer.step()</code> where it makes those parameter updates.</p>
+<p>Most of the actual number crunching is carried out by PyTorch’s autograd code. The attention mechanics are implemented in <code>DistilBertForSequenceClassification</code> class of the Hugging Face <code>transformers</code> library. This library also provides <code>AdamW</code>’s ability to perform parameter updates (with additional optimizations, in AdamW’s case).</p>
+<p>As you can see, there isn’t really a defined API for gradient descent. It’s on you to know what steps need to be done and do them.</p>
+<h4 id="model-configuration-and-training">Model Configuration and Training</h4>
+<p>The model configuration and training takes place in the program’s main method, separate from the above helper methods.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> DistilBertTokenizer.from_pretrained(<span class="st">'distilbert-base-uncased'</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DistilBertForSequenceClassification.from_pretrained(<span class="st">'distilbert-base-uncased'</span>, num_labels<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> TextClassificationDataset(train_texts, train_labels, tokenizer, max_len<span class="op">=</span><span class="dv">128</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>test_dataset <span class="op">=</span> TextClassificationDataset(test_texts, test_labels, tokenizer, max_len<span class="op">=</span><span class="dv">128</span>)</span></code></pre></div>
+<p>First, the <strong>tokenizer</strong> and <strong>model</strong> are initialized. The pre-trained ‘distilbert-base-uncased’ model is used, which means it’s been trained on lowercase English text. The <code>num_labels=3</code> parameter tells the model it’s dealing with a three-class classification problem.</p>
+<p><code>max_len=128</code> is set when creating the datasets. This <strong>maximum length</strong> parameter determines the longest sequence of tokens the model will process. Shorter sequences will be padded, and longer ones will be truncated.</p>
+<p>The <strong>batch size</strong> of 16 in the DataLoader means 16 examples will be processed at a time during training. This is another balance between memory usage and training speed. Larger batch sizes can lead to faster training but require more memory.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> torch.device(<span class="st">'mps'</span> <span class="cf">if</span> torch.backends.mps.is_available() <span class="cf">else</span> <span class="st">'cpu'</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>model.to(device)</span></code></pre></div>
+<p>Next, the model is moved to the appropriate device. A check is made if Apple’s Metal Performance Shaders (MPS) are available, which can accelerate training on compatible Mac hardware (this was only run on a Mac; this line would need to be changed if it were to be run optimally on different hardware).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> AdamW(model.parameters(), lr<span class="op">=</span><span class="fl">2e-5</span>)</span></code></pre></div>
+<p><strong>AdamW</strong> is an optimization algorithm for training neural networks. It features adaptive learning rates for each parameter and implements decoupled weight decay regularization. Weight decay is a regularization technique that encourages smaller parameter values in the model. It does this by adding a penalty term to the loss function based on the magnitude of the weights. The primary goal of weight decay is to prevent overfitting by discouraging the model from relying too heavily on any individual feature or learning overly complex patterns that may not generalize well to new data.</p>
+<p>A <strong>learning rate</strong> of 2e-5 (0.00002) is used here. It was selected by manually tuning the learning rate and number of epochs and evaluating network performance. It’s small enough to allow for fine adjustments to the pre-trained weights without causing drastic changes that could destroy the model’s pre-trained knowledge. Too high, and the model might overshoot optimal solutions; too low, and the model might train too slowly or get stuck in suboptimal solutions. This learning rate is much lower than what you would use for training a network from scratch, which is usually around 1e-3.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>num_epochs <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'Epoch </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_epochs<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    train_loss, train_acc <span class="op">=</span> train_epoch(model, train_dataloader, optimizer, device)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'Train loss </span><span class="sc">{</span>train_loss<span class="sc">:.4f}</span><span class="ss"> accuracy </span><span class="sc">{</span>train_acc<span class="sc">:.4f}</span><span class="ss">'</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    val_loss, val_acc <span class="op">=</span> evaluate(model, test_dataloader, device)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'Val loss </span><span class="sc">{</span>val_loss<span class="sc">:.4f}</span><span class="ss"> accuracy </span><span class="sc">{</span>val_acc<span class="sc">:.4f}</span><span class="ss">'</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>torch.save(model.state_dict(), <span class="st">'model/distilbert_classifier.pth'</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Model saved successfully.&quot;</span>)</span></code></pre></div>
+<p>The training loop runs for <strong>3 epochs</strong>, after which the accuracy and loss of both the training and validation sets reached desirable values (see “Results and Discussion” below).</p>
+<p>An epoch is one complete pass through the entire training dataset. In each epoch, the model is trained on the training data and then evaluated on the validation (test) data. The loss and accuracy for both training and validation sets are printed out with 4 decimal places.</p>
+<p>After training, the model is saved using <code>torch.save()</code>. This function saves the model’s <strong>state_dict</strong>. A state_dict in PyTorch is a Python dictionary that maps each layer to its parameter tensors. It contains all the learned weights and biases of the model. By saving the state_dict, all the knowledge the model has gained during training is essentially saved. The model is saved with a <strong>.pth</strong> file extension. This is a common convention in PyTorch for saved model files, standing for “PyTorch”.</p>
+<p>To use this saved model later, it would be loaded like this:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> DistilBertForSequenceClassification.from_pretrained(<span class="st">'distilbert-base-uncased'</span>, num_labels<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>model.load_state_dict(torch.load(<span class="st">'model/distilbert_classifier.pth'</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">eval</span>()</span></code></pre></div>
+<h3 id="results-and-discussion">Results and Discussion</h3>
+<p>For simplicity, I ran with the assumption that each string of text had one and only one classification. It would be much more useful if each string of text instead could have 0-3 classifications. This would also almost certainly bring down the accuracy of the model because determining whether a given string belongs to a single category at all seems like it would be a much more complex task than what it had to learn during training.</p>
+<p>After 3 epochs, the model achieves an <strong>accuracy of 100% and loss of 0.156 on the test set</strong> and an <strong>accuracy of 99.59% and loss of 0.0278 on the training set</strong>.</p>
+<pre><code>Epoch 1/3
+Train loss 0.6052 accuracy 0.8264
+Val loss 0.1448 accuracy 1.0000
+Epoch 2/3
+Train loss 0.0708 accuracy 0.9959
+Val loss 0.0314 accuracy 1.0000
+Epoch 3/3
+Train loss 0.0278 accuracy 0.9959
+Val loss 0.0156 accuracy 1.0000</code></pre>
+<p>The task was designed to be easy enough that a network could handle it, so the performance met my expectations. The 100% accuracy of the test set includes the entirety of the tasks that <strong>Llama 3 8B only achieved 92% accuracy</strong> on, with additional test data added in. And just for kicks, I later tried coming up with weird and contrived strings of text to try to confuse the model. I could not get it to incorrectly classify anything.</p>
+<p>After the fine-tuned DistilBERT model was trained on learning the distinctions between the three specific categories (refund requests, order inquiries, and general feedback), <strong>the fine-tuned model outperformed base Llama 3 for this specialized task at roughly 0.8% of its size</strong>. Llama 3 8B is subject to the variability of a general purpose instruction model, so it makes sense that it gets tripped up on even simple tasks from time to time.</p>
+<p>I came away completely sold on the idea of fine-tuning small models for repetitive, special purpose tasks. It is inevitable that many suitable tasks will instead be run on models that are hundreds of billions of parameters or larger via commercial APIs. This presents a huge opportunity for cost savings and efficiency that will only grow over time.</p>
+<p><em>The source code for this project is <a href="https://github.com/jpe90/fine-tuned-distilbert-classifier">available on GitHub</a>.</em></p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Fine-tuning NLP transformers for task automation">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

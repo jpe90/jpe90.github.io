@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Maybe Rust's Syntax is Good, Actually</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Maybe Rust's Syntax is Good, Actually</h1>
+            <article>
+    <section class="header">
+        Posted on May 16, 2025
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>In a <a href="https://github.com/jpe90/candle-pytorch-parity-testing">recent project</a>, I compared output from HuggingFace’s <a href="https://github.com/huggingface/candle">Candle</a> with <a href="https://github.com/pytorch/pytorch">PyTorch</a> equivalents to make sure that embeddings and calculations involving them are behaving as expected.</p>
+<p>This led to comparing Python snippets that look like this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> normalize_l2(embeddings):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> F.normalize(embeddings, p<span class="op">=</span><span class="dv">2</span>, dim<span class="op">=</span><span class="dv">1</span>)</span></code></pre></div>
+<p>to Rust that looks like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> normalize_l2(v<span class="op">:</span> <span class="op">&amp;</span>Tensor) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>Tensor<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cn">Ok</span>(v<span class="op">.</span>broadcast_div(<span class="op">&amp;</span>v<span class="op">.</span>sqr()<span class="op">?.</span>sum_keepdim(<span class="dv">1</span>)<span class="op">?.</span>sqrt()<span class="op">?</span>)<span class="op">?</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>You might think this isn’t a fair comparison, because the normalization is hand-rolled in Rust and just tucked away in a function call in the Python equivalent. But that’s besides the point; even a hand-rolled Python equivalent would not be this noisy. PyTorch semantics are fraught with unintuitive behavior behind primitive operators. As a matter of fact, I wrote an <a href="https://jeskin.net/blog/pytorch-broadcasting-mechanics/">earlier post</a> about getting confused by PyTorch broadcasting mechanics when trying to normalize a tensor. Can you spot the problem?</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> N.<span class="bu">float</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>P <span class="op">/=</span> P.<span class="bu">sum</span>(<span class="dv">1</span>)</span></code></pre></div>
+<h2 id="favoring-explicitness-over-implicitness">Favoring Explicitness over Implicitness</h2>
+<p>When I was learning PyTorch (and I suppose NumPy, by extension), I found that I would often struggle to understand code that I read, because there were a lot of implicit interactions going on that I wasn’t aware of:</p>
+<p><img src="../images/complaining.png" /></p>
+<p>While these make for clean-looking code, it creates issues:</p>
+<ul>
+<li>Failures often occur silently and cause calculations to have incorrect results, sometimes subtly. This is worst kind of failure that you can have in software.</li>
+<li>There’s a notable absence of a type system that could catch logic failures and serve as documentation.</li>
+</ul>
+<p>When I was learning, I found myself wishing that these operations were explicitly spelled out and enforced by a compiler. Without this, new developers must rely on someone (or more commonly, on documentation of inconsistent quality) to explain behavior that is not always very intuitive. It is always an option to determine this behavior by reading the source code, but unfortunately large projects such as PyTorch become extremely cumbersome to navigate once they grow past a certain size and complexity.</p>
+<h2 id="forcing-the-issues">Forcing the Issues</h2>
+<p>The parts of Rust’s syntax which I used to perceive as noise. Let me paste in <code>normalize_l2</code> again:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> normalize_l2(v<span class="op">:</span> <span class="op">&amp;</span>Tensor) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>Tensor<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="cn">Ok</span>(v<span class="op">.</span>broadcast_div(<span class="op">&amp;</span>v<span class="op">.</span>sqr()<span class="op">?.</span>sum_keepdim(<span class="dv">1</span>)<span class="op">?.</span>sqrt()<span class="op">?</span>)<span class="op">?</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>My early reaction to Rust code was to find the question marks, Result wrapping of the return type, and “OK” to be a lot of unfamiliar visual noise. These are some of are Rust’s way of forcing the programmer to acknowledge the potential failure points in their code. For a single developer who is continuously working on a codebase, you could argue this is not a big deal. Similarly, you could argue that it would create a burden for a small team of like-minded and extremely talented developers that is more trouble than its worth.</p>
+<p>But the value quickly compounds when you consider other scenarios. If you ever want to onboard more junior developers, it is immensely helpful for them to be forced to understand where landmines are in software. If you walk away from the codebase for some period of time, or software development entirely, and some of those details will slip. Having a strict compiler enforcing hygeine is immensely beneficial for compensating for human error. The code is noisy because the task at hand is noisy.</p>
+<p>Still, it would be nice if Rust could maintain its strictness with cleaner syntax. FP nerds probably recognize that the function is moving the input tensor through a Monadic context, and if the library existed in Haskell, it would be able to drop some of the noise with it’s “do notation”, like this:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">normalizeL2 ::</span> <span class="dt">Tensor</span> <span class="ot">-&gt;</span> <span class="dt">Either</span> <span class="dt">Error</span> <span class="dt">Tensor</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>normalizeL2 v <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  squared <span class="ot">&lt;-</span> sqr v</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  summed <span class="ot">&lt;-</span> sumKeepDim <span class="dv">1</span> squared</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  norms <span class="ot">&lt;-</span> <span class="fu">sqrt</span> summed</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  broadcastDiv v norms</span></code></pre></div>
+<p>Rust adopted many of ML-style language’s ideas, but I don’t think anyone has figured out how to let it take Haskell’s “do” without giving up imperative control flow like FP languages often do, which would be at odds with it goal of being a systems programming language. If you are forced to give up either explicitness, speed, or elegance, I think Rust makes a good compromise.</p>
+<p><em>Thanks to Matt for turning me into “that guy that keeps bringing Rust into the conversation”</em></p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Maybe Rust's Syntax is Good, Actually">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Fast command line syntax highlighting with clp</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Fast command line syntax highlighting with clp</h1>
+            <article>
+    <section class="header">
+        Posted on July 28, 2022
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <p><em>clp’s source code and installation instructions are available on <a href="https://github.com/jpe90/clp">Github</a> and <a href="https://sr.ht/~eskin/clp/">Sourcehut</a>. It’s a work in progress hobby project, so expect bugs and quirks.</em></p>
+<p>clp is a program that writes files to stdout with syntax highlighting. I built it to quickly fill fzf’s preview window.</p>
+<p>It’s similar to <a href="https://github.com/sharkdp/bat">bat</a> but is simpler, faster, and easier to add languages that don’t have existing Sublime syntax definitions.</p>
+<p>When the --preview option is set in fzf, the preview command is kicked off in an external process and the results are displayed in the preview window, which in this case is clp.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fzf</span> <span class="at">--preview</span> <span class="st">'clp {}'</span></span></code></pre></div>
+<p>Here’s what we see when we execute the command:</p>
+<figure>
+<img src="../images/fzf_clp.png" alt="fzf_clp" />
+<figcaption aria-hidden="true">fzf_clp</figcaption>
+</figure>
+<p>clp obtains syntax highlighting information from <a href="http://www.inf.puc-rio.br/~roberto/docs/peg.pdf">Parsing Expressing Grammar (PEG)</a> lexers provided by <a href="https://orbitalquark.github.io/scintillua/">Scintillua</a>.</p>
+<p>The implementation is very simple; here’s how clp works:</p>
+<ul>
+<li>shepherd input files to their respective lexer based on checks for filetype extension, MIME type, and more (thanks to Vis contributor Ian Nomar, who was hugely helpful in ironing out kinks in this project)</li>
+<li>lex the input file and produce a list of tokens</li>
+<li>iterate over the list of tokens:
+<ul>
+<li>for each token, it look up an ANSI color escape sequence corresponding to each token type, write it to stdout, and then write out the text that yielded the token to stdout</li>
+</ul></li>
+</ul>
+<p>I hacked in an option to highlight line a line as well, since that’s nice for file previewing.</p>
+<p>Here’s a performance comparison to similar programs taken from my machine, measuring the time it takes to highlight the <a href="https://sqlite.org/amalgamation.html">sqlite3 amalgamation</a> using <a href="https://github.com/sharkdp/hyperfine">hyperfine</a>:</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Command</th>
+<th style="text-align: left;">Mean [ms]</th>
+<th style="text-align: left;">Min [ms]</th>
+<th style="text-align: left;">Max [ms]</th>
+<th style="text-align: left;">Relative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>clp sqlite3.c</code></td>
+<td style="text-align: left;">212.7 ± 0.9</td>
+<td style="text-align: left;">211.5</td>
+<td style="text-align: left;">214.7</td>
+<td style="text-align: left;">1.00</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bat --color=always sqlite3.c</code></td>
+<td style="text-align: left;">3178.0 ± 109.6</td>
+<td style="text-align: left;">3128.6</td>
+<td style="text-align: left;">3488.7</td>
+<td style="text-align: left;"><strong>14.94 ± 0.52</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>source-highlight sqlite3.c</code></td>
+<td style="text-align: left;">4276.2 ± 12.6</td>
+<td style="text-align: left;">4259.6</td>
+<td style="text-align: left;">4297.7</td>
+<td style="text-align: left;"><strong>20.10 ± 0.11</strong></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="../images/median.png" alt="median" />
+<figcaption aria-hidden="true">median</figcaption>
+</figure>
+<p>It’s a pretty nice performance increase. It can also highlight around 150 programming languages, markup languages, input files, configuration files, and types of program output.</p>
+<p>clp is currently limited to 16 colors; since the program itself can run on any system with a C99 compiler, I figured I’d keep its default configuration very basic so it can run in any 16 color terminal emulator out of the box.</p>
+<p>Down the line I would like to make clp more easily theme-able and add some built-in themes. I’d also like to improve the aesthetics of line highlighting.</p>
+<p>When I started the project, I had very little knowledge of Lua, Autotools, and C. Working on it was a very fun and satisfying way to get more familiar with all of them.</p>
+<p>Overall, I’m happy with how clp is coming along and am excited to add more. It’s fast, supports a ton of languages, is easily extendable, and very portable to boot.</p>
+<p>Contributions are welcome, and if you’d like to add a lexer, you should submit it upstream to Scintillua. If it isn’t accepted there, I will merge pretty much any lexer that does not try to mine for Bitcoin.</p>
+<p><em>clp’s source code and installation instructions are available on <a href="https://github.com/jpe90/clp">Github</a> and <a href="https://sr.ht/~eskin/clp/">Sourcehut</a></em></p>
+<p><em>Update 8/20</em></p>
+<h3 id="adding-color-themes">Adding color themes</h3>
+<p>I’ve added the ability to change clp’s colors by selecting different built-in color themes or creating your own.</p>
+<p>To change your theme, create a configuration file in <code>~/.config/clp/clprc.lua</code> to override the system default. It should look like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode lua"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">clprc</span> <span class="op">=</span> <span class="op">{}</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">clprc</span><span class="op">.</span><span class="va">theme</span> <span class="op">=</span> <span class="st">&quot;ansi-16&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="va">clprc</span></span></code></pre></div>
+<p>The value of <code>clprc.theme</code> is the name of a colorscheme that <code>clp</code> will later <code>require</code>. The following themes are available out of the box:</p>
+<h3 id="bit-ansi-theme">3-bit ANSI theme</h3>
+<ul>
+<li><code>ansi-16</code></li>
+</ul>
+<h3 id="truecolor-themes">Truecolor themes</h3>
+<ul>
+<li><code>material</code></li>
+<li><code>codedark</code></li>
+<li><code>github_dark</code></li>
+<li><code>github_light</code></li>
+<li><code>gruvbox</code></li>
+<li><code>tokyonight</code></li>
+<li><code>sonokai</code></li>
+<li><code>everforest</code></li>
+</ul>
+<p>The ANSI theme is enabled by default; it uses 16 color ANSI codes and should work on both light or dark terminals. The truecolors themes were exported from vim using <a href="https://github.com/jpe90/export-colorscheme.nvim">export-colorscheme.nvim</a>, which is a little neovim plugin I wrote recently.</p>
+<p>You can create your own themes in <code>~/.config/clp/themes/</code>. Like with <code>clprc.lua</code>, these should be Lua modules. Here’s the definition of <code>ansi-16</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode lua"><code class="sourceCode lua"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="cn">M</span> <span class="op">=</span> <span class="op">{}</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cn">M</span><span class="op">.</span><span class="va">theme</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>	<span class="op">[</span><span class="st">'comment'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="va">color</span><span class="op">=</span><span class="st">&quot;cyan&quot;</span><span class="op">},</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>	<span class="op">[</span><span class="st">'keyword'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="va">color</span><span class="op">=</span><span class="st">&quot;blue&quot;</span><span class="op">},</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>	<span class="op">[</span><span class="st">'number'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="va">color</span><span class="op">=</span><span class="st">&quot;red&quot;</span><span class="op">},</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>	<span class="op">[</span><span class="st">'string'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="va">color</span><span class="op">=</span><span class="st">&quot;green&quot;</span><span class="op">},</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>	<span class="op">[</span><span class="st">'preprocessor'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="va">color</span><span class="op">=</span><span class="st">&quot;magenta&quot;</span><span class="op">},</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>	<span class="op">[</span><span class="st">'type'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="va">color</span><span class="op">=</span><span class="st">&quot;yellow&quot;</span><span class="op">},</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="cn">M</span></span></code></pre></div>
+<p>The table keys on the left correspond to lexical tokens picked up by the lexer, and the right specifies the color assigned to that token when the text is written to stdout.</p>
+<p>When the right hand value is a Lua object like above, <code>clp</code> will use 16 color ANSI codes to highlight the token.</p>
+<p>To use truecolor, the right hand value should be a string in the form <code>"#RRGGBB"</code> using hex values, like here:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode lua"><code class="sourceCode lua"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="st">'comment'</span><span class="op">]</span> <span class="op">=</span> <span class="st">&quot;#6a9955&quot;</span><span class="op">,</span></span></code></pre></div>
+<p>This will cause <code>clp</code> to emit 24 bit color codes upon encountering the token. This means it will only render if the terminal being used <a href="https://github.com/termstandard/colors#fully-supporting">supports truecolor.</a></p>
+<p>Throw a bunch of these definitions in a lua file in <code>~/.config/clp/themes/</code>, then set <code>clprc.theme</code> to the name of the file (not including the file extension), and you should be good to go!</p>
+<p><em>Thanks to Ian Nomar and Christopher Wellons for their help with this program!</em></p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Fast command line syntax highlighting with clp">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

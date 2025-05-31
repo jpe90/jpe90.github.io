@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Self hosting Git repositories with Stagit</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Self hosting Git repositories with Stagit</h1>
+            <article>
+    <section class="header">
+        Posted on October  6, 2022
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>An alternative to hosting your source code on forges like <a href="https://github.com/">Github</a> is use your own server. This commonly involves running <a href="https://git-scm.com/book/en/v2/Git-on-the-Server-Git-Daemon">git as a daemon</a> and deploying a web interface such as <a href="https://gitea.io/en-us/">gitea</a>, <a href="https://about.gitlab.com/install/">gitlab</a>, <a href="https://git.zx2c4.com/cgit/about/">cgit</a>, or <a href="https://sourcehut.org">sourcehut</a>. These projects essentially serve web applications that interface with the git server.</p>
+<p>However, if you’re not hosting large, established projects with frequent contributors, these options are probably overkill. Another option I came across recently is <a href="https://codemadness.org/stagit.html">stagit</a>. Unlike the aforementioned projects, stagit does not serve dynamic web content; it’s a C program that traverses git repositories using <a href="https://libgit2.org">libgit2</a> and writes data to HTML files as it reads it. It doesn’t run constantly and listen for filesystem changes, but is instead invoked manually or as a <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_post_receive">git hook</a>.</p>
+<h2 id="a-quick-tour-of-stagit">A quick tour of Stagit</h2>
+<h3 id="index-page">Index Page</h3>
+<p>The index page sits atop a collection of repositories. It displays the name, description, owner, and last commit date of each repository with a link to each.</p>
+<figure>
+<img src="../images/index.png" alt="index" />
+<figcaption aria-hidden="true">index</figcaption>
+</figure>
+<h3 id="log-page">Log Page</h3>
+<p>The log page is the default page that you arrive at when you visit a repository from the index page. It shows the same information you would see running <code>git log</code> in a repository on the master branch.</p>
+<figure>
+<img src="../images/log.png" alt="log" />
+<figcaption aria-hidden="true">log</figcaption>
+</figure>
+<h3 id="files-page">Files Page</h3>
+<p>A listing of all files on the latest commit of the master branch, alongside filesizes and file modes. It didn’t occur to me before seeing this that git has account for file permissions.</p>
+<figure>
+<img src="../images/files.png" alt="files" />
+<figcaption aria-hidden="true">files</figcaption>
+</figure>
+<h3 id="refs-page">Refs Page</h3>
+<p>A list of all branches and tags pushed to the server. You can see them listed out here, but you can’t actually browse anything other than master.</p>
+<p>In order to display other branches, Stagit would need to write a ton of additional pages, and it’s very likely that other branches would very rarely be used.</p>
+<p>Instead, if you want to view repository history related to other refs, you’re expected to just clone it and look locally.</p>
+<p>I think it’s an excellent tradeoff.</p>
+<figure>
+<img src="../images/refs.png" alt="refs" />
+<figcaption aria-hidden="true">refs</figcaption>
+</figure>
+<h3 id="readme-page">Readme Page</h3>
+<p>The README file, if present, is readable in text form on a dedicated page. It’s probably the first thing you want to read, so it definitely deserves the real estate.</p>
+<figure>
+<img src="../images/readme.png" alt="readme" />
+<figcaption aria-hidden="true">readme</figcaption>
+</figure>
+<h3 id="license-page">License Page</h3>
+<p>The license, if present, is important enough to get its own dedicated page. It’s crucial to highlight this information so that visitors intending to leverage code from the repository know the terms.</p>
+<figure>
+<img src="../images/license.png" alt="license" />
+<figcaption aria-hidden="true">license</figcaption>
+</figure>
+<h2 id="running-the-program">Running the Program</h2>
+<p>Stagit consists of two commands: <code>stagit-index</code>,which produces an index page that points to all your repositories, and <code>stagit</code>, which builds HTML pages for a single repository.</p>
+<p>Using them works as follows: you first run <code>stagit-index</code> passing in all of your git repositories as command line arguments, and then run <code>stagit</code> separately for each individual repository. There’s a <a href="https://codemadness.org/git/stagit/file/example_create.sh.html">shell script</a> in the stagit repo that will do both of these for you.</p>
+<p>This will create the HTML pages that describe the current state of all repositories, but it won’t update them for you when the repositories change. For this, you use git’s server-side <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_post_receive">post-receive hook</a> to update HTML pages for the index and the repository receiving the commit. Stagit provides another <a href="https://codemadness.org/git/stagit/file/example_post-receive.sh.html">sample script</a> that you can tweak and use for this as well.</p>
+<h2 id="modest-modifications">Modest Modifications</h2>
+<p>I’m maintaining <a href="https://github.com/jpe90/stagit">a fork</a> of stagit that I use for my personal git server.</p>
+<p><em>Update: I’ve since moved off my VPS and no longer run the git server.</em></p>
+<p>Below is an overview of the features I added in.</p>
+<h3 id="changes-to-readmes">Changes to READMEs</h3>
+<p>The first thing I customized was to have repositories open straight to the README from the index page. If there is no README, it opens the log page just like upstream.</p>
+<p>I also leaned on <a href="https://github.com/mity/md4c">md4c</a> to parse markdown into HTML instead of plaintext because I think it’s useful to be able to display screenshots and links.</p>
+<figure>
+<img src="../images/mdrender.png" alt="mdrender" />
+<figcaption aria-hidden="true">mdrender</figcaption>
+</figure>
+<h3 id="syntax-highlighting-on-files-with-customized-colors">Syntax Highlighting on Files with Customized Colors</h3>
+<p>Instead of just writing out plaintext file contents, I changed stagit to use chroma to output HTML with syntax highlighting. To support this use, I upstreamed a <a href="https://github.com/alecthomas/chroma/commit/d38b87110b078027006bc34aa27a065fa22295a1">small enhancement</a> to the chroma repository that allows you to use linkable lines in HTML output.</p>
+<p>Finally, I changed Stagit’s light and dark themes to match the themes I use on my blog.</p>
+<figure>
+<img src="../images/themes.gif" alt="themes" />
+<figcaption aria-hidden="true">themes</figcaption>
+</figure>
+<h2 id="closing-thoughts">Closing Thoughts</h2>
+<p>Stagit’s HTML pages appear to be designed with careful thought as to what someone viewing a repository would be interested in quickly learning. The commit log, README, files, license, and repository URL are never more than a click away, and the interface is free from clutter.</p>
+<p>The source code is very clear and readable. I was able to understand and modify it without significant C experience and the codebase was a pleasure to work with.</p>
+<p>Definitely give Stagit a try if you’re interested. You may want to read through the documentation’s <a href="https://codemadness.org/stagit.html">list of pros and cons</a> to make sure it fits your needs.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Self hosting Git repositories with Stagit">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

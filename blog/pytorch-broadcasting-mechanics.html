@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Pytorch broadcasting mechanics</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Pytorch broadcasting mechanics</h1>
+            <article>
+    <section class="header">
+        Posted on July  6, 2024
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <p><em>Update 2025-05-18: Looking back, this post is a little embarassing, but I’ll leave it up in case any other learners stumble across it and find it helpful.</em></p>
+<p>In the video <a href="https://www.youtube.com/watch?v=PaCmpygFfXo">The spelled-out intro to language modeling: building makemore</a>, Andrej Karpathy briefly mentioned a bug that can occur when broadcasting tensors during mathematical operations.</p>
+<p>In the lines below, N is a 27x27 tensor. The code is trying to normalize the rows of the tensor by dividing each row by the sum of the row.</p>
+<p>Here is the incorrect calculation:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> N.<span class="bu">float</span>()</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>P <span class="op">/=</span> P.<span class="bu">sum</span>(<span class="dv">1</span>)</span></code></pre></div>
+<p>The correct calculation should be:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> N.<span class="bu">float</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>P <span class="op">/=</span> P.<span class="bu">sum</span>(<span class="dv">1</span>,keepdim<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+<p>Andrej briefly explained why this happens, but his explanation didn’t land for me. I walked through a few smaller examples to understand the mechanics of the tensor operations.</p>
+<h1 id="p-p.sum1-keepdimtrue"><code>P / P.sum(1, keepdim=True)</code></h1>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> [[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>     [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>     [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> torch.tensor(P)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>P_sum <span class="op">=</span> torch.tensor(P).<span class="bu">sum</span>(<span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># P_sum: this is what a column vector looks like in PyTorch</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># [[6],</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#  [15],</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#  [24]]</span></span></code></pre></div>
+<p>Here, <code>P.sum(1, keepdim=True)</code> computes the sum of each row in P and returns its results as a 3 element column vector. The <code>1</code> argument is specifying that we want sums computed by the first axis, which are the rows of the vector. <code>keepdim=True</code> is saying that the output should have the same dimensions as the input. In other words, each row should remain a vector, rather than being flattened during the summation operation.</p>
+<p>Now when you divide P by <code>P_sum</code>, each element in a row of P is divided by the sum of that row. This normalizes each row so that the sum of the elements in each row is 1.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">/</span> P.<span class="bu">sum</span>(<span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)  </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># [[1/6, 2/6, 3/6],</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># [4/15, 5/15, 6/15],</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># [7/24, 8/24, 9/24]]</span></span></code></pre></div>
+<h1 id="p-p.sum1"><code>P / P.sum(1)</code></h1>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> [[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>     [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>     [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]]</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>     </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> torch.tensor(P)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>P_sum <span class="op">=</span> P.<span class="bu">sum</span>(<span class="dv">1</span>) </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># [6, 15, 24]</span></span></code></pre></div>
+<p><code>P.sum(1)</code> computes the sum of each row in P but it flattens the results into a single, flat row vector. The inner dimensions are discarded.</p>
+<p>When you divide P by <code>P.sum(1)</code>, the broadcasting rules in PyTorch will try to align the shapes. The broadcasting will align the 3 elements of <code>P.sum(1)</code> with the columns of P, which is not the intended behavior. This will result in incorrect normalization. Notice how each summed row is dividing a row, rather than a column. It’s operating on the wrong dimension.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>P <span class="op">/</span> P.<span class="bu">sum</span>(<span class="dv">1</span>)  </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># [[1/6, 2/15, 3/24],</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  [4/6, 5/15, 6/24],</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  [7/6, 8/15, 9/24]]</span></span></code></pre></div>
+<p>PyTorch mechanics can seem a little unintuitive and mind-bendy when you’re learning them, so it can be helpful to pick them apart like we did here to understand them.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Pytorch broadcasting mechanics">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

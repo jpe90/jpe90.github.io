@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Model view projection matrices</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Model view projection matrices</h1>
+            <article>
+    <section class="header">
+        Posted on November 23, 2022
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>When a 3D model is rendered using a modern graphics API, three things typically occur:
+1) the programmer defines the vertices that define the model and passes them to the graphics API
+2) a transform matrix is created in the application and sent to the GPU
+3) the GPU calculates the screen position and color of each visible point on the object’s surface using the vertices and transform matrix</p>
+<p>This blog post aims to build a conceptual understanding of what the transformation matrices are and explain computer hardware is doing during 3D rendering. It may be useful if you’re interested in getting started with low-level graphics programming or hand-rolling a 3D game engine.</p>
+<p>Some familiarity with graphics APIs such as OpenGL and knowledge of linear algebra is helpful but not required to follow along.</p>
+<p>The images in this post were produced by <a href="https://github.com/jpe90/model-view-projection">model-view-projection</a>, an OpenGL ES application written in C99. It lets you fly a free roam camera around or tug on some on-screen controls, and you can see how they affect the values of the model, view, and projection matrices in real-time.</p>
+<p><img src="../images/mvp_ss.png" alt="preview" style="width: 100%;" /></p>
+<h2 id="defining-vertices">Defining Vertices</h2>
+<p>Before you can draw an object, you must tell the graphics API the locations of its vertices. Vertices are normalized floating point values between -1.0f and 1.0f that define points on a surface.</p>
+<p>For example, the following define the position of a cube in 3D space:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> GLfloat cube_verts<span class="op">[]</span> <span class="op">=</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 0 -- front</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 1</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>     <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 2</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>     <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 3</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>     <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 4 -- back</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>     <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 5</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 6</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span> <span class="op">-</span><span class="fl">0.5</span><span class="bu">f</span><span class="op">,</span>  <span class="co">// 7</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<p><img src="../images/rectpts.png" alt="verts" style="width: 100%;" /></p>
+<p>Any values outside -1.0f and 1.0f are discarded because these points are supposed to be normalized. They serve to describe the location of each vertex relative to other vertices on the model, but give no context about their location in the world.</p>
+<p>These floating points are bound to objects in the graphics API and are stored in GPU memory. After the models are defined in terms of vertices, the graphics API maps the object to screen space through a series of matrix transforms.</p>
+<h2 id="transform-matrices-act-like-functions">Transform Matrices Act Like Functions</h2>
+<p>A transform matrix is a mathematical construct that is used to describe how a point or a vector in one coordinate system is mapped to another coordinate system. Graphics APIs use these in order to map points on the surfaces of models in order to the 2D screen coordinates you see on your monitor. We can build a conceptual understanding of what they are by comparing them to polynomial functions.</p>
+<p>Consider the functions f(x) = x^2 and g(x) = x + 2. If we apply these in sequence, we obtain a composite function that maps each member of the set of real numbers to a single point on a line.</p>
+<p><img src="../images/fgx2.png" alt="fgx" style="width: 100%;" /></p>
+<p>Matrix transformations represent functions that map one point in space to another point in space.</p>
+<p>As such, when you see a matrix transformation like this:</p>
+<pre><code>⎡2 0 0 0⎤
+⎢0 2 0 0⎥
+⎢0 0 2 0⎥
+⎣0 0 0 1⎦</code></pre>
+<p>You should be thinking of it as serving the same purpose of a polynomial function f(x). This particular matrix scales up any vector in 3D space to make it twice as large and is analogous to f(x) = 2x.</p>
+<p>And when you see matrix multiplication like this:</p>
+<pre><code>⎡1 0 0 0⎤   ⎡2 0 0 0⎤
+⎢0 1 0 0⎥ * ⎢0 2 0 0⎥
+⎢0 0 1 0⎥   ⎢0 0 2 0⎥
+⎣0 0 0 1⎦   ⎣0 0 0 1⎦</code></pre>
+<p>You should think of it as the composition f(g(x)). The first function in this sequence is the identity matrix, which leaves any input unchanged and is analogous to f(x) = x.</p>
+<p>If linear algebra is new to you, you might want to check out <a href="https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/a/multiplying-matrices">Khan Academy</a> to get a feel for the basics. If you’re not put off by dense reading material, I think <a href="https://linear.axler.net">Linear Algebra Done Right</a> gives very clear and thorough explanations of the material in a more logical order than the subject is usually tought.</p>
+<h2 id="model-matrix">Model Matrix</h2>
+<p>Transforming a drawn object by translating it, scaling it, or rotating it is accomplished by changing variables which are later passed to a function that produces the model matrix. You might notice in the image below that changing the translation, scaling, and rotation sliders causes the model matrix’s values to change.</p>
+<p><img src="../images/model.gif" alt="model" style="width: 100%;" /></p>
+<p>In the demo application, values for translation, scaling, and rotation in the x, y, and z directions are stored in a global variable.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> orientation</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// translation</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> tx<span class="op">;</span> <span class="dt">float</span> ty<span class="op">;</span> <span class="dt">float</span> tz<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// scaling</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> sx<span class="op">;</span> <span class="dt">float</span> sy<span class="op">;</span> <span class="dt">float</span> sz<span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// rotation</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> rx<span class="op">;</span> <span class="dt">float</span> ry<span class="op">;</span> <span class="dt">float</span> rz<span class="op">;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="kw">struct</span> orientation cube_transform<span class="op">;</span></span></code></pre></div>
+<p>Eventually, these get wired up to the UI with a slider.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>nk_layout_row_dynamic<span class="op">(</span>ctx<span class="op">,</span> <span class="dv">32</span><span class="op">,</span> <span class="dv">2</span><span class="op">);</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>nk_label<span class="op">(</span>ctx<span class="op">,</span> <span class="st">&quot;Scale x&quot;</span><span class="op">,</span> NK_TEXT_ALIGN_LEFT <span class="op">|</span> NK_TEXT_ALIGN_MIDDLE<span class="op">);</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>nk_slider_float<span class="op">(</span>ctx<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>cube_transform<span class="op">.</span>sx<span class="op">,</span> <span class="fl">5.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">0.01</span><span class="bu">f</span><span class="op">);</span></span></code></pre></div>
+<p>The vector and matrix math used in the application uses <a href="https://github.com/HandmadeMath/HandmadeMath">Handmade Math</a>, which supports matrix and vector multiplication.</p>
+<h2 id="view-matrix">View Matrix</h2>
+<p>A view matrix in 3D rendering is a mathematical representation of the position and orientation of the virtual camera in the 3D scene. It defines the position and orientation of the camera in relation to the 3D world, and is used in conjunction with the model and projection matrices to transform the vertices of an object into the 2D screen space of the rendering engine. This allows the object to be accurately rendered on the screen from the perspective of the virtual camera.</p>
+<p>Changing the 3D position of the camera (sometimes referred to as the “eye”), or changing the direction the camera is looking (sometimes referred to as the “center”) is done by modifying 3D vectors which are parameters to the function that build the view matrix. In <code>HandmadeMath</code>, this is <code>HMM_LookAt</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>COVERAGE<span class="op">(</span>HMM_LookAt<span class="op">,</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>HMM_INLINE hmm_mat4 HMM_PREFIX<span class="op">(</span>LookAt<span class="op">)(</span>hmm_vec3 Eye<span class="op">,</span> hmm_vec3 Center<span class="op">,</span> hmm_vec3 Up<span class="op">)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    ASSERT_COVERED<span class="op">(</span>HMM_LookAt<span class="op">);</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    hmm_mat4 Result<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    hmm_vec3 F <span class="op">=</span> HMM_PREFIX<span class="op">(</span>NormalizeVec3<span class="op">)(</span>HMM_PREFIX<span class="op">(</span>SubtractVec3<span class="op">)(</span>Center<span class="op">,</span> Eye<span class="op">));</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    hmm_vec3 S <span class="op">=</span> HMM_PREFIX<span class="op">(</span>NormalizeVec3<span class="op">)(</span>HMM_PREFIX<span class="op">(</span>Cross<span class="op">)(</span>F<span class="op">,</span> Up<span class="op">));</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    hmm_vec3 U <span class="op">=</span> HMM_PREFIX<span class="op">(</span>Cross<span class="op">)(</span>S<span class="op">,</span> F<span class="op">);</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">0</span><span class="op">][</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> S<span class="op">.</span>X<span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">0</span><span class="op">][</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> U<span class="op">.</span>X<span class="op">;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">0</span><span class="op">][</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>F<span class="op">.</span>X<span class="op">;</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">0</span><span class="op">][</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">1</span><span class="op">][</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> S<span class="op">.</span>Y<span class="op">;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">1</span><span class="op">][</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> U<span class="op">.</span>Y<span class="op">;</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">1</span><span class="op">][</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>F<span class="op">.</span>Y<span class="op">;</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">1</span><span class="op">][</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">2</span><span class="op">][</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> S<span class="op">.</span>Z<span class="op">;</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">2</span><span class="op">][</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> U<span class="op">.</span>Z<span class="op">;</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">2</span><span class="op">][</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>F<span class="op">.</span>Z<span class="op">;</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">2</span><span class="op">][</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">3</span><span class="op">][</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>HMM_PREFIX<span class="op">(</span>DotVec3<span class="op">)(</span>S<span class="op">,</span> Eye<span class="op">);</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">3</span><span class="op">][</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>HMM_PREFIX<span class="op">(</span>DotVec3<span class="op">)(</span>U<span class="op">,</span> Eye<span class="op">);</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">3</span><span class="op">][</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> HMM_PREFIX<span class="op">(</span>DotVec3<span class="op">)(</span>F<span class="op">,</span> Eye<span class="op">);</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">.</span>Elements<span class="op">[</span><span class="dv">3</span><span class="op">][</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">(</span>Result<span class="op">);</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>In the gif below, the free roam camera is implemented by changing the camera’s position in response to keyboard and mouse input. You can observe that when the camera pans around the cube, only the view transform is changing.</p>
+<p><img src="../images/view.gif" alt="view" style="width: 100%;" /></p>
+<h2 id="projection-matrix">Projection Matrix</h2>
+<p>The view matrix defines the location of the observer and where they are looking, but that’s not enough to convert their line of sight to a 2D image. You also need to know the angle of how far they can see into their periphery, how close an object can come to their nose before it drops out of sight, and how far into the horizon they can see.</p>
+<p>These are all described by the projection matrix. In many graphics libraries you specify a field of view, distance to a near plane, and distance to a far plane, and the graphics library will use these to draw a frustum pointing from the camera’s eye to the location that it’s looking.</p>
+<p>“Frustum” is a Latin word meaning “a removed slice”. In graphics parlance, it is a 3D shape that is aligned with the oberserver’s eye and serves to capture a portion of 3D world space which will be rendered to the screen. That is, anything that is inside the current frustum may be drawn, but anything outside of it will not.</p>
+<p>You’ll often see them shown as a square shape, such as the yellow frustum in the image below, but they can have different shapes as well.</p>
+<p><img src="../images/frustum.png" alt="frustum" style="width: 100%;" /></p>
+<h1 id="drawing-the-scene">Drawing the scene</h1>
+<p>To form the final matrix transformation that will determine what is drawn to the screen, the model, view, and projection matrices are typically multiplied together in the application code, which means those calculations are being done by the CPU. If you go digging through math libraries, you’ll see they often conditionally use <a href="https://www.intel.com/content/www/us/en/support/articles/000005779/processors.html">instruction set extensions</a> when the user’s hardware supports them to calculate the transformation more quickly and efficiently.</p>
+<p>The final model-view-projection matrix constitutes a function that is universally applied to all vertices on a model. Across all models in any given scene there are tons of vertices, so doing all this work serially on the CPU would be extremely slow. Instead, graphics cards contain hardware-level acceleration for highly parallelized matrix multiplication.</p>
+<p>The programmer utilizes it by creating a shader program, such as the one below, that sits in GPU memory and is executed on the GPU every frame.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">const</span> <span class="dt">char</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>frustum_vert_shader<span class="op">[]</span> <span class="op">=</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;precision mediump float;&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;uniform mat4 mvp;&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;attribute vec4 a_position;&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;attribute vec4 a_color;&quot;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;varying vec4 v_color;&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;void main()&quot;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{&quot;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;gl_Position = mvp * a_position;&quot;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;v_color = a_color;&quot;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;}&quot;</span><span class="op">;</span></span></code></pre></div>
+<p>Hope this helps somebody!</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><a href="https://learnopengl.com/Getting-started/OpenGL">OpenGL tutorials</a></li>
+<li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">Video series on linear algebra</a></li>
+<li><a href="https://developer.tizen.org/dev-guide/2.4.0/org.tizen.tutorials/html/native/graphics/opengl_tutorial_n.htm#cube">OpenGL ES example application</a></li>
+</ul>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Model view projection matrices">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

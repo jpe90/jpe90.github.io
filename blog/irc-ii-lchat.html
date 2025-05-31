@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - FIFO based IRC with ii and lchat</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>FIFO based IRC with ii and lchat</h1>
+            <article>
+    <section class="header">
+        Posted on January  3, 2023
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h1 id="introduction">Introduction</h1>
+<p>lchat is a small program that is designed to interface with other programs such as ii that present FIFO interfaces. This blog post will briefly show what that means and how lchat works in practice.</p>
+<p><img src="../images/lchat_preview.png" width="100%"></p>
+<h1 id="ii">ii</h1>
+<p>A typical irc client works by negotiating a connection with an IRC server before presenting the user with some kind of interface to interact with the server.</p>
+<p>For example, the popular client <a href="https://weechat.org/">weechat</a> draws a TUI interface that shows the server you’re connected to, what channels you’ve joined, and so on.</p>
+<p>Similar to many other interactive programs, it continually listens for the user’s keyboard input. When the user enters messages or commands, weechat marshals information back and forth between the IRC server, updates its internal state, and redraws its interface.</p>
+<p>ii (short for “irc it”) is an IRC client which works at a much lower level. It doesn’t draw anything or listen for keyboard or mouse input at all.</p>
+<p>Instead, represents your connection to an IRC server as a hierarchy of files.</p>
+<p>Each entity that you interact with in IRC, be it the server (to issue commands), or a channel, or a user, gets its own directory and its own pair of files.</p>
+<p>One file is named <code>in</code>, and anything written to that file is sent to the process. Another file is named <code>out</code>, and anything received from the process is written to it.</p>
+<p>Reading and writing to these files is not done by <code>ii</code> itself, but by some other existing part of the system, such as <code>echo</code> for writing and <code>cat</code> for reading.</p>
+<p>Representing processes by files in this manner is known as using a “Named Pipe” or a “FIFO” in Unix systems.</p>
+<h1 id="using-ii">using ii</h1>
+<p>If you run <code>ii</code> on its own, you’ll see a concise summary of its usage:</p>
+<pre><code>usage: ii -s host [-p port | -u sockname] [-i ircdir]
+[-n nickname] [-f fullname] [-k env_pass]</code></pre>
+<p>When I run <code>ii -s irc.libera.chat -n eskin</code>, ii connects me to libera.chat. By default this creates a few folders in “~/irc”:</p>
+<p><img src="../images/ii1.png" width="100%"></p>
+<p>The tty that I ran <code>ii</code> from is now taken over by a process that maintains a connection to the server and displays all messages from the server. To interact with ii, I switch to another terminal and interact with the <code>in</code> and <code>out</code> files created for the server I joined.</p>
+<p>Here’s me failing to login:</p>
+<p><img src="../images/ii2.png" width="100%"></p>
+<p>And here’s me joining a room:</p>
+<p><img src="../images/ii3.png" width="100%"></p>
+<p>Writing to <code>in</code> files and reading from <code>out</code> files with <code>echo</code> and <code>cat</code> are a little unwieldly, which is where <code>lchat</code> comes in.</p>
+<h1 id="lchat">lchat</h1>
+<p>lchat expects a command line argument containing the location of a directory containing <code>in</code> and <code>out</code> files.</p>
+<p>The command starts a process that continually reads from the <code>out</code> file and displaying its content in the terminal. At the same time, it continually provides a message area for you to type messages and submit them by pressing ‘Enter’. When you do, the contents of the message area are sent to the <code>in</code> file.</p>
+<p>In the image below, I navigate to the #linux subdirectory which is where the <code>in</code> and <code>out</code> files for the linux channel exist on my filesystem and the enter <code>lchat .</code> to start lchat in that location.</p>
+<p><img src="../images/lc.png" width="100%"></p>
+<p>lchat will work with any program that uses FIFO this way, including a few programs listed on the <a href="https://tools.suckless.org/lchat/">lchat homepage</a>.</p>
+<h1 id="installation">Installation</h1>
+<p>If you’d like to try out lchat, you’ll first need to grab ii:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://git.suckless.org/ii</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ii</span></code></pre></div>
+<p>If you want to use SSL, you’ll want to apply a patch to the repository:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://tools.suckless.org/ii/patches/ssl/ii-2.0-ssl.diff</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> apply ii-2.0-ssl.diff</span></code></pre></div>
+<p>Then build and install ii:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
+<p>Finally, you’ll want to clone, build, make, and install lchat:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://git.suckless.org/lchat</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> lchat</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
+<hr />
+<p>I’m a fan of the filebased approach to irc, so that I can keep it passively running without keeping track of an active window.</p>
+<p><code>ii</code> and <code>lchat</code> are fun, hackable projects that are fun to play around with. <code>lchat</code> was the first use I saw of <a href="https://libs.suckless.org/libgrapheme/">libgrapheme</a> in the wild, so that was cool to see. Check it out if you’re in to that sort of stuff!</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: FIFO based IRC with ii and lchat">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

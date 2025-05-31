@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Running Dreambooth in Stable Diffusion with low VRAM</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Running Dreambooth in Stable Diffusion with low VRAM</h1>
+            <article>
+    <section class="header">
+        Posted on January 14, 2023
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>In a <a href="https://arxiv.org/abs/2208.12242">recent whitepaper</a>, researchers described a technique to take existing pre-trained text-to-image models and embed new subjects, adding the capability to synthesize photorealistic images of the subject contextualized in the model’s output.</p>
+<p>A series of implementations were quickly built, finding their way to the <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">Stable Diffusion web UI</a> project in the form of the <a href="https://github.com/d8ahazard/sd_dreambooth_extension">sd_dreambooth_extension</a>.</p>
+<p>This adds the ability to fine-tune models on images of particular subjects.</p>
+<p>Images generated this way come out much better than the baseline model, especially when you start adding additional context.</p>
+<p>Unfortunately, the process is resource-intensive, and if your system low VRAM it’s easy for dreambooth to crash with an error like this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">RuntimeError:</span> No executable batch size found, reached zero.</span></code></pre></div>
+<p>In this blog post, I’ll show a few of the optimizations I used to fix this error and get dreambooth running with on my 8GB Nvidia Geforce 1070. I’ll also show a few of the problems I encountered along the way and how I fixed them.</p>
+<p>An arch linux system was used, but these optimizations should work on any OS, possibly with minor modifications.</p>
+<h2 id="optimizations">Optimizations</h2>
+<h3 id="use-xformers-for-image-generation">Use xFormers for image generation</h3>
+<p><a href="https://github.com/facebookresearch/xformers">xFormers</a> is a library written by facebook research that improves the speed and memory efficiency of image generation. To install it, stop stable-diffusion-webui if its running and build xformers from source by following <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers">these instructions</a>.</p>
+<p>Next, you’ll need to add a commandline parameter to enable xformers the next time you start the web ui, like in this line from my <code>webui-user.sh</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">COMMANDLINE_ARGS</span><span class="op">=</span><span class="st">&quot;--medvram --xformers&quot;</span></span></code></pre></div>
+<p>The next time you launch the web ui it should use xFormers for image generation.</p>
+<p>You’ll also need to make sure to explicitly use xformer when you’re training inside Dreambooth tab of the web UI under <code>Settings &gt; Advanced &gt; Memory Attention (select xformers)</code></p>
+<h3 id="tweak-dreambooth-settings">Tweak dreambooth settings</h3>
+<p>Dreambooth ran succesffully when I used the following settings in the Dreambooth tab of the web ui:</p>
+<pre><code>Use LORA: unchecked
+Training Steps Per Image (Epochs): 150
+batch size: 1
+Learning Rate Scheduler: constant with warmup
+Learning Rate: 0.000002
+Resolution: 512
+Use EMA: unchecked
+Use 8bit Adam: checked
+Mixed precision: fp16
+Memory Attention: xformers
+Cache Latents: unchecked</code></pre>
+<h3 id="run-stable-diffusion-without-a-graphical-environment">Run Stable Diffusion without a graphical environment</h3>
+<p>I need to squeeze every last meg of VRAM out of my card, so I usually opt not to run a graphical environment on the machine running stable diffusion. On Linux, this means never starting the X server/Wayland compositor.</p>
+<p>To do this, first you’ll need to configure the web ui to work from another machine on your local network.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">COMMANDLINE_ARGS</span><span class="op">=</span><span class="st">&quot;--medvram --listen --xformers&quot;</span></span></code></pre></div>
+<p>You’ll want to disable your display manager or similar mechanism and then reboot to free up as much memory as possible.</p>
+<p>Then, using another machine on your network (a wifi-connected smartphone works as well), navigate to [ip address of machine running webui]:[port shown in process output] and control it from there.</p>
+<h3 id="reboot-between-attempted-trainings">Reboot between attempted trainings</h3>
+<p>I’ve found that when I attempt a training, the follow up will often run OOM even when it should not.</p>
+<p>Restarting webui or ensuring that there are no leaking GPU resources with <a href="https://github.com/Syllo/nvtop">nvtop</a> do not seem to solve the issue.</p>
+<p>However, doing a full restart will cause the same configuration that ran OOM will succeed. Until I figure out what is leaking GPU memory like a sieve, I’ll probably continue doing full reboots between training.</p>
+<h3 id="avoiding-lora">Avoiding LORA</h3>
+<p>Many guides online recommend using LORA to reduce memory usage. However, on my setup, using LORA will cause runs to fail that succeed when I disable it.</p>
+<p>If LORA isn’t working for you, try turning it off.</p>
+<h3 id="disabling-preview-images">Disabling preview images</h3>
+<p>Setting <code>Save model frequency</code>, <code>Save preview frequency</code>, and <code>Generate Classification Images Using txt2img</code> gives you preview images at epoch checkpoints that you can view to check for overtraining.</p>
+<p>Unfortunately the preview images seem to use GPU memory and cause my trainings to fail.</p>
+<p>As a result, I end up only setting <code>Save model frequency</code>. When training completes, I bisect the completed checkpoints and check for overtraining.</p>
+<p>For example, if I generate 12 checkpoints, I’ll open up checkpoint 12 and run a few images that include my trained subject in a new context. If the images are incapable of including the new context, e.g. the image above showed Gillian Anderson’s face but didn’t respond to the “starfleet officer” prompt, that means the model has been overtrained.</p>
+<p>So I would open checkpoint 6, and if that worked, I would try checkpoint 9, and so on.</p>
+<h2 id="encountered-issues">Encountered Issues</h2>
+<p>Below are a hodgepodge of problems I ran into along the way, along with how I overcame them.</p>
+<h3 id="exception-training-model-could-not-run-xformersefficient_attention_forward_cutlass-with-arguments-from-the-cuda-backend.">Exception training model: ‘Could not run ’xformers::efficient_attention_forward_cutlass’ with arguments from the ‘CUDA’ backend.</h3>
+<p>I got this when I did not properly follow <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers">xformers installation steps</a>.</p>
+<h3 id="name-str2optimizer8bit_blockwise-is-not-defined">Name ‘str2optimizer8bit_blockwise’ is not defined</h3>
+<p>This was caused by python being unable to find a CUDA shared library on my system. To fix it, you’ll need to make sure the folders where CUDA’s libraries are located are set on your system’s path.</p>
+<p>On arch linux, I did that by setting environment variable <code>LD_LIBRARY_PATH="/opt/cuda/targets/x86_64-linux/lib:$LD_LIBRARY_PATH"</code>.</p>
+<h3 id="img-should-be-pil-image">Img should be PIL image</h3>
+<p>A number of posts online were saying to check “Apply Horizontal Flip” in the dreambooth settings, but doing so was giving me this error.</p>
+<p>I didn’t really look much into it, I just unchecked it and the error no longer occurred.</p>
+<h3 id="zipfile.badzipfile-file-is-not-a-zip-file">zipfile.BadZipFile: File is not a zip file</h3>
+<p>After I initially got dreambooth to train successfully, I exported the result as a .ckpt file. When I tried to load the checkpoint to produce the image, the model wouldn’t load, and I could see<code>zipfile.BadZipFile: File is not a zip file</code> in the server’s output.</p>
+<p>I looked at the .ckpt file that was being created and compared it to a valid one from a different model. The valid one looked like a zip archive, but the erronous one I was generating was just a yaml file with a .ckpt filename.</p>
+<p>I discovered that setting a custom model name in the “Saving” tab in dreambooth settings caused both a yaml and ckpt to be correctly created, and I could load and use the ckpt file.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Running Dreambooth in Stable Diffusion with low VRAM">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

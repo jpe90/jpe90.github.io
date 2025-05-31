@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Jon Eskin's Blog - Leveraging local AI for task automation</title>
+        <link rel="stylesheet" href="../css/default.css" />
+        <link rel="alternate" type="application/rss+xml" title="Jon Eskin's Blog RSS" href="../rss.xml" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Jon Eskin's Blog</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../rss.xml">RSS</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Leveraging local AI for task automation</h1>
+            <article>
+    <section class="header">
+        Posted on June 30, 2024
+        
+            by Jon Eskin
+        
+    </section>
+    <section>
+        <p>I’ve encountered many tasks that could almost be automated, except that they have some kind of ambigious step that requires manual attention. For example, it’s extremely common to find instances where freeform text needs to be flagged if it contains sensitive or important information. For such tasks, it’s easy to write software that performs subsequent steps such as interacting with a database or moving files around, but ambiguous text-processing can be extremely difficult to implement programatically. Solutions that use regular expressions or other simple text processing techniques can be finnicky, inaccurate, and difficult to tune.</p>
+<p>LLMs have presented an opportunity to make big gains in this problem space. Most programming languages can easily call into large commercial models like OpenAI’s GPT-4 or Google’s Gemini. You can read text in from your program, pass it to these service’s API, and perform actions based on the results. However, using external services for this can be problematic because of the cost and privacy implications. You may not want to depend on a paid service for an important task, and you <em>really</em> may not want to pass organizational data to it.</p>
+<p>On the other hand, open source LLMs that run locally on your system have been rapidly improving. They aren’t quite as powerful as commercial models, but they can be surprisingly effective, particularly if you give them simple tasks and make efforts to constrain their responses. Additionally, you always have the option of fine-tuning to improve performance.</p>
+<p>One of the biggest open source project to run these models is <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a>, which performs inference on open source models. It can be built as a library and utilized from other languages which write bindings to its API. I really like to experiment with new problem spaces in Clojure, so I used <a href="https://github.com/phronmophobic/llama.clj">llama.clj</a> to experiment with programatically interfacing with LLMs to automate tasks.</p>
+<p>I decided to put together an example to experiment with to simulate a case where we have a bunch of customer service inquiries and we want to figure out whether they are refund requests, order inquiries, or just general feedback. The goal of these experiments was only to perform this classification step.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[com.phronemophobic.llama <span class="at">:as</span> llama])</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[com.phronemophobic.llama.util <span class="at">:as</span> llutil])</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">;; 8B parameter llama 3 model with 4bit quantization that easily runs on my Macbook M1</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> model-path </span><span class="st">&quot;/Users/jon/development/cpp/llama.cpp/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf&quot;</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> llama-context </span>(llama/create-context model-path {}))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> inquiries</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  [{<span class="at">:classification</span> <span class="st">&quot;Order Inquiry&quot;</span> <span class="at">:inquiry</span> <span class="st">&quot;Where is my order? It was supposed to arrive yesterday.&quot;</span>}</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   {<span class="at">:classification</span> <span class="st">&quot;Refund Request&quot;</span> <span class="at">:inquiry</span> <span class="st">&quot;I want to return an item and get a refund. Can you help me with that?&quot;</span>}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>   {<span class="at">:classification</span> <span class="st">&quot;General Feedback&quot;</span> <span class="at">:inquiry</span> <span class="st">&quot;I think your website could be more user-friendly.&quot;</span>}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; ... many more omitted</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> classifications </span>[<span class="st">&quot;Order Inquiry&quot;</span> <span class="st">&quot;Refund Request&quot;</span> <span class="st">&quot;General Feedback&quot;</span>])</span></code></pre></div>
+<p>My setup was to run each classification over a classify function and append the experimental result to the actual result so that I could compare them.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> naive-classify </span>[inquiry]</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  (llama/generate-string</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>   llama-context</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>   (llama3-inquiry inquiry)))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> naive-greedy-classify </span>[inquiry]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  (llama/generate-string</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>   llama-context</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>   (llama3-inquiry inquiry)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>   {<span class="at">:samplef</span> llama/sample-logits-greedy}))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> classify-inquiries </span>[classify-fn inquiries]</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">map</span> (<span class="kw">fn</span> [inquiry]</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>         (<span class="kw">assoc</span> inquiry</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">:experimental-classification</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                (classify-fn (<span class="at">:inquiry</span> inquiry))))</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>       inquiries))</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> correct-results </span>[results]</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">filter</span> #(<span class="kw">=</span> (<span class="at">:classification</span> <span class="va">%</span>) (<span class="at">:experimental-classification</span> <span class="va">%</span>)) results))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> incorrect-results </span>[results]</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">filter</span> #(<span class="kw">not=</span> (<span class="at">:classification</span> <span class="va">%</span>) (<span class="at">:experimental-classification</span> <span class="va">%</span>)) results))</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> summary-results </span>[results]</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:correct</span> (<span class="kw">count</span> (correct-results results))</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>   <span class="at">:incorrect</span> (<span class="kw">count</span> (incorrect-results results))</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>   <span class="at">:accuracy</span> (<span class="kw">/</span> (<span class="kw">count</span> (correct-results results)) (<span class="kw">count</span> results))})</span></code></pre></div>
+<p>llama.clj provides a few different sampling functions that you can use to generate text. Sampling functions are the means by which the text tokens which form the response are selected. In addition to giving a few options for pre-defined functions, the library also gives you the ability to create your own. For my experiments, I started with microstatv2 (which <code>naive-classify</code> above uses above - llama.clj uses this function by default) and a greedy sampling function (which <code>naive-greedy-classify</code> requests via the <code>samplef</code> key).</p>
+<p>I noticed I would generally get about 92% accuracy with the model, data, and prompts I used. When I looked at the responses that were incorrect, I noticed that many of them were from responses that would misformat the specific response format that I asked for, e.g. returning something like “[Order Inquiry]” instead of just “Order Inquiry”. Since llama.cpp is feeding you text straight from the model, you have to get a little creative to deal with this. Both llama.cpp and llama.clj provide different ways to constrain models to produce valid json, which you can then further validate. I decided to try constraining responses by first just retrying if the gets a response does not belong to the set of strings I’m looking for:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> retry-classify </span>[inquiry]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">loop</span> [<span class="kw">count</span> <span class="dv">0</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> [response (llama/generate-string</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                    llama-context</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                    (llama3-inquiry inquiry))]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">if</span> (<span class="kw">some</span> #(<span class="kw">=</span> response <span class="va">%</span>) classifications)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        response</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">if</span> (<span class="kw">&gt;</span> <span class="kw">count</span> <span class="dv">3</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>          <span class="va">nil</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">recur</span> (<span class="kw">inc</span> <span class="kw">count</span>)))))))</span></code></pre></div>
+<p>This took care of those cases nicely and brought accuracy up to about 95%. It didn’t noticeably decrease performance because it doesn’t retry often - only in specific failure cases.</p>
+<p>One potential issue is that if the model ever went haywire and started filling the context window with garbage (which does happen occasionally on some models), it would take inordinate amounts of time to generate responses and fail, which would slow everything to a crawl. I decided to try hand rolling a greedy sampling function that selects the first token which completes a valid classification to avoid this situation. The way that llama.cpp works is that it determines the relative probability of every possible text token at each point in the response. What I wanted to try to do in my sampling function was constrain the responses by forcing it to only choose tokens that are available in pre-defined categories (defined by <code>classifications</code> above). For the first generated token, it can only select the first token of any of those classifications. It selects the member of those tokens which it deems most likely to be correct.</p>
+<p>From there, at each step, we filter out only classifications which start with the response tokens we’ve already accumulated, and repeat the process until we have a full response.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode clojure"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> greedy-constrained-classify </span>[inquiry]</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [prompt (llama3-prompt (<span class="kw">str</span> <span class="st">&quot;Inquiries can be one of 'Order Inquiry', 'Refund Request', or 'General Feedback'. What is the classification of the following inquiry? Reply with only the classification and nothing else: </span><span class="sc">\&quot;</span><span class="st">&quot;</span> inquiry <span class="st">&quot;</span><span class="sc">\&quot;</span><span class="st">&quot;</span>))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        prompt-tokens (llutil/tokenize llama-context prompt)]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    (llama/llama-update llama-context (llama/bos) <span class="dv">0</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">doseq</span> [token prompt-tokens]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      (llama/llama-update llama-context token))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">loop</span> [classification-tokens (<span class="kw">map</span> #(llutil/tokenize llama-context <span class="va">%</span>) classifications)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>           acc []]</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">let</span> [logits (llama/get-logits llama-context)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>            valid-tokens (<span class="kw">map</span> <span class="kw">first</span> classification-tokens)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            token (<span class="kw">-&gt;&gt;</span> logits</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                       (map-indexed (<span class="kw">fn</span> [idx p]</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                                      [idx p]))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                       (<span class="kw">filter</span> #(<span class="kw">contains?</span> (<span class="kw">set</span> valid-tokens) (<span class="kw">first</span> <span class="va">%</span>)))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                       (<span class="kw">apply</span> <span class="kw">max-key</span> <span class="kw">second</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                       <span class="kw">first</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>            next-acc (<span class="kw">conj</span> acc token)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            next-classification-tokens (<span class="kw">-&gt;&gt;</span> classification-tokens</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">filter</span> #(<span class="kw">=</span> (<span class="kw">first</span> <span class="va">%</span>) token))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">map</span> <span class="kw">rest</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">map</span> <span class="kw">vec</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                                            (<span class="kw">into</span> []))]</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        (<span class="kw">if</span> (<span class="kw">or</span> (<span class="kw">empty?</span> next-classification-tokens) (<span class="kw">every?</span> <span class="kw">empty?</span> next-classification-tokens))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>          (llutil/untokenize llama-context next-acc)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>          (<span class="kw">do</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>            (llama/llama-update llama-context token)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>            (<span class="kw">recur</span> next-classification-tokens next-acc)))))))</span></code></pre></div>
+<p>Unfortunately, in my testing, this brought accuracy way down to around 84%. When I dug into the issue, it seemed that in failing cases, the very first response token it generates is for the wrong classification. It’s kind of hard for me to tell what the issue is without more knowledge about llama.cpp or how the wrapper works. It’s possible that that there may be an issue with the initial context setup while reading in the prompt. I emulated the setup steps that I found in llama.clj’s documentation, but perhaps llama.cpp has changed since the repository was written (the examples and tutorials were written with llama 2), or maybe llama 3 is fundamentally different and requires different processing from llama 2, or maybe I overlooked some other mistake in my code.</p>
+<p>I’m planning to dig into llama.cpp more in depth next to learn more and continue experimenting. By looking at llama.cpp’s internal mechanics, it would be interesting to see why my sampling function failed. Before that, I think it might be a good idea to work through <a href="https://karpathy.ai/zero-to-hero.html">Andrej Karpathy’s neural network course</a> to try to get some more context and understanding of how these libraries work under the hood. It probably isn’t strictly necessary, but the more domain knowledge you have, the easier it is to understand the architecture of software projects.</p>
+<p>Overall, llama.clj is extremely fun to learn and sketch out ideas with. Even without much knowledge about LLMs, you could probably use it put together some interesting and effective applications. I came in expecting just a dry but functional wrapper to llama.cpp, but the documentation was fantastic and I learned a lot of new techniques and concepts from the clojure code used throughout the project. From the little bit of llama.cpp that I looked at, it didn’t really seem to strive to maintain API stability, so it seems like it must be a challenge for wrapper libraries such as llama.clj to keep up to date. In any case, I had a great time and I’m looking forward to learning more about training and inference.</p>
+    </section>
+    <section class="comment-footer">
+        <a href="mailto:eskinjp@gmail.com?subject=Re: Leveraging local AI for task automation">Comment via email</a>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>
